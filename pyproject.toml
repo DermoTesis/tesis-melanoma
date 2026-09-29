@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "melanoma"
+version = "0.1.0"
+description = "Clasificador binario de melanoma para la tesis UPC: experimentos EXP-01 a EXP-05."
+requires-python = ">=3.11,<3.14"
+authors = [
+    { name = "Ilan Núñez del Arco" },
+    { name = "Jorge Orrego" },
+]
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# TensorFlow de PyPI, para el contenedor de desarrollo (CPU): EXP-01, EXP-05 y pruebas.
+# En la GPU se usa el TensorFlow o el PyTorch que trae la imagen de Docker (ver README).
+tf = ["tensorflow==2.21.*"]
+# Intérprete LiteRT, el mismo runtime que usará el backend en Cloud Run (EXP-05).
+litert = ["ai-edge-litert>=2.2"]
+dev = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

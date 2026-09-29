@@ -1,0 +1,52 @@
+# Configuración común. Cada experimento la hereda con `extends: base.yaml` y solo cambia lo
+# necesario. Las rutas son relativas a la raíz del repo.
+
+seed: 42
+
+paths:
+  data: data            # datasets crudos (fuera de git)
+  splits: splits        # particiones congeladas (en git)
+  outputs: outputs      # modelos, checkpoints y predicciones (fuera de git)
+  results: resultados   # config, entorno y métricas de cada corrida (en git)
+
+data:
+  # Melanoma (1) vs. todas las demás clases (0). Se confirma al revisar los datasets en EXP-01.
+  positive_class: mel
+  image_size: 224
+  sources:
+    ham10000:
+      metadata: data/ham10000/HAM10000_metadata.csv
+      images: data/ham10000/images
+    # isic: se agrega al confirmar el año. Si es 2019, ya contiene HAM10000 y se deduplica
+    # por id de imagen antes de particionar.
+
+split:
+  group_column: lesion_id   # todas las imágenes de una lesión caen en la misma partición
+  test_fraction: 0.15       # test fijo; se usa una sola vez, al final de EXP-04
+  n_folds: 5                # StratifiedGroupKFold sobre el resto
+
+model:
+  backbone: mobilenet_v3_large   # candidato principal; mobilenet_v2 es la línea base
+  weights: imagenet
+  head: dense                    # dense | random_forest
+  dropout: 0.2
+
+# Valores iniciales; se ajustan al implementar EXP-02.
+training:
+  batch_size: 32
+  mixed_precision: true
+  phases:
+    head:        # fase 1: backbone congelado, solo se entrena la cabeza
+      epochs: 5
+      learning_rate: 1.0e-3
+    finetune:    # fase 2: fine-tuning del backbone
+      epochs: 20
+      learning_rate: 1.0e-5
+  early_stopping_patience: 5
+  imbalance: none   # none | class_weight | oversampling | focal_loss (EXP-03)
+
+metrics:
+  target_recall: 0.90   # obligatorio en el umbral operativo
+  target_auc: 0.90      # meta propuesta para comparar candidatos
+  bootstrap_resamples: 2000
+  confidence_level: 0.95

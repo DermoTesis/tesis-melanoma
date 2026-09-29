@@ -1,0 +1,16 @@
+# EXP-05: conversión y cuantización a .tflite con un candidato de EXP-02 (no hace falta el final).
+# Mide tamaño, latencia en CPU con 2 hilos (Cloud Run: 2 vCPU), arranque en frío y pérdida de AUC
+# frente al modelo Keras.
+extends: base.yaml
+experiment: exp05
+
+# int8: pesos y activaciones cuantizados con entrada y salida en float. No se fuerza int8 completo
+# (entrada/salida enteras), que solo hace falta en aceleradores; el servidor es x86.
+formats: [float32, float16, dynamic_range, int8]
+representative_samples: 200   # imágenes de train para calibrar la cuantización int8
+
+benchmark:
+  threads: 2
+  warmup_runs: 10
+  timed_runs: 200
+  cold_start_runs: 5   # proceso nuevo: cargar el modelo + primera inferencia

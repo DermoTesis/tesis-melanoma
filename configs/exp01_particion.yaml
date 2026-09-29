@@ -1,0 +1,4 @@
+# EXP-01: partición sin fuga de datos. Solo necesita los CSV de metadatos.
+# Produce splits/ (test fijo + 5 folds) congelado con hash; todos los demás experimentos lo leen.
+extends: base.yaml
+experiment: exp01

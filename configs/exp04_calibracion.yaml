@@ -1,0 +1,13 @@
+# EXP-04: calibración y umbral de decisión orientado a sensibilidad, sobre el modelo final.
+# Todo se ajusta con las predicciones de validación de los folds; el test se evalúa una sola vez,
+# en la corrida final, y el código se niega a volver a evaluarlo.
+extends: base.yaml
+experiment: exp04
+
+calibration:
+  methods: [temperature, isotonic]
+  ece_bins: 15
+
+# Umbral: el más alto que en validación mantiene recall >= metrics.target_recall.
+# La banda de "confianza baja" (RF-06.1) se define al implementar este experimento.
+evaluate_test: false
