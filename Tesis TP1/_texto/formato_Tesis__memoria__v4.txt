@@ -1,0 +1,1783 @@
+
+
+===== PÁGINA 1 =====
+UNIVERSIDAD PERUANA DE CIENCIAS APLICADAS
+FACULTAD DE INGENIERÍA
+PROGRAMA ACADÉMICO DE CIENCIAS DE LA COMPUTACIÓN
+Aplicación móvil basada en aprendizaje automático para la detección
+temprana de melanoma maligno como estrategia de apoyo diagnóstico en la
+atención oncológica de segundo nivel en el sistema de salud público peruano
+TESIS
+Para optar el título profesional de Licenciado en Ciencias de la Computación
+/Ingeniero de Software
+AUTOR(ES)
+Orrego Noriega, Jorge David (0009-0001-4220-5827)
+Núñez Del Arco, Ilan André (0009-0009-4598-6479)
+ASESOR(ES)
+Alarcón Delgado, Carlos Adrián (Colocar ORCID)
+Lima, 23 de setiembre de 2026
+
+===== PÁGINA 2 =====
+1
+DEDICATORIA
+[Sección opcional en la que el autor o los autores hacen mención a quien va dedicada la
+realización del trabajo. Colocar el texto en cursiva]
+
+===== PÁGINA 3 =====
+2
+AGRADECIMIENTOS
+[Sección opcional en la que el autor o los autores hacen mención de las personas o
+instituciones que contribuyeron o apoyaron en la realización del trabajo. Debe ir en una
+página aparte].
+
+===== PÁGINA 4 =====
+3
+Resumen
+El melanoma maligno es el cáncer de piel de mayor letalidad y su pronóstico depende
+críticamente de la detección temprana. En el sistema de salud público peruano, la escasez de
+especialistas, la sobrecarga asistencial y los prolongados tiempos de espera derivan en
+diagnósticos tardíos, mientras ocho de cada diez pacientes oncológicos del seguro social
+declaran insatisfacción con la atención recibida. Este trabajo propone una aplicación móvil
+integrada con un modelo de aprendizaje automático de reconocimiento de imágenes,
+concebida como herramienta de apoyo diagnóstico, no como sistema autónomo, para las
+consultas oncológicas de segundo nivel. Se ejecutó una revisión sistemática de la literatura
+según la metodología de Kitchenham y Charters, que recuperó 550 registros de Scopus, Web
+of Science y Google Scholar y seleccionó 40 artículos publicados entre 2023 y 2026 en
+revistas de cuartiles Q1 y Q2. Los hallazgos muestran que las redes neuronales
+convolucionales y los Vision Transformer superan el 94% de precisión sobre conjuntos
+públicos como ISIC y HAM10000, pero que casi ninguna solución ha sido validada en
+entornos clínicos reales ni en fototipos de piel diversos. Sobre esa brecha se especificaron
+34 requisitos funcionales y 17 no funcionales, y se diseñó una arquitectura monolítica
+modular desplegada en Google Cloud, de uso exclusivo del médico especialista, que impide
+técnicamente cerrar un caso o emitir su informe sin validación médica previa, conforme a la
+Ley N.° 29733 y a la Ley N.° 31814. La gestión combina Scrum y la Guía PMBOK, y aplica
+CRISP-DM al modelo, cuya meta es superar el 90% de precisión priorizando la sensibilidad.
+Palabras clave: Melanoma maligno; aprendizaje automático; aplicación móvil; apoyo
+diagnóstico; redes neuronales convolucionales; salud pública
+
+===== PÁGINA 5 =====
+4
+[Título del trabajo en inglés]
+Abstract
+Malignant melanoma is the deadliest form of skin cancer, and its prognosis depends critically
+on early detection. Within the Peruvian public health system, the shortage of specialists, the
+excessive clinical workload and the prolonged waiting times lead to late diagnoses, in a
+context where eight out of ten oncology patients of the social security system report
+dissatisfaction with the care they receive. This research proposes a mobile application
+integrated with a machine learning image recognition model, conceived as a diagnostic
+support tool rather than an autonomous diagnostic system, for second-level oncological
+consultations. As a foundation, a systematic literature review was conducted following the
+Kitchenham and Charters methodology, retrieving 550 records from Scopus, Web of Science
+and Google Scholar and selecting 40 articles published between 2023 and 2026 in Q1 and
+Q2 indexed journals. The findings show that convolutional neural networks and Vision
+Transformers exceed 94% accuracy on public datasets such as ISIC and HAM10000, yet
+almost no solution has been validated in real clinical settings or across diverse skin
+phototypes. Addressing this gap, 34 functional and 17 non-functional requirements were
+specified, and a modular monolithic architecture deployed on Google Cloud was designed
+for exclusive use by medical specialists, one that technically prevents any case from being
+closed or reported without prior medical validation, in compliance with Peruvian Law No.
+29733 and Law No. 31814. Project management combines Scrum with the PMBOK Guide,
+and applies CRISP-DM to the model lifecycle, whose performance target is to exceed 90%
+accuracy while prioritizing sensitivity.
+Keywords: Malignant melanoma; machine learning; mobile application; diagnostic support;
+convolutional neural networks; public health
+
+===== PÁGINA 6 =====
+5
+TABLA DE CONTENIDOS
+1. Introducción ..................................................................................................................... 1
+2. Diseño y Desarrollo del Proyecto ................................................................................... 3
+2.1 Diseño del Proyecto ..................................................................................................... 3
+2.1.1 Motivación ............................................................................................................ 3
+2.1.2 Objetivo General................................................................................................... 4
+2.1.3 Objetivos Específicos ........................................................................................... 4
+2.1.4 Limitaciones y Restricciones ................................................................................ 4
+2.2 Desarrollo del Proyecto ............................................................................................... 5
+2.2.1 Equipo de Proyecto ............................................................................................... 5
+2.2.2 Recursos Requeridos ............................................................................................ 6
+2.2.3 Fases e hitos del proyecto ..................................................................................... 6
+2.2.4 Enfoques del trabajo ............................................................................................. 8
+2.2.5 Riesgos y Mitigación .......................................................................................... 11
+3. Análisis y Diseño de Algoritmos ................................................................................... 12
+3.1 Arquitectura MobileNet ............................................................................................. 12
+3.2 Modelo MobileNet-v2 ............................................................................................... 12
+3.3 .................................................................................................................................... 12
+3.4 Arquitectura / Modelo / Algoritmo 4 ......................................................................... 12
+4. Aporte Cientifico............................................................................................................ 13
+4.1 Contexto..................................................................................................................... 13
+4.2 Trabajos relacionados ................................................................................................ 13
+4.3 Contribución .............................................................................................................. 13
+4.3.1 Propuesta ............................................................................................................ 13
+4.3.2 Hipótesis ............................................................................................................. 13
+5. Aplicación / Solución ..................................................................................................... 13
+5.1 Requisitos .................................................................................................................. 13
+5.1.1 Requisitos Funcionales ....................................................................................... 13
+5.1.2 Requisitos No Funcionales ................................................................................. 15
+5.1.3 Casos de Uso (Use Cases) .................................................................................. 16
+5.1.4 Historias de Usuario (User Stories) .................................................................... 16
+5.2 Diseño ........................................................................................................................ 18
+5.2.1 Arquitectura del Software ................................................................................... 18
+5.2.1.1 Diagramas de Componentes ........................................................................ 19
+5.2.1.2 Diagramas de Despliegue ............................................................................ 20
+
+===== PÁGINA 7 =====
+6
+5.2.1.3 Diagramas de Capas .................................................................................... 22
+5.2.2 Diseño de la Base de Datos ................................................................................ 22
+5.2.2.1 Modelo Entidad-Relación (ERD) ................................................................ 23
+5.2.2.2 Esquema de la Base de Datos ...................................................................... 23
+5.2.3 Diseño de Interfaz de Usuario (UI/UX) ............................................................. 26
+5.2.4 Diseño Detallado de Módulos/Componentes ..................................................... 26
+5.2.5 Diagramas de Secuencia/Actividad/Clases (UML) ............................................ 28
+6. Validación y Resultados del Proyecto .......................................................................... 32
+6.1 Protocolo Experimental ............................................................................................. 32
+6.2 Resultados .................................................................................................................. 32
+6.2.1 Resultados Cuantitativos .................................................................................... 32
+6.2.1.1 Métricas ....................................................................................................... 33
+6.2.1.2 Resultados 1 ................................................................................................. 33
+6.2.1.3 Resultados 2 ................................................................................................. 33
+6.2.2 Resultados Cualitativos ...................................................................................... 33
+6.2.2.1 Percepción de técnicas ................................................................................. 33
+6.2.2.2 Satisfacción percibida .................................................................................. 33
+6.2.2.3 Retroalimentación ........................................................................................ 33
+6.3 Discusión ................................................................................................................... 33
+6.3.1 Análisis Comparativo ......................................................................................... 33
+6.3.2 Hallazgos ............................................................................................................ 33
+CONCLUSIONES Y RECOMENDACIONES .............................................................. 33
+REFERENCIAS................................................................................................................. 33
+[ANEXOS] .......................................................................................................................... 35
+
+===== PÁGINA 8 =====
+7
+ÍNDICE DE TABLAS
+Tabla 1. Requisitos Funcionales del Sistema ...................................................................... 13
+Tabla 2. Requisitos No Funcionales del Sistema ................................................................ 15
+Tabla 3. Resumen de las Historias de Usuario del Product Backlog .................................. 16
+Tabla 4. Nodos y Servidores de la Arquitectura Física ....................................................... 21
+Tabla 5. Componentes de Software de la Solución ............................................................. 26
+Tabla 6. Sistemas Externos y Puntos de Integración ........................................................... 29
+
+===== PÁGINA 9 =====
+8
+ÍNDICE DE FIGURAS
+Figura 1. Marco de trabajo Scrum ......................................................................................... 9
+Figura 2. Ciclo de vida de la metodología CRISP-DM ....................................................... 10
+Figura 3. Diagrama de Componentes UML de la Solución ................................................ 19
+Figura 4. Diagrama de Despliegue UML de la Arquitectura Física .................................... 22
+Figura 5. Diagrama de Secuencia: Registro de Paciente y Consentimiento Informado ...... 30
+Figura 6. Diagrama de Secuencia: Alta de Especialista por el Administrador .................... 31
+Figura 7. Diagrama de Secuencia: Validación del Caso y Generación del Informe ........... 32
+
+===== PÁGINA 10 =====
+1
+1. Introducción
+A nivel global, el melanoma maligno representa uno de los tipos de cáncer de piel más
+agresivos y de mayor crecimiento en incidencia, siendo la detección temprana el factor
+determinante para mejorar el pronóstico y aumentar las probabilidades de supervivencia del
+paciente. En este contexto, la integración de soluciones tecnológicas en los sistemas de salud
+se ha consolidado como una respuesta estratégica ante la creciente demanda de atención
+oncológica especializada, impulsando el desarrollo de herramientas de apoyo diagnóstico
+basadas en aprendizaje automático que permiten identificar patrones en imágenes médicas
+con alta precisión (Babatunde et al., 2025).
+En el contexto nacional, sin embargo, el sistema de salud peruano enfrenta limitaciones
+estructurales que dificultan gravemente el diagnóstico oportuno de enfermedades como el
+melanoma maligno. La alta demanda de pacientes, la escasez de especialistas y los
+prolongados tiempos de espera en instituciones como el Ministerio de Salud del Perú y
+EsSalud afectan directamente la calidad y rapidez de la atención médica. Según el Instituto
+Nacional de Estadística e Informática, existen brechas importantes en el acceso a servicios
+de salud y en la capacidad de atención del sistema (INEI, 2024).
+Esta crisis se manifiesta con particular gravedad en el ámbito oncológico. Karla Ruiz,
+directora de la ONG Esperantra, organización dedicada a apoyar a pacientes con
+enfermedades crónicas y de alto costo, señaló en una entrevista con el diario La República
+(Peralta, 2025): "ocho de cada diez pacientes oncológicos del seguro social nos indican no
+estar conformes con la atención recibida", haciendo referencia al retraso en la atención,
+diagnósticos y tratamientos médicos en el Seguro Social de Salud administrado por EsSalud.
+La directora añade que la situación es tan crítica que hay pacientes que "se mueren esperando
+que el diagnóstico de su tipo de cáncer les llegue para tener acceso a la terapia", lo que refleja
+una sobrecarga del sistema con riesgo de colapso (Peralta, 2025).
+Como consecuencia directa de esta ineficiencia, los procesos de atención fallan en su función
+más básica: los pacientes se ven obligados a buscar alternativas privadas, y una gran
+proporción de asegurados prefiere no atenderse en EsSalud debido a la ineficiencia del
+servicio (Espinoza, 2025). Estudios sobre calidad de atención confirman que la
+insatisfacción de los usuarios está estrechamente relacionada con los largos tiempos de
+
+===== PÁGINA 11 =====
+2
+espera y las deficiencias en la atención oportuna (Cárdenas, 2026). En el ámbito oncológico,
+este retraso incrementa el riesgo de complicaciones graves y reduce la efectividad de los
+tratamientos disponibles, dado que la calidad del servicio de salud influye directamente en
+los resultados clínicos y en la continuidad del tratamiento de los pacientes (Esquivel et al.,
+2023).
+El Perú enfrenta profundas barreras tecnológicas y de infraestructura en el sector público. Se
+evidencia una escasez y deficiencia crítica de herramientas tecnológicas operativas en los
+establecimientos de salud. Informes recientes de la Defensoría del Pueblo (2026) advierten
+de manera recurrente a EsSalud sobre la paralización de atenciones debido a la
+inoperatividad prolongada de equipos médicos especializados (como tomógrafos) en
+hospitales de alta complejidad. Ante este déficit de equipamiento, el personal de salud
+mantiene un limitado conocimiento sobre alternativas de software accesible —como el
+análisis automatizado de imágenes mediante aplicaciones móviles— que podrían
+complementar el flujo de trabajo y acelerar la detección temprana de patologías.
+El sistema de salud peruano tambien padece una severa fragmentación digital. La
+Organización para la Cooperación y el Desarrollo Económicos (OCDE, 2025) advierte que
+la división estructural entre subsistemas como el MINSA y EsSalud, sumada a la limitada
+infraestructura de información y la falta de estandarización, obstaculiza gravemente la
+interrelación de datos clínicos. Esta fragmentación informática estructural impide que exista
+una definición clara sobre cómo integrar nuevos componentes tecnológicos, como un
+modelo de apoyo diagnóstico por inteligencia artificial, dentro de los procesos de validación
+médica ya establecidos.
+Si bien existen esfuerzos académicos a nivel nacional para el diagnóstico de melanoma,
+como la propuesta teórica de Villanueva y Pardo (2024), la literatura técnica revela que estos
+modelos rara vez trascienden el laboratorio. La mayoría de los desarrollos dependen de bases
+de datos altamente controladas y disminuyen significativamente su rendimiento al ser
+expuestos a la calidad variable de imágenes de la consulta diaria, fenómeno conocido como
+desplazamiento de dominio (Chamarthi et al., 2024). En consecuencia, persiste una escasa
+disponibilidad de herramientas tecnológicas que hayan sido validadas en condiciones reales
+y que cuenten con la robustez técnica suficiente para operar de forma segura en las consultas
+oncológicas del sistema público peruano.
+
+===== PÁGINA 12 =====
+3
+La brecha entre la situación deseada, un sistema capaz de detectar oportunamente
+enfermedades como el melanoma desde el segundo nivel de atención, y la situación actual,
+marcada por diagnósticos tardíos, colapso institucional e insatisfacción generalizada,
+evidencia la urgencia de incorporar soluciones tecnológicas que contribuyan a mejorar los
+procesos diagnósticos sin depender exclusivamente de la disponibilidad de especialistas. En
+este sentido, el aprendizaje automático ha demostrado ser una alternativa prometedora:
+conforme al trabajo de Alshmrani et al. (2026), es posible desarrollar un modelo de
+clasificación basado en el algoritmo Random Forest con el apoyo de una Red Neuronal
+Convolucional (CNN) para la detección temprana de melanomas, obteniendo resultados
+positivos (en promedio, AUC = 85.09%, Precisión = 94.7%, Sensibilidad = 84.53%). Sobre
+la base de estos resultados, se considera que ampliar la funcionalidad de dicho modelo
+mediante una aplicación móvil de uso exclusivo del médico especialista, que le permita
+capturar y enviar a análisis las imágenes de las lesiones de sus pacientes y obtener de forma
+ágil una predicción preliminar de apoyo, representaría un aporte concreto para reducir la
+brecha diagnóstica en contextos de segundo nivel de atención con recursos limitados,
+beneficiando a los pacientes del sistema público peruano a través de una atención más
+oportuna.
+2. Diseño y Desarrollo del Proyecto
+2.1 Diseño del Proyecto
+2.1.1 Motivación
+Nuestra motivación para realizar este proyecto parte desde la identificación de las carencias
+en el tratamiento de pacientes oncológicos con herramientas tecnológicas que podrían
+agilizar su diagnóstico por parte del médico tratante. Por ello, quisimos desarrollar una
+aplicación que pudiese ayudar en el proceso de detección de enfermedades utilizando
+nuestros conocimientos en aprendizaje automático y en el desarrollo de aplicaciones para
+dispositivos móviles. Como enfoque decidimos elegir la detección de melanomas malignos,
+los cuales son el tipo de cáncer de piel más agresivos, para ayudar con una detección
+temprana de esta enfermedad al médico especialista tratante y así asegurar que el paciente
+
+===== PÁGINA 13 =====
+4
+tenga más chances de responder positivamente al tratamiento.
+2.1.2 Objetivo General
+Desarrollar una aplicación móvil integrada con un sistema de reconocimiento de imágenes
+con aprendizaje automático para el apoyo en la detección de melanomas en consultas
+oncológicas de segundo nivel dentro del sistema de salud público peruano.
+2.1.3 Objetivos Específicos
+OE1: Analizar las tecnologías, modelos y frameworks existentes, así como soluciones
+semejantes a lo propuesto para el desarrollo del sistema de detección de melanomas.
+OE2: Diseñar la arquitectura de software de la solución tomando como referencia los
+conceptos y tecnologías investigadas junto al entrenamiento del modelo, con el objetivo de
+integrar una aplicación móvil con un modelo de reconocimiento de imágenes con
+aprendizaje automático.
+OE3: Desarrollar la aplicación móvil y el modelo de aprendizaje automático utilizando los
+conceptos previamente analizados, para luego poder integrar ambas partes de manera
+eficiente.
+OE4: Evaluar y validar que la solución cumpla con la detección de melanomas con una
+precisión mayor al 90% en métricas para modelos de aprendizaje automático (en este caso
+vamos a priorizar el recall y el f1-score) tanto en un entorno de pruebas como en un entorno
+controlado y supervisado por especialistas médicos.
+2.1.4 Limitaciones y Restricciones
+A continuación, se detallan las suposiciones sobre las que se plantea el proyecto. Estas parten
+de que la aplicación funcionará como una herramienta de apoyo para la detección de
+melanoma maligno, siempre bajo la supervisión y el criterio del médico especialista.
+Suposiciones Descripción
+El sistema funcionará como una
+aplicación de detección de
+melanomas malignos en la piel.
+En base al resultado del análisis, el sistema sugerirá al médico
+especialista medidas como realizar exámenes adicionales para descartar
+un falso positivo; cualquier indicación al paciente la comunica el médico
+durante la consulta.
+La herramienta servirá como
+soporte para el diagnóstico
+médico.
+Tiene la misión de ayudar a los médicos especialistas a detectar posibles
+casos de melanoma de piel maligno de forma más rápida, sin reemplazar
+el criterio del especialista.
+
+===== PÁGINA 14 =====
+5
+El uso de la herramienta requiere
+la supervisión de un médico
+especialista.
+Los resultados generados por la aplicación deben ser validados por un
+profesional médico antes de tomar cualquier decisión clínica.
+Asimismo, se establecen las restricciones que delimitan el uso del sistema: la aplicación no
+agenda citas, no brinda atención a distancia, no reemplaza el criterio médico ni los exámenes
+clínicos y no es utilizada directamente por los pacientes.
+Restricciones Descripción
+El sistema no funcionará como
+una plataforma para agendar
+consultas o exámenes médicos.
+La conducta a seguir la registra el médico especialista; el sistema no
+agenda citas y no tiene la potestad de brindar diagnósticos médicos ni de
+solicitar exámenes o revisiones sin la supervisión de un médico
+especialista.
+El sistema no será una
+plataforma de telemedicina.
+No tiene como objetivo brindar atención médica a distancia, ya que
+únicamente sirve como una herramienta de apoyo adicional para los
+médicos tratantes.
+El sistema no reemplaza el
+criterio médico ni los exámenes
+clínicos pertinentes.
+La aplicación no sustituye el juicio profesional del especialista ni los
+procedimientos diagnósticos formales requeridos para confirmar un caso
+de melanoma.
+El sistema no será utilizado
+directamente por pacientes.
+Únicamente los médicos especialistas y el administrador acceden a la
+aplicación; el paciente no crea una cuenta ni recibe resultados a través
+del sistema, sino mediante el médico especialista durante la consulta.
+Limitaciones Descripción
+Solo se utilizarán datasets
+públicos de lesiones de la piel
+para el entrenamiento del
+modelo.
+Dada la complejidad para conseguir datos personales de pacientes
+oncológicos (en nuestro caso sería las imágenes de las lesiones en la
+piel), se ha decidido utilizar datasets públicos como el HAM 10000 para
+el entrenamiento del modelo. Esto significaría que nuestro modelo no
+poseería tanta información para la detección de lesiones en tonos de piel
+más diversos como los que hay en nuestro país.
+Se utilizarán servicios en la nube
+en vez de soluciones on premise.
+Al no tener el control sobre la disponibilidad de la infraestrucutra de
+centros de salud públicos, se ha decidido optar por utilizar servicios de
+infraestructura en la nube.
+2.2 Desarrollo del Proyecto
+2.2.1 Equipo de Proyecto
+La siguiente tabla muestra los roles que participan en el proyecto, los miembros que los
+asumen y sus responsabilidades principales. Además de los stakeholders y asesores, se
+incluyen los roles de gestión y de Scrum que asumen los integrantes del equipo.
+Rol Miembro Responsabilidades
+Stakeholder Comité de proyectos
+Revisión y aprobación del proyecto de
+tesis.
+
+===== PÁGINA 15 =====
+6
+Stakeholder Expertos (Médicos Especialistas)
+Revisión y aprobación de la funcionalidad
+de la aplicación; son, además, sus usuarios
+finales.
+Asesor/Cliente Carlos Alarcón
+Brindar apoyo y feedback al equipo de
+desarrollo del proyecto.
+Profesor Metodológico Profesor del Curso de TP1/TP2
+Brindar apoyo y feedback al equipo sobre
+la metodología de la investigación del
+proyecto.
+Project Manager Jorge Orrego
+Encargado de dirigir al equipo de
+desarrollo, vela por el cumplimiento de los
+objetivos del proyecto.
+Scrum Master Jorge Orrego Facilitador y líder del equipo ágil.
+Product Owner Ilan Nuñez del Arco
+Encargado de traducir las necesidades de
+los stakeholders en tareas y
+funcionalidades a realizar por el equipo de
+desarrollo.
+Desarrolladores
+Jorge Orrego y Ilan Núñez del
+Arco
+Encargados del desarrollo del producto
+final del proyecto. Requieren de una
+colaboración cercana y dinámica entre sí.
+2.2.2 Recursos Requeridos
+Recursos Humanos:
+● Equipo de trabajo del proyecto (desarrolladores)
+● Asesores del proyecto (asesor especializado, asesor metodológico)
+● Expertos en el área (médicos especializados), que actúan como validadores y
+usuarios finales de la aplicación
+Recursos tecnológicos:
+● Computadoras (desarrollo de la solución)
+● Smartphones Android (desarrollo, pruebas y uso en consulta, opcionalmente con
+dermatoscopio acoplado)
+● Conexión a internet (datos móviles, red local)
+● Despliegue en la nube (GCP: Cloud Run, Firestore y Cloud Storage; Firebase
+Authentication y Firebase Cloud Messaging)
+2.2.3 Fases e hitos del proyecto
+Las siguientes tablas presentan los hitos del proyecto para los cursos TP1 y TP2, con su
+fecha estimada, los entregables incluidos y su prioridad. Los hitos combinan las
+sustentaciones académicas con la entrega de los Sprints de desarrollo.
+
+===== PÁGINA 16 =====
+7
+Hitos TP1:
+Hito del proyecto Fecha Estimada Entregables incluidos Prioridad
+Hito 1: Validación con el Comité de
+Proyectos
+Semana 1 a Semana
+3
+● Plan de cumplimiento de
+Outcomes ABET
+● Project Charter
+● Listado de User Stories
+(Product Backlog)
+Alta
+Hito 2: Planificación del proyecto
+Semana 1 a Semana
+3
+● Product Backlog corregido
+● Plan de Gestión del
+Proyecto
+Alta
+Hito 3: Sprint 1
+Semana 4 a Semana
+6
+● Entregables del Sprint 1
+Alta
+Hito 4: Sprint 2
+Semana 7 a Semana
+9
+● Entregables del Sprint 2
+Alta
+Hito 5: Sustentación con el Profesor
+Metodológico
+Semana 7
+● Objetivo 2 Completado
+Alta
+Hito 6: Sustentación parcial TP1 Semana 8
+● Trabajo Parcial
+Alta
+Hito 7: Sprint 3
+Semana 10 a
+Semana 12
+● Entregables del Sprint 3
+Alta
+Hito 8: Sprint 4
+Semana 13 a
+Semana 15
+● Entregables del Sprint 4
+Alta
+Hito 9: Sustentación con el Profesor
+Metodológico
+Semana 14
+● Objetivo 3 Completado
+● Capítulo 4 Completado
+● Paper – Lista de
+Aprobados
+Alta
+Hito 10: Sustentación Final TP1 Semana 15
+● Trabajo Final
+Alta
+Hitos TP2:
+Hito del proyecto
+Fecha
+Estimada
+Entregables incluidos Prioridad
+Hito 1: Sprint 5
+Semana 1 a
+Semana 3
+● Entregables del Sprint 5
+Alta
+Hito 2: Sprint 6
+Semana 4 a
+Semana 6
+● Entregables del Sprint 6
+Alta
+
+===== PÁGINA 17 =====
+8
+Hito 3: Sprint 7
+Semana 7 a
+Semana 9
+● Entregables del Sprint 7
+Alta
+Hito 4: Sustentación con el Profesor
+Metodológico
+Semana 7
+● Capítulo 5: Diseño y Desarrollo
+del Proyecto
+● Objetivo 4
+Alta
+Hito 5: Sustentación parcial TP2 Semana 8 ● Ajustes del Objetivo 4
+● Trabajo Parcial
+Alta
+Hito 6: Sprint 8
+Semana 10 a
+Semana 12
+● Entregables del Sprint 8
+Alta
+Hito 7: Sprint 9
+Semana 13 a
+Semana 15
+● Entregables del Sprint 9
+Alta
+Hito 8: Sustentación con el Profesor
+Metodológico
+Semana 14
+● Capítulo 6: Validación y
+Resultados
+● Plan de Costos y Presupuestos
+● Conclusiones y
+Recomendaciones
+Alta
+Hito 10: Sustentación Final TP2 Semana 15
+● Trabajo Final
+● Entrega de Artefactos de la
+memoria
+● Paper – Lista de Aprobados
+Alta
+2.2.4 Enfoques del trabajo
+En este trabajo se implementará SCRUM + CRISP-DM con el objetivo de realizar entregas
+periódicas que aporten valor a los stakeholder y que a su vez siga una estructura propia para
+la evaluación y despliegue de un modelo de aprendizaje automático. A continuación, se
+describirá con más detalle ambos marcos de trabajo:
+SCRUM: Un enfoque ágil que se emplea para crear y gestionar productos complejos a través
+de entregas que se realizan de manera iterativa y progresiva. De acuerdo con la Guía Scrum,
+se define como "un enfoque ligero que permite a personas, equipos y organizaciones generar
+valor mediante soluciones flexibles para problemas complejos" (Schwaber y Sutherland,
+2020). Está compuesto por tres funciones (Product Owner, Scrum Master y equipo de
+desarrollo), cinco eventos (Sprint, Planificación del Sprint, Reunión Diaria, Revisión del
+Sprint y Retrospectiva del Sprint) y tres artefactos (Product Backlog, Sprint Backlog e
+Incremento). En este estudio, se emplea Scrum para estructurar el desarrollo de la aplicación
+móvil en incrementos de sprints, lo que facilita la adaptación de la solución a los
+
+===== PÁGINA 18 =====
+9
+descubrimientos realizados durante la fase de entrenamiento y validación del modelo de
+aprendizaje automático.
+Figura 1
+Marco de trabajo Scrum
+Fuente: PM-PARTNERS (https://www.pm-partners.com.au/insights/the-agile-journey-a-scrum-
+overview/)
+CRISP-DM: Representa el acrónimo de Proceso Estándar Interindustrial para la Minería de
+Datos, es la metodología más comúnmente utilizada en proyectos de minería de datos y
+aprendizaje automático. Este enfoque organiza el desarrollo en seis fases cíclicas:
+entendimiento del negocio, entendimiento de los datos, preparación de los datos, modelado,
+evaluación y despliegue (Chapman et al., 2000). En este trabajo, se utiliza CRISP-DM como
+guía a lo largo del ciclo de vida del modelo para detectar melanomas malignos, abarcando
+desde la comprensión del problema médico y la organización de los conjuntos de datos
+dermatológicos (ISIC), hasta el entrenamiento, la evaluación mediante métricas (precisión,
+exactitud, recuperación, F1-score) y la implementación del modelo en la aplicación móvil.
+
+===== PÁGINA 19 =====
+10
+Figura 2
+Ciclo de vida de la metodología CRISP-DM
+Fuente: Enterprise Knowledge (https://www.pm-partners.com.au/insights/the-agile-journey-a-
+scrum-overview/)
+Por otra parte, para el manejo de la gestión del proyecto se utilizará la guía PMBOK en su
+versión 6, con el objetivo de documentar la ejecución de una manera más estructurada y
+tomando en cuenta los 5 grupos de procesos principales como el inicio, la planificación, la
+ejecución, el monitoreo y control, y el cierre del proyecto. A continuación, se describirá con
+más detalle:
+Guía PMBOK 6ta edición: Este estándar fue publicado por el Project Management Institute
+(PMI) en 2017 y sirve como una referencia global para la gestión de proyectos. Incluye 49
+procesos que se agrupan en 5 Grupos de Procesos (Inicio, Planificación, Ejecución,
+Monitoreo y Control, y Cierre) y 10 Áreas de Conocimiento: Integración, Alcance,
+Cronograma, Costos, Calidad, Recursos, Comunicaciones, Riesgos, Adquisiciones e
+Interesados (Project Management Institute [PMI], 2017). En este trabajo, se aplica para
+organizar la gestión del alcance, cronograma, costos, calidad y riesgos del proyecto,
+complementándose con el enfoque ágil Scrum.
+Para asegurar la calidad del software a desarrollar, se seguirán los lineamientos de la norma
+ISO/IEC 25001:2014. A continuación, se describirá con más detalle la norma:
+ISO/IEC 25001:2014: Esta norma internacional de la familia SQuaRE se añade al modelo
+de calidad ISO/IEC 25010, definiendo pautas para la planificación y gestión de los procesos
+de especificación y evaluación de la calidad del software. De acuerdo con la norma misma,
+
+===== PÁGINA 20 =====
+11
+esta "ofrece requisitos y recomendaciones para una organización encargada de implementar
+y gestionar" las actividades relacionadas con la calidad de los productos de software
+(Organización Internacional de Normalización [ISO] y Comisión Electrotécnica
+Internacional [IEC], 2014). En este trabajo, se utiliza como un marco que organiza la
+planificación de la evaluación de características clave de la aplicación móvil y del modelo
+de aprendizaje automático, tales como la fiabilidad del clasificador, la seguridad de los datos
+dermatológicos y la usabilidad.
+2.2.5 Riesgos y Mitigación
+En la siguiente tabla se identifican los principales riesgos del proyecto, con su probabilidad
+de ocurrencia, su impacto y la estrategia de mitigación propuesta. Entre ellos destacan los
+relacionados con el desempeño del modelo, la disponibilidad de datos representativos de la
+población peruana y la participación de médicos especialistas en la validación.
+# Riesgo Probabilidad Impacto Estrategia de mitigación
+1
+El Modelo
+utilizado cuenta
+con más falsos
+negativos que
+positivos
+Baja
+No se detectan
+posibles casos de
+melanoma maligno,
+lo que pone en riesgo
+la vida de los
+pacientes al dar al
+médico especialista
+una falsa sensación
+de seguridad.
+Ajustar el modelo para que pueda
+devolver todos los posibles casos
+positivos (recall), priorizando así la
+detección de la mayor cantidad de
+casos posibles. Además, la predicción
+se presenta siempre como preliminar y
+no validada, y el médico debe registrar
+su propio sustento clínico antes de
+cerrar el caso.
+2
+No se logra
+encontrar un
+dataset
+adecuado a la
+realidad
+nacional.
+Media
+El modelo
+desarrollado no
+podría detectar casos
+de melanoma en
+pacientes con
+tonalidades de piel
+propios de nuestro
+país.
+Consultar y buscar imágenes de
+lesiones de piel en instituciones
+relacionadas al tratamiento de
+enfermedades oncológicas como el
+Instituto Nacional de Enfermedades
+Neoplásticas (INEN).
+3
+El personal de
+salud no
+dispone de la
+infraestructura
+tecnológica
+para hacer uso
+de la aplicación
+móvil.
+Muy Bajo
+No se podría probar
+ni poner en
+funcionamiento la
+integración de la
+aplicación en el
+entorno deseado.
+Dado que es una aplicación móvil, no
+requiere de muchos recursos
+adicionales con respecto a la
+infraestructura de la institución en la
+que se evaluará el funcionamiento e
+integración. Solo se requerirá de un
+smartphone con conexión a internet
+(sean por datos móviles o por red
+WiFi).
+En caso no se pueda dar estos criterios,
+el equipo podrá asistir en brindar los
+equipos y conexión necesaria para el
+funcionamiento de la aplicación.
+
+===== PÁGINA 21 =====
+12
+4
+La captura de
+imágenes no es
+lo
+suficientemente
+nítida para
+brindar un
+análisis
+satisfactorio de
+la lesión en la
+piel.
+Alto
+No se podrá dar un
+resultado
+satisfactorio al
+médico especialista
+con respecto a la
+probabilidad de que
+su lesión pueda ser
+maligna o benigna, lo
+cual hace el uso de la
+aplicación
+redundante.
+Dado que la calidad de imágenes
+tomadas por smartphones varía
+dependiendo de los modelos, se
+buscará proveer al personal de salud
+con uno en caso de que los que tengan
+no puedan capturar imágenes nítidas.
+Además, se podrían aplicar técnicas de
+posprocesamiento de imágenes para
+resaltar características útiles para la
+detección de la lesión en la piel.
+Asimismo, el médico podrá acoplar un
+dermatoscopio al smartphone, lo que
+acerca las imágenes capturadas a las
+imágenes dermatoscópicas del
+conjunto HAM10000 utilizado en el
+entrenamiento.
+5
+Falta de
+participación
+de médicos
+expertos para la
+validación de la
+propuesta que
+trabajen en
+hospitales
+públicos.
+Alto
+El funcionamiento de
+la aplicación no
+podrá ser validado
+por los médicos
+expertos.
+Se tendrá que buscar con anticipación
+a expertos médicos que tengan tiempo
+para formar parte de las validaciones
+de la aplicación. Pese a las
+precauciones que podríamos tomar, el
+horario de revisión de la aplicación va
+a depender únicamente de la
+disponibilidad del especialista, por lo
+que tenemos que adecuarnos a sus
+necesidades.
+6
+Lentitud en el
+análisis de las
+imágenes de
+lesiones de la
+piel por parte
+del modelo
+desplegado o de
+la aplicación.
+Medio
+Los resultados del
+análisis del modelo
+desplegado en la
+nube no podrán ser
+devueltos en un
+periodo de tiempo
+razonable al médico
+especialista durante
+la consulta, lo cual
+impide que el
+proceso de detección
+se pueda agilizar.
+Evaluar las soluciones de despliegue
+en la nube, así como de nuevas
+técnicas y características que permitan
+implementar nuestra solución de tal
+forma que se pueda reducir
+considerablemente los tiempos de
+respuesta.
+3. Análisis y Diseño de Algoritmos
+3.1 Arquitectura MobileNet
+3.2 Modelo MobileNet-v2
+3.3
+3.4 Arquitectura / Modelo / Algoritmo 4
+
+===== PÁGINA 22 =====
+13
+4. Aporte Cientifico
+4.1 Contexto
+4.2 Trabajos relacionados
+4.3 Contribución
+4.3.1 Propuesta
+4.3.2 Hipótesis
+5. Aplicación / Solución
+5.1 Requisitos:
+5.1.1 Requisitos Funcionales
+Tabla 1
+Requisitos Funcionales del Sistema
+ID Categoría Descripción
+RF-01.1 Gestión de usuarios y
+autenticación
+El sistema debe permitir el acceso únicamente a usuarios con
+cuentas creadas por el administrador, con los roles de médico
+especialista y administrador, sin ofrecer registro público.
+RF-01.2 Gestión de usuarios y
+autenticación
+El sistema debe autenticar usuarios mediante credenciales
+(correo/contraseña) y permitir la recuperación segura de
+acceso ante olvido de contraseña.
+RF-01.3 Gestión de usuarios y
+autenticación
+El sistema debe permitir que únicamente el administrador
+habilite cuentas de especialista, registrando el número de
+colegiatura verificado, la fecha de verificación y el
+administrador responsable, antes de otorgar permisos
+clínicos.
+RF-01.4 Gestión de usuarios y
+autenticación
+El sistema debe permitir la administración de roles y
+permisos, restringiendo el acceso a funciones clínicas
+exclusivamente a usuarios habilitados.
+RF-02.1 Registro de pacientes,
+captura y envío de imágenes
+El sistema debe permitir la captura de imágenes mediante la
+cámara del dispositivo o su carga desde galería.
+RF-02.2 Registro de pacientes,
+captura y envío de imágenes
+El sistema debe validar la calidad técnica de la imagen
+(enfoque, iluminación, encuadre, formato, resolución) antes
+de aceptarla.
+RF-02.3 Registro de pacientes,
+captura y envío de imágenes
+El sistema debe permitir registrar información clínica
+complementaria asociada a la imagen (ubicación, tiempo de
+aparición, síntomas).
+RF-02.4 Registro de pacientes,
+captura y envío de imágenes
+El sistema debe encolar el caso enviado con un estado inicial
+de procesamiento, garantizando el envío incluso ante
+interrupciones de conectividad.
+RF-02.5 Registro de pacientes,
+captura y envío de imágenes
+El sistema debe permitir al médico especialista registrar o
+buscar al paciente atendido mediante su número de historia
+clínica, sin generarle credenciales de acceso.
+
+===== PÁGINA 23 =====
+14
+RF-02.6 Registro de pacientes,
+captura y envío de imágenes
+El sistema debe exigir el registro del consentimiento
+informado del paciente antes de habilitar la captura de
+imágenes de un nuevo caso, y permitir registrar su
+revocación.
+RF-03.1 Generación de predicción
+preliminar (ML)
+El sistema debe procesar y preparar el dataset de imágenes
+(normalización, balanceo de clases, aumento de datos)
+utilizado para el entrenamiento del modelo.
+RF-03.2 Generación de predicción
+preliminar (ML)
+El sistema debe extraer características de la imagen mediante
+una red neuronal convolucional (CNN).
+RF-03.3 Generación de predicción
+preliminar (ML)
+El sistema debe generar una clasificación binaria
+(benigno/maligno) con nivel de confianza asociado,
+etiquetada explícitamente como predicción preliminar.
+RF-03.4 Generación de predicción
+preliminar (ML)
+El sistema debe evaluar el desempeño del modelo mediante
+métricas estándar (Accuracy, Precision, Recall, F1-Score,
+AUC-ROC) antes de habilitarlo para uso clínico.
+RF-03.5 Generación de predicción
+preliminar (ML)
+El sistema debe integrar el modelo mediante una interfaz que
+reciba una imagen y retorne la predicción preliminar en
+formato estructurado.
+RF-03.6 Generación de predicción
+preliminar (ML)
+El sistema debe versionar el modelo en producción y
+monitorear su desempeño para detectar degradación.
+RF-04.1 Supervisión y validación
+médica obligatoria
+El sistema debe presentar al especialista la imagen, los datos
+del paciente y la predicción preliminar de forma consolidada
+para su revisión.
+RF-04.2 Supervisión y validación
+médica obligatoria
+El sistema debe permitir al especialista confirmar, corregir o
+descartar la predicción preliminar, conservando el dato
+original sin sobrescribirlo.
+RF-04.3 Supervisión y validación
+médica obligatoria
+El sistema debe exigir un sustento clínico como condición
+obligatoria para registrar cualquier validación.
+RF-04.4 Supervisión y validación
+médica obligatoria
+El sistema debe generar un registro inmutable de cada
+validación (fecha, hora, especialista, decisión), impidiendo su
+modificación posterior.
+RF-04.5 Supervisión y validación
+médica obligatoria
+El sistema debe identificar y alertar al médico responsable
+sobre los casos que excedan el tiempo límite de validación sin
+ser revisados.
+RF-05.1 Informes y seguimiento de
+casos
+El sistema debe mostrar al médico especialista el estado de
+cada caso registrado, diferenciando los pendientes de
+validación.
+RF-05.2 Informes y seguimiento de
+casos
+El sistema debe permitir cerrar un caso y generar su informe
+únicamente después de la validación médica, incluyendo la
+identificación del especialista responsable.
+RF-05.3 Informes y seguimiento de
+casos
+El sistema debe mostrar de forma explícita el alcance de
+apoyo diagnóstico de la herramienta, requiriendo su
+aceptación por el médico especialista en su primer acceso e
+incluyéndolo en todo informe generado.
+RF-05.4 Informes y seguimiento de
+casos
+El sistema debe permitir al especialista registrar la conducta
+o recomendación clínica para el paciente, sin gestionar
+directamente citas o derivaciones médicas.
+RF-05.5 Informes y seguimiento de
+casos
+El sistema debe permitir exportar y compartir el informe del
+caso validado en formato PDF, excluyendo las observaciones
+clínicas internas.
+RF-05.6 Informes y seguimiento de
+casos
+El sistema debe mostrar al médico especialista el historial
+cronológico de los casos validados de cada paciente.
+RF-06.1 Apoyo a la decisión clínica
+del especialista
+El sistema debe sugerir de forma editable la consideración de
+exámenes adicionales cuando la confianza de la predicción
+sea baja o ambigua.
+RF-06.2 Apoyo a la decisión clínica
+del especialista
+El sistema debe priorizar por defecto los casos según su
+probabilidad preliminar de malignidad, permitiendo
+reordenamiento manual por el especialista.
+
+===== PÁGINA 24 =====
+15
+RF-06.3 Apoyo a la decisión clínica
+del especialista
+El sistema debe permitir el registro de observaciones clínicas
+internas, visibles únicamente para personal médico y
+excluidas del informe exportable.
+RF-07.1 Arquitectura, integración y
+seguridad
+El sistema debe implementar un flujo de procesamiento que
+impida técnicamente omitir la etapa de validación médica
+antes del cierre de un caso o la generación de su informe.
+RF-07.2 Arquitectura, integración y
+seguridad
+El sistema debe cifrar todas las comunicaciones entre la
+aplicación, el backend y los servicios en la nube.
+RF-07.3 Arquitectura, integración y
+seguridad
+El sistema debe permitir la eliminación o anonimización de
+datos personales a solicitud del titular canalizada a través del
+establecimiento de salud, preservando los registros clínicos
+exigidos por normativa.
+RF-07.4 Arquitectura, integración y
+seguridad
+El sistema debe someterse a validación integral en entorno
+controlado antes de su liberación oficial.
+En la Tabla 1 se han dividido los requisitos funcionales de la aplicación en 7 categorías:
+Gestión de usuarios y autenticación, Registro de pacientes, captura y envío de imágenes,
+Generación de predicción preliminar (ML), Supervisión y validación médica obligatoria,
+Informes y seguimiento de casos, Apoyo a la decisión clínica del especialista y Arquitectura,
+integración y seguridad.
+5.1.2 Requisitos No Funcionales
+Tabla 2
+Requisitos No Funcionales del Sistema
+ID Categoría Descripción
+RNF-01 Seguridad Los datos personales y clínicos deben cifrarse en reposo.
+RNF-02 Seguridad Toda comunicación de datos sensibles debe transmitirse mediante
+canales cifrados (TLS).
+RNF-03 Seguridad El acceso a funciones clínicas debe estar controlado mediante
+autorización basada en roles.
+RNF-04 Seguridad Los registros de validación médica deben ser inmutables y
+trazables a su autor y fecha.
+RNF-05 Cumplimiento
+normativo
+El tratamiento de datos personales debe cumplir con la Ley N.°
+29733 de Protección de Datos Personales del Perú y su
+Reglamento, incluidas las garantías para el flujo transfronterizo
+hacia la región de nube donde se almacenan los datos.
+RNF-06 Cumplimiento
+normativo
+El sistema debe conservar evidencia del consentimiento informado
+del paciente, registrado por el médico especialista antes de la
+captura, así como de la aceptación del alcance de apoyo diagnóstico
+de la herramienta por parte del médico.
+RNF-07 Disponibilidad El servicio de predicción preliminar debe mantener un nivel de
+disponibilidad acorde a la operación del segundo nivel de atención.
+RNF-08 Disponibilidad El sistema debe operar en modo degradado ante pérdida de
+conectividad, garantizando el envío diferido de casos.
+RNF-09 Rendimiento La generación de la predicción preliminar debe completarse dentro
+de un tiempo de respuesta que no afecte el flujo de atención.
+RNF-10 Rendimiento El panel de revisión del especialista debe mantener tiempos de
+carga adecuados incluso con el crecimiento del volumen de casos.
+
+===== PÁGINA 25 =====
+16
+RNF-11 Escalabilidad El servicio de backend, que incluye la inferencia del modelo, debe
+escalar horizontalmente ante incrementos de demanda.
+RNF-12 Escalabilidad El almacenamiento clínico debe soportar el crecimiento sostenido
+del volumen de datos sin requerir migraciones disruptivas.
+RNF-13 Mantenibilidad El modelo de aprendizaje automático debe poder actualizarse sin
+modificar el código de la aplicación.
+RNF-14 Mantenibilidad El sistema debe registrar métricas de desempeño del modelo en
+producción para facilitar su monitoreo y reentrenamiento.
+RNF-15 Confiabilidad El modelo de clasificación debe alcanzar un umbral mínimo de
+precisión validado antes de su uso en producción.
+RNF-16 Usabilidad La interfaz debe guiar al médico especialista, usuario no técnico,
+mediante retroalimentación clara ante errores de captura o ingreso
+de datos.
+RNF-17 Auditoría Todo evento crítico del sistema (alta de cuentas, registro de
+pacientes y consentimientos, validación, cierre de casos,
+eliminación de datos) debe quedar registrado en una bitácora
+auditable.
+En la Tabla 2 se listaron los requisitos no funcionales de la solución, los cuales se enfocan
+en atributos de calidad como la seguridad, disponibilidad, escalabilidad, mantenibilidad y
+confiabilidad. Además, se listan también atributos para el cumplimiento normativo y
+auditoría de procesos de todo el sistema.
+5.1.3 Casos de Uso (Use Cases)
+Descripciones detalladas de cómo los usuarios interactúan con el sistema para lograr un
+objetivo.
+5.1.4 Historias de Usuario (User Stories)
+Las funcionalidades de la solución se especificaron mediante historias de usuario, redactadas
+desde la perspectiva de cada rol (médico especialista, administrador del sistema y equipo de
+desarrollo) con el formato Como / Quiero / Para. La Tabla 3 presenta su versión resumida,
+agrupada por épica e indicando el sprint en que se planifica su desarrollo.
+Tabla 3
+Resumen de las Historias de Usuario del Product Backlog
+ID Historia de usuario Sprint
+E1: Gestión de Usuarios y Autenticación
+HU01
+Como médico especialista, quiero activar mi cuenta definiendo mi contraseña
+y aceptando las condiciones de uso, para acceder sabiendo que la herramienta
+es solo de apoyo diagnóstico.
+2
+HU02
+Como médico especialista, quiero iniciar sesión con mi correo y contraseña,
+para acceder de forma segura a mi panel de casos.
+2
+HU03
+Como médico especialista, quiero recuperar mi contraseña en caso de olvido,
+para no perder el acceso a mi cuenta.
+2
+
+===== PÁGINA 26 =====
+17
+ID Historia de usuario Sprint
+HU04
+Como administrador del sistema, quiero dar de alta las cuentas de los médicos
+verificando su número de colegiatura, para que solo profesionales habilitados
+accedan.
+2
+HU05
+Como administrador del sistema, quiero gestionar los roles y permisos de los
+usuarios, para que solo médicos habilitados accedan a los casos y
+validaciones.
+2
+E2: Registro de Pacientes, Captura y Envío de Imágenes
+HU06
+Como médico especialista, quiero registrar o buscar al paciente por su número
+de historia clínica, para asociar los casos a su expediente sin que requiera una
+cuenta.
+3
+HU07
+Como médico especialista, quiero registrar el consentimiento informado del
+paciente antes de la captura, para cumplir con la Ley N.° 29733.
+3
+HU08
+Como médico especialista, quiero capturar la foto de la lesión con el celular,
+con o sin dermatoscopio, para obtener una predicción preliminar durante la
+consulta.
+3
+HU09
+Como médico especialista, quiero recibir indicaciones de encuadre, distancia
+e iluminación, para que la imagen sea apta para el análisis.
+3
+HU10
+Como médico especialista, quiero subir una imagen desde la galería del
+dispositivo, para analizar lesiones fotografiadas con anterioridad.
+4
+HU11
+Como médico especialista, quiero registrar datos clínicos complementarios de
+la lesión, para conservar el contexto clínico del caso.
+4
+HU12
+Como médico especialista, quiero enviar la imagen y los datos del caso a
+análisis, para obtener la predicción preliminar del modelo.
+4
+E3: Modelo de Aprendizaje Automático (Clasificación de Imágenes)
+HU13
+Como equipo de desarrollo, quiero recopilar y organizar un dataset de lesiones
+benignas y malignas, para entrenar el modelo de apoyo diagnóstico.
+1
+HU14
+Como equipo de desarrollo, quiero preprocesar las imágenes (normalización,
+redimensionamiento y aumento de datos), para mejorar la entrada del modelo.
+1
+HU15
+Como equipo de desarrollo, quiero implementar una CNN para extraer
+características de las imágenes, para alimentar el clasificador.
+3
+HU16
+Como equipo de desarrollo, quiero implementar un clasificador Random
+Forest sobre las características extraídas, para generar una predicción
+preliminar benigno/maligno.
+4
+HU17
+Como equipo de desarrollo, quiero evaluar el modelo con Accuracy,
+Precision, Recall, F1-Score y AUC-ROC, para validar su desempeño antes del
+uso clínico.
+5
+HU18
+Como equipo de desarrollo, quiero integrar el modelo como módulo de
+inferencia en el backend, para generar predicciones preliminares revisables
+por el médico.
+5
+HU19
+Como equipo de desarrollo, quiero versionar el modelo en la nube y
+monitorear su desempeño, para actualizarlo sin modificar el código y detectar
+su degradación.
+5
+E4: Supervisión y Validación Médica Obligatoria
+HU20
+Como médico especialista, quiero visualizar la predicción preliminar junto
+con la imagen y los datos clínicos, para emitir un juicio clínico informado.
+5
+HU21
+Como médico especialista, quiero confirmar, corregir o descartar la
+predicción preliminar, para que ningún caso se cierre sin criterio médico.
+6
+HU22
+Como médico especialista, quiero registrar mi sustento clínico al validar un
+caso, para dejar trazabilidad de la decisión tomada.
+6
+
+===== PÁGINA 27 =====
+18
+ID Historia de usuario Sprint
+HU23
+Como médico especialista, quiero que cada validación quede en un registro
+inmutable, para fines de auditoría y responsabilidad profesional.
+6
+HU24
+Como médico especialista, quiero recibir alertas de los casos sin validar tras
+un tiempo límite, para que ningún caso quede sin decisión clínica.
+6
+E5: Informes y Seguimiento de Casos
+HU25
+Como médico especialista, quiero ver en mi panel el estado de cada caso, para
+identificar cuáles requieren mi atención.
+7
+HU26
+Como médico especialista, quiero registrar la conducta o recomendación
+clínica en el caso validado, para incluirla en el informe del paciente.
+8
+HU27
+Como médico especialista, quiero exportar el informe del caso validado en
+PDF, para adjuntarlo a la historia clínica o entregarlo al paciente.
+8
+HU28
+Como médico especialista, quiero visualizar el historial de casos validados de
+cada paciente, para dar seguimiento a la evolución de sus lesiones.
+8
+E6: Apoyo a la Decisión del Especialista
+HU29
+Como médico especialista, quiero recibir sugerencias de exámenes
+adicionales en casos de alta incertidumbre del modelo, para apoyar mi
+decisión sin sustituirla.
+7
+HU30
+Como médico especialista, quiero priorizar en mi panel los casos con alta
+probabilidad preliminar de malignidad, para revisarlos primero.
+7
+HU31
+Como médico especialista, quiero agregar observaciones clínicas internas a un
+caso, para enriquecer el expediente sin incluirlas en el informe exportable.
+7
+E7: Arquitectura, Integración y Seguridad
+HU32
+Como equipo de desarrollo, quiero diseñar la arquitectura del backend
+monolítico modular en la nube, para garantizar que ningún caso se cierre sin
+revisión humana.
+1
+HU33
+Como equipo de desarrollo, quiero implementar comunicación cifrada
+(HTTPS/TLS) entre la aplicación, el backend y la nube, para proteger la
+información médica.
+1
+HU34
+Como administrador del sistema, quiero que los datos se almacenen cifrados y
+con acceso por roles en la región de nube definida, para cumplir con la Ley
+N.° 29733.
+4
+HU35
+Como equipo de desarrollo, quiero validar la solución completa con
+especialistas en un entorno controlado, para confirmar su rol de apoyo antes
+de la liberación oficial.
+9
+En la Tabla 3 se resumieron las 35 historias de usuario del Product Backlog, organizadas en
+7 épicas y distribuidas en 9 sprints de tres semanas cada uno (27 semanas en total). Los dos
+criterios de aceptación de cada historia, redactados con el formato Dado / Cuando / Entonces,
+se detallan en el Product Backlog del proyecto.
+5.2 Diseño:
+5.2.1 Arquitectura del Software:
+
+===== PÁGINA 28 =====
+19
+Se adopta una arquitectura monolítica modular, organizada en capas (presentación, dominio
+e infraestructura) y desplegada como un único servicio. Dentro de la capa de dominio, el
+sistema se divide en módulos por responsabilidad, que se comunican únicamente mediante
+sus interfaces públicas y no acceden directamente a los datos de otros módulos. Esta elección
+se sustenta en los siguientes criterios:
+• Simplicidad operativa: un equipo de dos integrantes mantiene un único artefacto, un
+único flujo de despliegue y un único servicio que monitorear, sin comunicación ni
+autenticación entre servicios. El volumen esperado de un piloto en el segundo nivel
+de atención no requiere escalar componentes de forma independiente.
+• RNF-13 exige que el modelo pueda actualizarse sin modificar el código de la
+aplicación. El modelo se gestiona como un artefacto .tflite versionado en Cloud
+Storage; su actualización consiste en publicar una nueva versión y modificar la
+variable de configuración que indica la versión activa, sin recompilar el backend.
+• RNF-11 exige escalamiento horizontal ante picos de demanda. Cloud Run replica el
+servicio completo y, al ser la inferencia una operación sin estado, esta escala junto
+con el resto del backend.
+• RF-07.1 y los requisitos de validación médica exigen que dicha validación sea una
+barrera que ningún otro módulo pueda omitir. El módulo Informes solo puede cerrar
+un caso y generar su informe si recibe del módulo Validación Clínica un registro de
+validación existente, regla que se refuerza con la secuencia obligatoria de estados del
+caso y con permisos de solo inserción sobre la base de datos de validaciones.
+5.2.1.1 Diagramas de Componentes:
+Figura 3
+Diagrama de Componentes UML de la Solución
+
+===== PÁGINA 29 =====
+20
+En la Figura 3 se visualiza el diagrama de componentes de la solución en notación UML. El
+subsistema Backend monolítico agrupa la capa de presentación y los módulos de dominio,
+desplegados en un único servicio de Cloud Run. Las interfaces entre módulos representan el
+flujo obligatorio del caso, desde su registro hasta el cierre del caso y la generación de su
+informe, mientras que Firebase y los servicios gestionados de Google Cloud aparecen como
+componentes externos de los que depende el backend.
+5.2.1.2 Diagramas de Despliegue:
+El sistema se despliega íntegramente en Google Cloud Platform (GCP), en la región
+southamerica-west1 (Santiago de Chile), la más cercana al Perú, dado que GCP no cuenta
+con una región en el país. En esta región se almacenan los datos personales y clínicos, así
+como las imágenes de las lesiones. Dicha ubicación implica un flujo transfronterizo de datos
+personales, que la Ley N.° 29733 y su Reglamento admiten cuando el país receptor cuenta
+con un nivel adecuado de protección o cuando el emisor otorga garantías adecuadas
+(Congreso de la República del Perú, 2011; Ministerio de Justicia y Derechos Humanos,
+
+===== PÁGINA 30 =====
+21
+2024). En la solución, estas garantías se implementan mediante cifrado en tránsito y en
+reposo, control de acceso basado en roles, registros de validación inmutables y auditoría de
+los accesos a los datos.
+Los servicios de GCP se seleccionaron priorizando opciones serverless y de pago por uso,
+que escalan a cero en ausencia de tráfico, evitando recursos con costos fijos recurrentes
+(como instancias siempre encendidas o endpoints de inferencia dedicados) o que dependan
+de la aprobación de cuotas especiales de GPU; el entrenamiento del modelo, de naturaleza
+puntual, sí emplea GPU. Asimismo, se descartó el uso de API Gateway, que no puede
+desplegarse en regiones de Sudamérica: al tratarse de un único servicio, el propio backend
+valida la identidad y el rol en cada solicitud.
+Nodos y Servidores:
+Tabla 4
+Nodos y Servidores de la Arquitectura Física
+Ubicación Nodo Rol
+Cliente Smartphone Android (médico
+especialista / administrador)
+Ejecuta la aplicación móvil
+Global (Firebase) Firebase Authentication Gestión de credenciales y emisión de tokens;
+no almacena datos clínicos
+Global (Firebase) Firebase Cloud Messaging Entrega de notificaciones push con contenido
+genérico
+GCP – Santiago Cloud Run (backend monolítico) Entrada pública única; ejecuta los módulos de
+dominio y la inferencia con TFLite
+GCP – Santiago Cloud Scheduler Revisión periódica de casos vencidos (RF-
+04.5) y reintento de análisis fallidos
+GCP – Santiago Firestore (default) Usuarios, pacientes, casos, predicciones e
+informes
+GCP – Santiago Firestore validaciones Registros de validación de solo inserción
+GCP – Santiago Cloud Storage Imágenes clínicas (bucket privado) y modelos
+versionados
+GCP – Santiago Cloud Logging / Cloud Monitoring Bitácora de auditoría con retención bloqueada
+y alertas
+
+===== PÁGINA 31 =====
+22
+En la Tabla 4 se identifican los nodos de la solución. El cliente es la aplicación Android;
+Firebase Authentication y Firebase Cloud Messaging son servicios globales que solo
+gestionan credenciales y tokens de dispositivo, sin datos clínicos, mientras que el cómputo,
+la inferencia y la persistencia se concentran en la región de Santiago.
+Figura 4
+Diagrama de Despliegue UML de la Arquitectura Física
+En la Figura 4 se presenta el diagrama de despliegue UML de la solución. El smartphone
+Android se autentica con Firebase Authentication y consume el backend desplegado en
+Cloud Run, que concentra la lógica de negocio y la inferencia del modelo. En la región
+southamerica-west1 se ubican también Cloud Scheduler, Cloud Logging y los servicios de
+persistencia: las dos bases de datos de Firestore y Cloud Storage. Las imágenes se cargan
+desde la aplicación directamente a Cloud Storage mediante URLs firmadas, por lo que no
+transitan por el backend.
+5.2.1.3 Diagramas de Capas:
+Describe la organización del sistema en capas.
+5.2.2 Diseño de la Base de Datos:
+5.2.2.1 Modelo Entidad-Relación (ERD):
+
+===== PÁGINA 32 =====
+23
+5.2.2.2 Esquema de la Base de Datos:
+Colección_Usuarios:
+Campo
+Tipo de Dato
+(Firestore)
+Clave Descripción
+
+===== PÁGINA 33 =====
+24
+uid String PK Identificador único emitido por Firebase Auth.
+rol String Define los permisos: especialista o admin.
+dni String Documento Nacional de Identidad del usuario.
+nombres String Nombres y apellidos completos.
+correo String Correo electrónico de contacto.
+metadatos_rol Map
+Objeto dinámico. Para especialistas guarda
+numero_colegiatura, estado_habilitacion y
+fecha_aceptacion_terminos.
+Colección_Pacientes:
+Campo
+Tipo de Dato
+(Firestore)
+Clave Descripción
+id_paciente String PK
+Identificador único autogenerado; el paciente no
+tiene cuenta de acceso.
+numero_historia_clinica String
+Número de historia clínica del paciente en el
+establecimiento; único.
+nombres String Nombres y apellidos completos.
+fecha_nacimiento Timestamp Fecha de nacimiento del paciente.
+sexo String Sexo del paciente.
+fototipo String Fototipo de piel según la escala de Fitzpatrick.
+consentimiento Map
+Objeto con: otorgado (Boolean),
+fecha_otorgamiento (Timestamp), uid_medico
+(String) y fecha_revocacion (Timestamp).
+uid_medico_registro String FK
+Referencia al médico especialista que registró al
+paciente.
+Colección_CasosClínicos
+
+===== PÁGINA 34 =====
+25
+Campo
+Tipo de Dato
+(Firestore)
+Clave Descripción
+id_caso String PK Identificador único autogenerado por Firestore.
+id_paciente String FK
+Referencia al documento del paciente en la colección
+pacientes.
+uid_medico String FK Referencia al médico especialista que registró el caso.
+estado String
+Estado del flujo: REGISTRADO, EN_ANALISIS,
+ERROR_ANALISIS, PENDIENTE_VALIDACION,
+VALIDADO, CERRADO.
+url_imagen_storage String
+Ruta de acceso segura al archivo de imagen en Cloud
+Storage.
+datos_clinicos Map
+Objeto con: ubicacion_lesion (String), tiempo_aparicion
+(String) y sintomas (String).
+prediccion_ml Map
+Objeto con salida IA: probabilidad_malignidad
+(Number/Float), clase_predicha (String),
+version_modelo (String).
+fecha_creacion Timestamp Fecha y hora exacta del envío del caso.
+Colección_validacionesClinicas:
+Campo
+Tipo de Dato
+(Firestore)
+Clave Descripción
+id_validacion String PK Identificador único de la validación médica.
+id_caso String FK Referencia al caso clínico evaluado.
+uid_especialista String FK Referencia al médico validador en la colección usuarios.
+decision_medica String
+Veredicto del especialista: confirmar, corregir o
+descartar.
+sustento_clinico String Justificación médica de la decisión tomada.
+examenes_adicionales String
+Sugerencia de pruebas extra ante incertidumbre del
+modelo.
+
+===== PÁGINA 35 =====
+26
+observaciones_internas String
+Notas exclusivas para el cuerpo médico (excluidas del
+informe exportable).
+fecha_validacion Timestamp Marca de tiempo inmutable de la firma médica.
+Colección_Informes:
+Campo
+Tipo de Dato
+(Firestore)
+Clave Descripción
+id_informe String PK Identificador único del informe.
+id_caso String FK Referencia al caso clínico original.
+conducta_clinica String
+Conducta o recomendación clínica registrada por el
+especialista para el paciente.
+url_pdf String
+Ruta al archivo PDF del informe, que el especialista puede
+adjuntar a la historia clínica o entregar al paciente.
+fecha_cierre Timestamp Fecha en la que el sistema cerró el caso tras su validación.
+5.2.3 Diseño de Interfaz de Usuario (UI/UX):
+• Wireframes y Mockups: Representaciones visuales de las pantallas de la
+aplicación.
+• Prototipos: Versiones interactivas de la interfaz.
+• Guías de Estilo: Directrices para la coherencia visual y de interacción.
+5.2.4 Diseño Detallado de Módulos/Componentes:
+A continuación, se muestra una tabla con los componentes de software de la solución:
+Tabla 5
+Componentes de Software de la Solución
+Componente Responsabilidad APIs / interfaces Bibliotecas /
+dependencias
+
+===== PÁGINA 36 =====
+27
+App móvil Interfaz del médico especialista y
+del administrador; control local de
+la calidad técnica de la imagen (RF-
+02.2); cola local offline-first; carga
+directa de la imagen mediante URL
+firmada. No ejecuta el modelo de
+clasificación.
+API REST del backend,
+Firebase Auth SDK, FCM
+Flutter, tflite_flutter
+(solo control de
+calidad),
+flutter_secure_storage
+Capa de
+presentación
+(API REST)
+Punto único de entrada; valida el ID
+token de Firebase y el rol del
+usuario en cada endpoint (RNF-03).
+REST pública sobre
+HTTPS
+Firebase Admin SDK
+Módulo
+Identidad
+Alta de especialistas por el
+administrador, activación de
+cuentas y aceptación de condiciones
+de uso; gestión de roles mediante
+custom claims.
+POST /users/me/terms
+POST /admin/specialists
+PATCH
+/admin/users/{id}/role
+Firebase Admin SDK,
+Firestore (default)
+Módulo
+Pacientes
+Registro y búsqueda de pacientes
+por número de historia clínica, sin
+credenciales de acceso; registro y
+revocación del consentimiento
+informado; historial por paciente.
+POST /patients
+GET
+/patients?hc={número}
+POST
+/patients/{id}/consent
+Firestore (default)
+Módulo
+Gestión de
+Casos
+Registro del caso asociado a un
+paciente con consentimiento
+vigente, datos complementarios,
+emisión de URL firmada y control
+de los estados del caso.
+POST /cases
+POST
+/cases/{id}/upload-url
+POST /cases/{id}/submit
+GET /cases/{id}/status
+Firestore (default),
+Cloud Storage
+Módulo
+Inferencia
+Preprocesamiento de la imagen,
+clasificación con el modelo TFLite
+y registro de la predicción
+preliminar con la versión del
+modelo.
+Interfaz interna invocada
+por Gestión de Casos
+TensorFlow Lite
+(LiteRT), Cloud
+Storage
+Módulo
+Validación
+Clínica
+Cola priorizada, decisión con
+sustento clínico, registro inmutable
+y detección de casos vencidos.
+GET /cases/pending
+POST /validations
+Firestore validaciones
+(solo inserción)
+Módulo
+Informes
+Cierre condicionado del caso,
+registro de la conducta clínica,
+GET /reports/{caseId}
+GET
+/reports/{caseId}/pdf
+Firestore (default),
+librería de generación
+de PDF
+
+===== PÁGINA 37 =====
+28
+exportación del informe a PDF e
+historial por paciente.
+GET
+/patients/{id}/reports
+Módulo
+Notificaciones
+Envío de notificaciones push sin
+datos clínicos al médico
+responsable cuando un caso vence
+sin validación.
+Interfaz interna Firebase Admin SDK
+(FCM)
+Módulo
+Auditoría
+Bitácora de eventos críticos y
+métricas de desempeño del modelo,
+como la concordancia entre
+especialista y modelo (RF-03.6,
+RNF-14).
+Registros estructurados,
+no expuesto
+Cloud Logging, Cloud
+Monitoring
+En la Tabla 5 se detallan los componentes de la solución: la aplicación móvil, la capa de
+presentación del backend y los ocho módulos de dominio. Cada módulo concentra una
+responsabilidad del flujo de apoyo diagnóstico y expone únicamente las interfaces que
+necesitan la aplicación o los demás módulos, lo que mantiene la separación de
+responsabilidades sin recurrir a servicios independientes.
+El caso sigue la secuencia de estados REGISTRADO → EN_ANÁLISIS →
+PENDIENTE_VALIDACIÓN → VALIDADO → CERRADO. El módulo Informes solo
+genera informes de casos en estado CERRADO, que contienen la conclusión validada por el
+especialista y nunca la predicción preliminar sin validar ni las observaciones internas (RF-
+05.5). El paciente no accede a la aplicación: recibe la información a través del médico
+especialista durante la consulta.
+La inferencia se ejecuta de forma síncrona al enviar el caso (POST /cases/{id}/submit),
+dentro de la misma solicitud. Si el análisis falla, el caso queda en estado ERROR_ANÁLISIS
+y es reprocesado por una tarea periódica de Cloud Scheduler, la misma que identifica los
+casos que exceden el tiempo límite de validación (RF-04.5). Si en fases posteriores el tamaño
+del modelo lo requiriera, la inferencia podría separarse en un servicio independiente sin
+rediseñar los módulos.
+5.2.5 Diagramas de Secuencia/Actividad/Clases (UML):
+
+===== PÁGINA 38 =====
+29
+Diagramas de Secuencia:
+Tabla 6
+Sistemas Externos y Puntos de Integración
+Sistema externo Protocolo Síncrono / Asíncrono
+Firebase Authentication HTTPS mediante SDK de Firebase (tokens
+JWT)
+Síncrono
+Firebase Cloud Messaging Notificación push (API HTTP v1) Asíncrono
+En la Tabla 6 se listan los servicios externos de la solución. Firebase Authentication gestiona
+el registro e inicio de sesión mediante tokens JWT que el backend valida en cada solicitud,
+
+===== PÁGINA 39 =====
+30
+y Firebase Cloud Messaging entrega las notificaciones push de forma asíncrona, sin incluir
+datos clínicos en su contenido.
+A continuación, se presentan el flujo de datos junto con los puntos de integración mediante
+diagramas de secuencia UML:
+Registro de paciente y consentimiento informado por el especialista:
+Figura 5
+Diagrama de Secuencia: Registro de Paciente y Consentimiento Informado
+En la Figura 5, el especialista busca al paciente por su número de historia clínica. El módulo
+Pacientes valida el token y el rol del solicitante; si el paciente no está registrado, el
+especialista ingresa sus datos mínimos y su consentimiento informado, y el módulo lo
+
+===== PÁGINA 40 =====
+31
+registra sin generarle credenciales de acceso, dejando el evento en la bitácora de auditoría.
+Solo con un consentimiento vigente la aplicación habilita la creación de un nuevo caso.
+Alta de especialista por el administrador, con verificación manual de la colegiatura:
+Figura 6
+Diagrama de Secuencia: Alta de Especialista por el Administrador
+En la Figura 6, el administrador verifica la colegiatura del especialista fuera del sistema y
+registra su alta desde la aplicación. El backend confirma que la solicitud proviene de un
+administrador, crea la cuenta con el rol de especialista en Firebase Authentication y registra
+el número de colegiatura junto con el evento de auditoría. El especialista activa su cuenta
+definiendo su contraseña mediante el flujo de recuperación de acceso (RF-01.2) y, en su
+primer ingreso, acepta las condiciones de uso de la herramienta (RF-05.3).
+Validación del caso y generación del informe:
+
+===== PÁGINA 41 =====
+32
+Figura 7
+Diagrama de Secuencia: Validación del Caso y Generación del Informe
+En la Figura 7, el especialista registra su decisión, el sustento clínico y la conducta a seguir.
+El módulo Validación Clínica almacena el registro inmutable, deja el evento en la bitácora
+de auditoría y solicita al módulo Informes el cierre del caso, que solo procede si existe una
+validación registrada. Luego, el especialista solicita el informe en PDF, que excluye las
+observaciones internas y la predicción sin validar, para adjuntarlo a la historia clínica o
+entregarlo al paciente. Los módulos se ejecutan dentro del mismo backend.
+6. Validación y Resultados del Proyecto
+6.1 Protocolo Experimental
+6.2 Resultados
+6.2.1 Resultados Cuantitativos
+
+===== PÁGINA 42 =====
+33
+6.2.1.1 Métricas
+6.2.1.2 Resultados 1
+6.2.1.3 Resultados 2
+6.2.2 Resultados Cualitativos
+6.2.2.1 Percepción de técnicas
+6.2.2.2 Satisfacción percibida
+6.2.2.3 Retroalimentación
+6.3 Discusión
+6.3.1 Análisis Comparativo
+6.3.2 Hallazgos
+CONCLUSIONES Y RECOMENDACIONES
+REFERENCIAS
+Alshmrani, A. S., Alotaibi, F. M., & Alfakeeh, A. S. (2026). Integrating features of
+radiomics and CNN models for early skin cancer detection based on watershed
+segmentation. Discover Oncology, 17(1). https://doi.org/10.1007/S12672-026-
+04652-7
+Babatunde, A. N., Balogun, B. F., Babatunde, A. J., Isiaka, S. O., Awotunde, J. B., &
+Adeniyi, A. E. (2025). Improving skin lesion classification using k-means, transfer
+learning and mobilenet architecture. Network Modeling Analysis in Health
+Informatics and Bioinformatics, 14(1). https://doi.org/10.1007/S13721-025-00569-
+3
+Cárdenas, R. (2026). Calidad del servicio y satisfacción del usuario: el caso del Seguro
+Integral de Salud en un hospital peruano. Revista APCSH. https://apcsh-
+journal.org/index.php/apcsh/article/view/24
+
+===== PÁGINA 43 =====
+34
+Chamarthi, S., Fogelberg, K., Brinker, T. J., & Niebling, J. (2024). Mitigating the influence
+of domain shift in skin lesion classification: A benchmark study of unsupervised
+domain adaptation methods. Informatics in Medicine Unlocked, 44, 101430.
+https://doi.org/10.1016/j.imu.2023.101430
+Chapman, P., Clinton, J., Kerber, R., Khabaza, T., Reinartz, T., Shearer, C., & Wirth, R.
+(2000). CRISP-DM 1.0: Step-by-step data mining guide. SPSS Inc.
+https://www.the-modeling-agency.com/crisp-dm.pdf
+Congreso de la República del Perú. (2011, 3 de julio). Ley N.° 29733, Ley de Protección de
+Datos Personales. Diario Oficial El Peruano.
+https://www.gob.pe/institucion/congreso-de-la-republica/normas-legales/243470-
+29733
+Congreso de la República del Perú. (2023, 5 de julio). Ley N.° 31814, Ley que promueve el
+uso de la inteligencia artificial en favor del desarrollo económico y social del país.
+Diario Oficial El Peruano.
+Defensoría del Pueblo. (24 de febrero de 2026). Defensoría del Pueblo reitera
+preocupación a EsSalud por falta de medicinas e inoperatividad de equipos.
+https://www.defensoria.gob.pe/defensoria-del-pueblo-reitera-preocupacion-a-
+essalud-por-falta-de-medicinas-e-inoperatividad-de-equipos/
+Espinoza, A. (2025, 25 de noviembre). EsSalud: Ocho de cada diez asegurados prefieren
+no atenderse en el Seguro Social por colapso del sistema. Infobae.
+https://www.infobae.com/peru/2025/11/25/essalud-ocho-de-cada-diez-asegurados-
+prefieren-no-atenderse-en-el-seguro-social-por-colapso-del-sistema/
+Esquivel, E., Vera, D., & Salas, U. (2023). Influencia de la calidad de servicio en la
+fidelización de clientes en un centro oncológico (Lima-Perú), 2023. Revista
+Científica de Ciencias de la Salud.
+http://www.scielo.org.bo/scielo.php?pid=S2521-
+27372024000200018&script=sci_arttext
+Instituto Nacional de Estadística e Informática. (2024). Perú: Enfermedades no
+transmisibles y transmisibles, 2023. INEI.
+https://www.inei.gob.pe/media/MenuRecursivo/publicaciones_digitales/Est/Lib195
+1/libro.pdf
+
+===== PÁGINA 44 =====
+35
+International Organization for Standardization, & International Electrotechnical
+Commission. (2011). ISO/IEC 25010:2011 Systems and software engineering —
+Systems and software Quality Requirements and Evaluation (SQuaRE) — System
+and software quality models. ISO. https://www.iso.org/standard/35733.html
+International Organization for Standardization, & International Electrotechnical
+Commission. (2014). ISO/IEC 25001:2014 Systems and software engineering —
+Systems and software Quality Requirements and Evaluation (SQuaRE) — Planning
+and management. ISO. https://www.iso.org/standard/64787.html
+Kitchenham, B., & Charters, S. (2007). Guidelines for performing systematic literature
+reviews in software engineering (Technical Report EBSE-2007-01). Keele
+University and University of Durham.
+Ministerio de Justicia y Derechos Humanos. (2024, 30 de noviembre). Decreto Supremo
+N.° 016-2024-JUS, que aprueba el Reglamento de la Ley N.° 29733, Ley de
+Protección de Datos Personales. Diario Oficial El Peruano.
+Organización para la Cooperación y el Desarrollo Económicos. (2025). Estudios de la
+OCDE sobre los Sistemas de Salud: Perú 2025.
+https://www.oecd.org/es/publications/estudios-de-la-ocde-sobre-los-sistemas-de-
+salud-peru-2025_262a739e-es/full-report/overview-of-peru-s-health-
+system_10a277e9.html
+Peralta, L. (2025, 12 de noviembre). Crisis en EsSalud: expertos y pacientes alertan
+sistema al borde del colapso mientras miles siguen esperando atención. La
+República. https://larepublica.pe/sociedad/2025/11/12/crisis-en-essalud-expertos-y-
+pacientes-alertan-sistema-al-borde-del-colapso-mientras-miles-siguen-esperando-
+atencion-ntpe-271733
+Project Management Institute. (2017). Guía de los fundamentos para la dirección de
+proyectos (Guía del PMBOK®) (6.ª ed.). Project Management Institute.
+Schwaber, K., & Sutherland, J. (2020). La Guía Scrum: La guía definitiva de Scrum: Las
+reglas del juego. Scrum.org. https://scrumguides.org/docs/scrumguide/v2020/2020-
+Scrum-Guide-Spanish-European.pdf
+
+===== PÁGINA 45 =====
+36
+Villanueva, N., & Pardo, F. (2024). Modelo analítico basado en Machine Learning, para
+el diagnóstico de melanoma en etapas tempranas, en Cusco, Perú [Universidad
+Peruana de Ciencias Aplicadas (UPC)]. https://doi.org/10.19083/TESIS/684588
+[ANEXOS]
+1. INTRODUCCIÓN
+2. DISEÑO Y DESARROLLO DEL PROYECTO
+2.1 DISEÑO DEL PROYECTO
+2.1.1 Motivación
+2.1.2 Objetivo General
+2.1.3 Objetivos Específicos
+2.1.4 Limitaciones
+2.2 DESARROLLO DEL PROYECTO
+2.2.1 Equipo del proyecto
+2.2.2 Recursos requeridos
+2.2.3 Fases e hitos del proyecto
+2.2.4 Enfoques del trabajo
+2.2.5 Riesgos y mitigación
+3. ANÁLISIS Y DISEÑO DE ALGORITMOS
+3.1 Arquitectura/Modelo/Algoritmo 1
+3.2 Arquitectura/Modelo/Algoritmo 2
+3.3 Arquitectura/Modelo/Algoritmo 3
+3.4 Arquitectura/Modelo/Algoritmo 4
+3.5 Arquitectura/Modelo/Algoritmo 5
+PARA CC:
+4. APORTE CIENTÍFICO
+4.1 Contexto
+4.2 Trabajos relacionados
+4.3 Contribución
+4.3.1 Propuesta
+4.3.2 Hipótesis
+PARA ISW
+4. APLICACIÓN/SOLUCIÓN (SE DETALLA LINEAS ABAJO)
+4.1
+4.2
+4.3
+4.4
+
+===== PÁGINA 46 =====
+37
+5. VALIDACIÓN Y RESULTADOS DEL PROYECTO
+5.1 PROTOCOLO EXPERIMENTAL
+5.2 RESULTADOS
+5.2.1 Resultados Cuantitativos
+5.2.1.1 Métricas
+5.2.1.2 Resultados 1
+5.2.1.3 Resultados 2
+5.2.2 Resultados Cualitativos
+5.2.2.1 Percepción de técnicas
+5.2.2.2 Satisfacción percibida
+5.2.2.3 Retroalimentación
+5.3 Discusión
+5.3.1 Análisis Comparativo
+5.3.2 Hallazgos

@@ -1,0 +1,36 @@
+Prioridad
+ID
+Experimento
+Por qué va al inicio
+Depende de
+Decisión que produce
+1
+EXP-01
+Partición sin fuga de datos
+Es requisito de todos los demás. Si la partición tiene fuga, cualquier resultado posterior queda invalidado.
+Solo el dataset y sus metadatos
+Conjuntos train/val/test congelados y versionados para todo el proyecto
+2
+EXP-02
+Comparación de arquitecturas
+Define el modelo base y resuelve la inconsistencia del Random Forest (HU13/HU14), lo que puede cambiar el backlog.
+EXP-01
+Arquitectura seleccionada y ajuste o retiro de HU13/HU14
+3
+EXP-03
+Manejo del desbalance
+Se ejecuta en paralelo sobre los mejores candidatos de EXP-02. Con 1113 melanomas frente a 6705 nevus, sin esto la sensibilidad no es representativa.
+EXP-01, candidatos de EXP-02
+Técnica de balanceo que entra al pipeline definitivo
+4
+EXP-05
+Conversión y cuantización a .tflite
+Valida temprano que el artefacto cumple las métricas satisficing (tamaño y latencia) antes de construir el servicio en Cloud Run. Descubrirlo al final sería costoso.
+Un modelo candidato de EXP-02 (no necesita ser el final)
+Formato de cuantización y datos para dimensionar CPU y memoria en Cloud Run
+5
+EXP-04
+Umbral de decisión y calibración
+Define qué recibe el especialista: una probabilidad calibrada y un umbral orientado a sensibilidad. Esto condiciona el diseño de la pantalla de validación.
+Modelo de EXP-02 + EXP-03
+Umbral operativo y formato de la "predicción preliminar"

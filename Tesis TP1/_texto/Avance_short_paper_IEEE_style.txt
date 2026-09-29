@@ -1,0 +1,729 @@
+
+
+===== PÁGINA 1 =====
+Aplicación móvil basada en aprendizaje automático para la
+detección temprana de melanoma maligno como estrategia
+de apoyo diagnóstico en la atención oncológica de segundo
+nivel en el sistema de salud público peruano
+Jorge David Orrego Noriega
+Universidad Peruana de Ciencias
+Aplicadas
+Lima, Perú
+U201921734@upc.edu.pe
+Ilan André Núñez del Arco Ramos
+Universidad Peruana de Ciencias
+Aplicadas
+Lima, Perú
+U202217100@upc.edu.pe
+Carlos Adrián Alarcón Delgado
+Universidad Peruana de Ciencias
+Aplicadas
+Lima, Perú
+pciscala@upc.edu.pe
+Abstract— El melanoma maligno es el cáncer de piel de mayor
+letalidad y su pronóstico depende críticamente de la detección
+temprana. En el sistema de salud público peruano, la escasez de
+especialistas, la sobrecarga asistencial y los prolongados tiempos
+de espera derivan en diagnósticos tardíos, mientras ocho de cada
+diez pacientes oncológicos del seguro social declaran insatisfacción
+con la atención recibida. Este trabajo propone una aplicación
+móvil integrada con un modelo de aprendizaje automático de
+reconocimiento de imágenes, concebida como herramienta de
+apoyo diagnóstico, no como sistema autónomo, para las consultas
+oncológicas de segundo nivel. Se ejecutó una revisión sistemática
+de la literatura según la metodología de Kitchenham y Charters,
+que recuperó 550 registros de Scopus, Web of Science y Google
+Scholar y seleccionó 40 artículos publicados entre 2023 y 2026 en
+revistas de cuartiles Q1 y Q2. Los hallazgos muestran que las redes
+neuronales convolucionales y los Vision Transformer superan el
+94% de precisión sobre conjuntos públicos como ISIC y
+HAM10000, pero que casi ninguna solución ha sido validada en
+entornos clínicos reales ni en fototipos de piel diversos. Sobre esa
+brecha se especificaron 32 requisitos funcionales y 17 no
+funcionales, y se diseñó una arquitectura de microservicios con
+despliegue híbrido que impide técnicamente liberar un resultado
+al paciente sin validación médica previa, conforme a la Ley N.°
+29733 y a la Ley N.° 31814. La gestión combina Scrum y la Guía
+PMBOK, y aplica CRISP-DM al modelo, cuya meta es superar el
+90% de precisión priorizando la sensibilidad.
+Index Terms—Melanoma maligno; aprendizaje automático;
+aplicación móvil; apoyo diagnóstico; redes neuronales
+convolucionales; salud pública
+I. INTRODUCCIÓN
+A nivel global, el melanoma maligno representa uno de los
+tipos de cáncer de piel más agresivos y de mayor crecimiento
+en incidencia, siendo la detección temprana el factor
+determinante para mejorar el pronóstico y aumentar las
+probabilidades de supervivencia del paciente. En este contexto,
+la integración de soluciones tecnológicas en los sistemas de
+salud se ha consolidado como una respuesta estratégica ante la
+creciente demanda de atención oncológica especializada,
+impulsando el desarrollo de herramientas de apoyo diagnóstico
+basadas en aprendizaje automático que permiten identificar
+patrones en imágenes médicas con alta precisión (Babatunde et
+al., 2025).
+En el contexto nacional, sin embargo, el sistema de salud
+peruano enfrenta limitaciones estructurales que dificultan
+gravemente el diagnóstico oportuno de enfermedades como el
+melanoma maligno. La alta demanda de pacientes, la escasez de
+especialistas y los prolongados tiempos de espera en
+instituciones como el Ministerio de Salud del Perú y EsSalud
+afectan directamente la calidad y rapidez de la atención médica.
+Según el Instituto Nacional de Estadística e Informática, existen
+brechas importantes en el acceso a servicios de salud y en la
+capacidad de atención del sistema (INEI, 2024).
+Esta crisis se manifiesta con particular gravedad en el
+ámbito oncológico. Karla Ruiz, directora de la ONG
+Esperantra, organización dedicada a apoyar a pacientes con
+enfermedades crónicas y de alto costo, señaló en una entrevista
+con el diario La República (Peralta, 2025): "ocho de cada diez
+pacientes oncológicos del seguro social nos indican no estar
+conformes con la atención recibida", haciendo referencia al
+retraso en la atención, diagnósticos y tratamientos médicos en
+el Seguro Social de Salud administrado por EsSalud. La
+directora añade que la situación es tan crítica que hay pacientes
+que "se mueren esperando que el diagnóstico de su tipo de
+cáncer les llegue para tener acceso a la terapia", lo que refleja
+una sobrecarga del sistema con riesgo de colapso (Peralta,
+2025).
+Como consecuencia directa de esta ineficiencia, los
+procesos de atención fallan en su función más básica: los
+pacientes se ven obligados a buscar alternativas privadas, y una
+gran proporción de asegurados prefiere no atenderse en EsSalud
+debido a la ineficiencia del servicio (Espinoza, 2025). Estudios
+sobre calidad de atención confirman que la insatisfacción de los
+usuarios está estrechamente relacionada con los largos tiempos
+de espera y las deficiencias en la atención oportuna (Cárdenas,
+2026). En el ámbito oncológico, este retraso incrementa el
+riesgo de complicaciones graves y reduce la efectividad de los
+tratamientos disponibles, dado que la calidad del servicio de
+salud influye directamente en los resultados clínicos y en la
+continuidad del tratamiento de los pacientes (Esquivel et al.,
+2023).
+El Perú enfrenta profundas barreras tecnológicas y de
+infraestructura en el sector público. Se evidencia una escasez y
+deficiencia crítica de herramientas tecnológicas operativas en
+los establecimientos de salud. Informes recientes de la
+
+===== PÁGINA 2 =====
+Defensoría del Pueblo (2026) advierten de manera recurrente a
+EsSalud sobre la paralización de atenciones debido a la
+inoperatividad prolongada de equipos médicos especializados
+(como tomógrafos) en hospitales de alta complejidad. Ante este
+déficit de equipamiento, el personal de salud mantiene un
+limitado conocimiento sobre alternativas de software accesible
+—como el análisis automatizado de imágenes mediante
+aplicaciones móviles— que podrían complementar el flujo de
+trabajo y acelerar la detección temprana de patologías.
+El sistema de salud peruano tambien padece una severa
+fragmentación digital. La Organización para la Cooperación y
+el Desarrollo Económicos (OCDE, 2025) advierte que la
+división estructural entre subsistemas como el MINSA y
+EsSalud, sumada a la limitada infraestructura de información y
+la falta de estandarización, obstaculiza gravemente la
+interrelación de datos clínicos. Esta fragmentación informática
+estructural impide que exista una definición clara sobre cómo
+integrar nuevos componentes tecnológicos, como un modelo de
+apoyo diagnóstico por inteligencia artificial, dentro de los
+procesos de validación médica ya establecidos.
+Si bien existen esfuerzos académicos a nivel nacional para
+el diagnóstico de melanoma, como la propuesta teórica de
+Villanueva y Pardo (2024), la literatura técnica revela que estos
+modelos rara vez trascienden el laboratorio. La mayoría de los
+desarrollos dependen de bases de datos altamente controladas y
+disminuyen significativamente su rendimiento al ser expuestos
+a la calidad variable de imágenes de la consulta diaria,
+fenómeno conocido como desplazamiento de dominio
+(Chamarthi et al., 2024). En consecuencia, persiste una escasa
+disponibilidad de herramientas tecnológicas que hayan sido
+validadas en condiciones reales y que cuenten con la robustez
+técnica suficiente para operar de forma segura en las consultas
+oncológicas del sistema público peruano.
+La brecha entre la situación deseada, un sistema capaz de
+detectar oportunamente enfermedades como el melanoma
+desde el segundo nivel de atención, y la situación actual,
+marcada por diagnósticos tardíos, colapso institucional e
+insatisfacción generalizada, evidencia la urgencia de incorporar
+soluciones tecnológicas que contribuyan a mejorar los procesos
+diagnósticos sin depender exclusivamente de la disponibilidad
+de especialistas. En este sentido, el aprendizaje automático ha
+demostrado ser una alternativa prometedora: conforme al
+trabajo de Alshmrani et al. (2026), es posible desarrollar un
+modelo de clasificación basado en el algoritmo Random Forest
+con el apoyo de una Red Neuronal Convolucional (CNN) para
+la detección temprana de melanomas, obteniendo resultados
+positivos (en promedio, AUC = 85.09%, Precisión = 94.7%,
+Sensibilidad = 84.53%). Sobre la base de estos resultados, se
+considera que ampliar la funcionalidad de dicho modelo
+mediante una aplicación móvil, que sirva como interfaz para el
+envío de imágenes a analizar y la recepción ágil de resultados,
+representaría un aporte concreto para reducir la brecha
+diagnóstica en contextos de segundo nivel de atención con
+recursos limitados, beneficiando directamente a los pacientes
+del sistema público peruano.
+II. ESTADO DEL ARTE
+El reconocimiento de actividades humanas (HAR) se ha
+consolidado como un campo de investigación clave en
+aplicaciones de salud, monitoreo y bienestar. El uso de sensores
+inerciales, ampliamente presentes en dispositivos portátiles
+como relojes inteligentes, permite identificar patrones de
+movimiento que revelan el contexto y las rutinas de los
+usuarios.
+Gilmore & Nasseri [4] exploraron la integración de datos
+inerciales y fisiológicos mediante la pulsera médica Empatica
+E4, entrenando los modelos Random Forest y CNN. Su enfoque
+logró un F1-score de 77.95% para clasificar actividades
+individuales y un 93.29% en actividades agrupadas por
+similitud para el modelo Random Forest. Aunque la propuesta
+presenta un buen resultado para generalizar, el costo elevado
+del dispositivo limita la escalabilidad y su uso cotidiano.
+Mekruksavanich & Jitpattanakul [5] desarrollaron un
+modelo híbrido CNN-ResBiGRU-CBAM para mejorar la
+detección de actividades simétricas y asimétricas. Las
+características del modelo propuesto permiten extraer patrones
+temporales y capturar dependencias a largo plazo con menor
+dificultad. Asimismo, facilitan la identificación de información
+significativa. Por ello, su propuesta alcanzó hasta un 96% de
+precisión en datasets públicos gracias al uso de bloques de
+atención y modelado bidireccional. Sin embargo, su alta
+complejidad computacional requerida dificulta la
+implementación en dispositivos portátiles de uso común y el
+entrenamiento con datos obtenidos de entornos controlados
+debilita la aplicación del enfoque en la realidad.
+Mollyn et al. [6] abordaron la fusión de datos de
+movimiento y audio, aplicando CNNs multimodales con relojes
+inteligentes y micrófonos. El principal aporte de este estudio
+fue la construcción de su propio conjunto de datos, el desarrollo
+de un detector de eventos para reducir el consumo de recursos
+computacionales y la protección de la privacidad del usuario en
+los datos capturados por audio. Aunque su enfoque logró un
+92.2% de precisión en clasificadores individuales y redujo
+riesgos de privacidad mediante submuestreo del audio, el
+rendimiento global del sistema completo se redujo a 69.7%,
+reflejando la dificultad de integrar ambos canales
+eficientemente.
+Lacroix et al. [7] propusieron un modelo híbrido
+personalizado que combina CNN y Transformers mediante
+aprendizaje por transferencia para mejorar la detección de
+actividades humanas con el conjunto de datos WISDM. Su
+objetivo principal fue evidenciar la superioridad de los modelos
+personalizados frente a los genéricos, alcanzando hasta un
+92.4% de precisión con Trans-CNN en comparación con el 70%
+obtenido por los modelos generalizados. No obstante, a pesar
+de los resultados sobresalientes, la propuesta depende en gran
+medida de contar con datos etiquetados para cada nuevo usuario
+y presenta dificultades al diferenciar actividades con alta
+similitud.
+Alawneh et al. [8] desarrollaron un LSTM con aprendizaje
+incremental en una arquitectura edge-cloud, orientado a
+personalizar el reconocimiento de actividades para cada
+usuario. Su principal contribución fue la optimización del
+
+===== PÁGINA 3 =====
+modelo mediante TensorFlow Lite y cuantificación, reduciendo
+el tamaño de 15.24 MB a 1.29 MB sin comprometer el
+rendimiento. Con el enfoque personalizado, solo uno de los
+modelos logró 98.54% de precisión para un usuario; mientras
+que el modelo generalizado obtuvo un 72.19%. Aunque el
+sistema logró un rendimiento positivo, presentó limitaciones en
+la detección de ciertas acciones y careció de evaluación en
+entornos reales. Otro aspecto limitante es que solo se reportan
+los resultados más representativos de los modelos
+personalizados, omitiendo una evaluación integral en todos los
+usuarios.
+III. PRINCIPAL CONTRIBUCIÓN
+La principal contribución de esta investigación radica en el
+diseño y validación de un sistema de Human Activity
+Recognition (HAR) orientado al bienestar ocupacional, capaz
+de identificar y visibilizar hábitos físicos perjudiciales en
+trabajadores. A diferencia de los enfoques centrados en
+entornos controlados o aplicaciones generales de monitoreo, el
+sistema propuesto integra datos reales recolectados mediante
+relojes inteligentes con un modelo de aprendizaje automático
+entrenado para identificar actividades cotidianas y detectar
+patrones de inactividad prolongada.
+Este trabajo aborda la ausencia de soluciones que
+aprovechen la tecnología HAR para ofrecer beneficios tangibles
+al usuario final, combinando la captura sensorial, el
+procesamiento inteligente y la retroalimentación personalizada
+en un entorno laboral real. Su validación empírica con datos
+heterogéneos refuerza su aplicabilidad práctica y sienta las
+bases para futuros desarrollos en el monitoreo de la salud
+ocupacional mediante dispositivos portátiles.
+Específicamente, los aportes son:
+• Diseño de arquitectura de software escalable y
+modular: la arquitectura propuesta integra una aplicación
+móvil y un sistema backend orientado a servicios,
+diseñados para garantizar escalabilidad, interoperabilidad
+y despliegue eficiente en entornos reales. El núcleo del
+sistema se implementa con FastAPI sobre Amazon EC2,
+conectando módulos especializados para el procesamiento
+de señales inerciales, métricas de actividad diaria, gestión
+de usuarios y manejo de alertas. El modelo HAR,
+desplegado en Amazon SageMaker, se comunica mediante
+API REST para la inferencia en tiempo real, mientras que
+la persistencia de datos se gestiona en PostgreSQL
+(Amazon RDS) utilizando estructuras JSONB para
+flexibilidad analítica. La arquitectura incorpora además
+servicios de Google Cloud y Firebase para autenticación y
+notificaciones push, consolidando un ecosistema
+distribuido y robusto que facilita el monitoreo continuo.
+• Validación del modelo de aprendizaje profundo: se
+llevó a cabo la validación de un modelo TCN, diseñado
+para procesar señales inerciales crudas provenientes de
+acelerómetros de relojes inteligentes. La evaluación se
+realizó utilizando datos recolectados en entornos laborales
+reales, lo que permitió analizar su desempeño frente a
+condiciones de variabilidad, ruido y comportamiento no
+controlado. Los resultados obtenidos evidencian la
+capacidad del modelo para reconocer patrones de actividad
+con precisión y adaptabilidad, demostrando su
+aplicabilidad práctica en el monitoreo del bienestar
+ocupacional y la detección de hábitos físicos perjudiciales.
+A. Arquitectura de HARbit
+La arquitectura del sistema HARbit se diseñó con un enfoque
+modular y orientado a servicios, con el objetivo de garantizar
+escalabilidad, mantenibilidad y eficiencia en entornos reales. El
+sistema integra tres capas principales —presentación,
+aplicación y datos— que actúan de forma coordinada para
+procesar señales inerciales capturadas por relojes inteligentes,
+ejecutar la inferencia del modelo de reconocimiento de
+actividades humanas (HAR) y proporcionar retroalimentación
+al usuario mediante notificaciones y métricas de bienestar
+ocupacional. Esta estructura busca optimizar el flujo de
+información desde la adquisición de datos hasta la generación
+de alertas, asegurando la interoperabilidad entre componentes
+distribuidos en la nube.
+1) Diseño lógico: el diseño lógico del sistema (Fig. 1)
+representa una visión de alto nivel que describe la interacción
+funcional entre los componentes de HARbit. Su propósito es
+facilitar la comprensión del flujo de datos y las relaciones entre
+módulos antes de la implementación física. En esta etapa se
+modelaron los procesos principales: adquisición de señales
+desde el smartwatch, transmisión hacia la aplicación móvil,
+procesamiento y análisis en el servidor, almacenamiento de
+resultados y entrega de alertas personalizadas. Esta
+representación conceptual sirvió como base para definir las
+dependencias, interfaces y responsabilidades de cada
+subsistema durante el desarrollo e integración.
+Fig. 1. Diseño lógico del sistema HARbit.
+2) Diseño físico: el diseño físico (Fig. 2) define la
+implementación tecnológica de los componentes descritos en el
+nivel lógico, distribuyendo responsabilidades entre las capas de
+software y los servicios en la nube. La capa de presentación está
+
+===== PÁGINA 4 =====
+compuesta por la aplicación móvil desarrollada en Android
+(Kotlin, Jetpack Compose) y el smartwatch, encargados de la
+captura y envío de señales inerciales. La capa de aplicación,
+implementada con FastAPI y desplegada en Amazon EC2
+mediante contenedores Docker, gestiona la comunicación con
+el modelo HAR alojado en Amazon SageMaker y coordina los
+módulos de métricas, gestión de usuarios y manejo de alertas.
+Finalmente, la capa de datos utiliza Amazon RDS
+(PostgreSQL) con soporte JSONB para el almacenamiento
+estructurado y eficiente de registros sensoriales, resultados de
+inferencia y configuraciones del sistema. Además, el
+ecosistema se complementa con Google Cloud y Firebase,
+encargados de la autenticación y el envío de notificaciones
+push, consolidando una infraestructura distribuida, segura y
+escalable.
+Fig. 2. Diseño físico del sistema HARbit.
+3) Diagrama de componentes: el diagrama de componentes
+(Fig. 3) describe la organización estructural del sistema HARbit
+y los protocolos de comunicación entre sus partes. Este nivel de
+representación permite identificar las dependencias entre
+módulos, las interfaces de integración y los flujos de
+información a través de la API REST. La visualización de estos
+elementos facilita el análisis de interoperabilidad y la
+validación del diseño arquitectónico, asegurando que la
+comunicación entre la aplicación móvil, el backend y los
+servicios externos mantenga coherencia, seguridad y eficiencia.
+En conjunto, el diagrama de componentes proporciona una
+visión integral del ecosistema funcional de HARbit, desde la
+adquisición de datos hasta la entrega de resultados al usuario.
+Fig. 3. Diagrama de componentes del sistema HARbit.
+B. Modelo de clasificación propuesto
+El modelo TCN permite clasificar actividades humanas a partir
+de señales inerciales capturadas por el smartwatch,
+identificando patrones temporales y espaciales asociados al
+movimiento de los trabajadores. Su alto rendimiento en
+entornos reales y no controlados demuestra la capacidad del
+sistema para adaptarse a variaciones en los datos y condiciones
+laborales diversas. Este nivel de precisión y robustez fortalece
+la fiabilidad de la aplicación HARbit, garantizando que las
+sugerencias y alertas emitidas se basen en predicciones
+consistentes, mejorando así la seguridad y el bienestar en el
+entorno de trabajo.
+C. Manejo de datos
+El diseño de la base de datos está basado en una estructura
+relacional optimizada para el procesamiento de datos
+temporales, implementada en Amazon RDS con PostgreSQL.
+Esta configuración permite almacenar grandes volúmenes de
+datos sensoriales con alta eficiencia en consultas y compresión.
+Las tablas principales organizan la información en torno a
+entidades como usuarios, señales inerciales y resultados de
+inferencia, estableciendo relaciones normalizadas que
+garantizan la integridad y trazabilidad de los datos. Además, el
+uso de índices temporales y particionamiento por rango
+temporal mejora el rendimiento en operaciones de lectura y
+análisis, permitiendo acceder rápidamente a datos recientes o
+históricos dentro de Amazon RDS.
+La base de datos de HARbit se encarga de almacenar
+información de usuarios, registros sensoriales y resultados de
+inferencia. Las entidades se encuentran estrechamente
+vinculadas mediante claves foráneas que garantizan la
+trazabilidad entre los datos crudos capturados por los relojes
+inteligentes y las actividades clasificadas por el modelo HAR.
+La tabla de usuarios actúa como eje central de las relaciones,
+enlazándose con los registros de señales crudas para el
+almacenamiento de señales inerciales, con la tabla
+processed_activities para los resultados del modelo, y con
+notifications y progress_insights para la retroalimentación al
+usuario.
+En conjunto, la solución propuesta representa un avance
+significativo en la aplicación de tecnologías de inteligencia
+artificial y computación en la nube al reconocimiento de
+actividades humanas en entornos laborales peruanos. La
+combinación de una infraestructura escalable, un modelo
+robusto validado en condiciones reales y un flujo de datos
+
+===== PÁGINA 5 =====
+optimizado desde la adquisición hasta la inferencia, consolida
+al sistema HARbit como una plataforma tecnológica integral
+capaz de contribuir a la evaluación y mejora del bienestar
+ocupacional mediante el análisis automatizado de la actividad
+humana.
+IV. MÉTODO
+En esta sección se justifica la elección del modelo propuesto
+junto con las características de cada capa y la conexión con una
+capa completamente conectada para la clasificación de las
+señales inerciales. También se describen los procedimientos de
+preprocesamiento, así como los dispositivos y componentes
+utilizados en los experimentos para evaluar el rendimiento del
+modelo en entornos controlados y reales.
+A. Selección del modelo HAR
+El modelo TCN (Fig. 4) se organiza en una secuencia de
+bloques convolucionales que construyen representaciones
+jerárquicas de las señales crudas, permitiendo avanzar desde
+patrones locales simples hasta dinámicas secuenciales de largo
+alcance. La elección de la arquitectura TCN se fundamenta en
+la naturaleza multivariada y secuencial de los datos procedentes
+de sensores inerciales. Si bien se evaluó la posibilidad de
+utilizar modelos convolucionales y recurrentes, tanto de manera
+individual como híbrida, sus limitaciones se hicieron evidentes:
+un modelo únicamente convolucional no logra capturar
+dependencias a largo plazo, mientras que un modelo
+exclusivamente recurrente suele presentar mayores costos de
+entrenamiento y dificultades de paralelización [9]. En contraste,
+la TCN ofrece un equilibrio adecuado. Las convoluciones
+iniciales permiten reducir la dimensionalidad y extraer patrones
+locales discriminativos a partir de señales crudas con
+redundancia y ruido, mientras que la capa temporal, mediante
+convoluciones causales y dilatadas, amplía el campo receptivo
+para modelar dependencias temporales prolongadas de manera
+eficiente [10]. En la revisión de antecedentes, los modelos
+basados en redes convolucionales alcanzaron métricas
+superiores al 90% de precisión, manteniendo un costo
+computacional competitivo para aplicaciones con inferencia en
+tiempo real, lo que justifica su elección como referencia en este
+trabajo [6].
+El bloque inicial recibe directamente los datos
+multivariados de los sensores y aplica filtros convolucionales
+junto con operaciones de pooling para identificar variaciones
+elementales y, al mismo tiempo, reducir la dimensionalidad
+temporal y el ruido. A partir de estas primeras representaciones,
+el bloque intermedio combina y transforma los patrones
+detectados para capturar interacciones más complejas entre los
+canales y secuencias cortas, mientras que el bloque de
+características amplias incrementa el número de filtros y la
+capacidad representacional, consolidando descriptores robustos
+que facilitan la diferenciación entre clases con alta similitud.
+Sobre esta base, la Temporal Convolutional Network (TCN)
+constituye el componente central para modelar la dinámica
+temporal a gran escala: organiza convoluciones en bloques
+residuales y utiliza dilataciones crecientes que expanden
+progresivamente el campo receptivo, lo cual permite al modelo
+incorporar información de contextos lejanos en la secuencia sin
+aumentar excesivamente la profundidad ni el número de
+parámetros [10]. Además, las convoluciones causales aseguran
+que en cada instante solo se utilice información presente y
+pasada, manteniendo la coherencia temporal en el
+procesamiento de las series. Este enfoque ha demostrado ser
+una alternativa eficiente a las arquitecturas recurrentes como
+LSTM, al capturar dependencias prolongadas con menor costo
+computacional [9]. Finalmente, una etapa de agregación global
+condensa las características aprendidas en un vector
+representativo, el cual se proyecta a través de capas densas
+hacia una salida softmax que asigna probabilísticamente la
+pertenencia de cada muestra a una clase de actividad.
+Fig. 4. Arquitectura TCN propuesta para el reconocimiento de actividades humanas.
+B. Dataset WISDM-HAR
+El conjunto de datos utilizado para el entrenamiento del modelo
+es WISDM-HAR, que contiene información de las señales
+inerciales emitidas por acelerómetros y giroscopios de un
+smartwatch (LG G Watch) y dos smartphones (Samsung
+Galaxy S5 y Google Nexus 5/5x).
+Las especificaciones técnicas de cada dispositivo son:
+LG G Watch
+• SO: Android Wear OS 1.0
+• Procesador: Snapdragon 400 (1.2 GHz)
+• Sensores inerciales: acelerómetro y giroscopio
+• RAM: 512 MB
+• Almacenamiento: 4 GB
+Samsung Galaxy S5
+• SO: Android 4.4.2
+• Procesador: Snapdragon 801 (2.5 GHz)
+
+===== PÁGINA 6 =====
+• Sensores inerciales: acelerómetro y giroscopio
+• RAM: 2 GB
+• Almacenamiento: 32 GB
+Google Nexus 5/5x
+• SO: Android OS
+• Procesador: Snapdragon 800 (2.26 GHz)
+• Sensores inerciales: acelerómetro y giroscopio
+• RAM: 2 GB
+• Almacenamiento: 16 GB/32 GB
+C. Preprocesamiento de datos
+Para el preprocesamiento de los datos se emplearon únicamente
+las señales crudas de los ejes X, Y y Z del acelerómetro,
+segmentadas en ventanas deslizantes de 5 segundos a 20 Hz con
+un 50% de solapamiento. Este procedimiento permitió generar
+representaciones tridimensionales de forma (100, 3),
+preservando la dinámica temporal de las señales originales.
+Aunque el conjunto de datos WISDM-HAR contiene
+inicialmente 18 actividades, estas fueron reagrupadas en
+categorías más representativas para entornos reales: caminar
+(caminar, trotar y subir escaleras), sentarse, escribir en teclado,
+escribir a mano, pararse, comer (sopa, papas, pasta, emparedado
+y beber de un vaso), ejercicio (fútbol, lanzamiento de pelota de
+tenis y básquet) y otros (aplaudir, cepillarse los dientes y doblar
+ropa). La decisión de trabajar únicamente con el acelerómetro
+y no con el giroscopio se fundamenta en que, en escenarios
+prácticos, los sensores no generan datos perfectamente
+sincronizados, lo que ocasiona pérdida de información al
+integrarlos. Además, esta exclusión no redujo el rendimiento,
+sino que lo mejoró en términos de exactitud. Para optimizar el
+entrenamiento, se incorporaron callbacks como EarlyStopping,
+que interrumpe el ajuste cuando la pérdida de validación deja
+de mejorar, y ReduceLROnPlateau, que reduce dinámicamente
+la tasa de aprendizaje al detectar mesetas, favoreciendo una
+convergencia más estable y precisa.
+D. Entrenamiento del modelo
+El entrenamiento del modelo se realizó en un entorno local
+configurado con una GPU NVIDIA RTX 3060 con 16 GB de
+VRAM, 32 GB de memoria RAM y un procesador AMD Ryzen
+5 7600X. Para aprovechar la aceleración por hardware, se
+utilizó un contenedor de TensorFlow con soporte GPU
+ejecutado sobre Ubuntu mediante Windows Subsystem for
+Linux (WSL) en Docker. Esta configuración permitió optimizar
+los tiempos de entrenamiento y garantizar la compatibilidad con
+bibliotecas de cómputo paralelo, asegurando un procesamiento
+eficiente de los datos sensoriales y una convergencia estable del
+modelo de reconocimiento de actividades.
+La arquitectura TCN está compuesta por módulos stem,
+mid, wider y temporal, cada uno con dos capas convolucionales
+unidimensionales de 64, 128 y 256 filtros, respectivamente.
+Cada módulo incorpora una capa de dropout con tasas que
+oscilan entre 0.1 y 0.3 para prevenir el sobreajuste. El módulo
+temporal se construye mediante iteraciones sucesivas en las que
+el factor de dilatación de las convoluciones aumenta
+exponencialmente, desde 2⁰ hasta 2⁴, permitiendo capturar
+dependencias de largo alcance. La salida de esta última capa
+convolucional se conecta a una red totalmente conectada de dos
+capas densas con 256 y 128 neuronas, seguida de una capa
+softmax encargada de la clasificación de la actividad en cada
+ventana temporal.
+E. Evaluación del modelo: técnica LOSO
+Para evaluar la capacidad de generalización del modelo, se
+empleó la estrategia de validación cruzada Leave-One-Subject-
+Out (LOSO), que garantiza la evaluación con sujetos no vistos
+previamente. La Tabla I presenta los resultados obtenidos tras
+entrenar la TCN en 51 iteraciones, correspondientes al número
+total de usuarios en el conjunto de datos WISDM-HAR. El
+promedio de métricas alcanzado fue de 80.21% en exactitud,
+acompañado de valores consistentes en precisión, recall y F1-
+score. Estos resultados demuestran la sólida capacidad del
+modelo para reconocer actividades de participantes nuevos, lo
+que confirma su potencial en la identificación de patrones de
+sedentarismo e inactividad física personalizados por usuario.
+TABLA I
+RENDIMIENTO DEL MODELO TCN CON VALIDACIÓN LOSO
+Métrica Valor (%)
+Accuracy promedio 80.21%
+Precision promedio 75.63%
+Recall promedio 73.94%
+F1-score promedio 73.09%
+F. Evaluación del modelo: datos reales
+Para evaluar el impacto del modelo en entornos no controlados,
+se construyó un conjunto de muestras empleando un
+smartwatch Xiaomi Watch 2 y un smartphone OPPO Reno 6
+Lite, con el cual se recolectaron datos de las actividades de
+caminar, comer, pararse, sentarse y tipear.
+Los componentes de cada dispositivo son:
+Xiaomi Watch 2
+• SO: Wear OS 4.0
+• Procesador: Snapdragon W5+ Gen 1
+• Sensores inerciales: acelerómetro y giroscopio
+• RAM: 2 GB
+• Almacenamiento: 32 GB
+Oppo Reno 6 Lite
+• SO: Android 11
+• Procesador: Snapdragon 662
+• Núcleos: 8
+• RAM: 6 GB
+• Almacenamiento: 128 GB
+Los resultados obtenidos, presentados en la Tabla II,
+evidencian la capacidad del modelo para adaptarse al contexto
+real. Las actividades de caminar, escribir y tipear alcanzaron
+métricas sobresalientes, con valores de precisión, recall y F1-
+score superiores al 90%. En contraste, las actividades de
+sentarse y comer no lograron el mismo nivel de rendimiento.
+Sin embargo, este resultado se debe a que la actividad de comer
+se ejecuta en simultáneo con sentarse, ocasionando que haya
+una superposición de actividades en los breves intervalos de
+tiempo que se deja de comer. Este comportamiento resalta la
+
+===== PÁGINA 7 =====
+capacidad del modelo para discriminar actividades incluso en
+situaciones de simultaneidad, lo que demuestra su adaptabilidad
+frente a las condiciones dinámicas de entornos reales.
+TABLA II
+RENDIMIENTO DETALLADO POR ACTIVIDAD CON DATOS REALES
+Actividad Precisión Recall F1-score
+Sentarse 75.00% 82.00% 79.00%
+Escribir 99.00% 98.00% 98.00%
+Tipear 95.00% 88.00% 92.00%
+Caminar 98.00% 94.00% 96.00%
+Comer 70.00% 64.00% 67.00%
+De manera global, el modelo obtuvo un F1-score macro de
+86% (Tabla III), validando su eficacia para la clasificación de
+actividades humanas tanto en entornos prácticos como en
+validación por usuario, consolidándose como una arquitectura
+prometedora para el reconocimiento de actividades humanas.
+TABLA III
+RENDIMIENTO GLOBAL DEL MODELO TCN CON DATOS REALES
+Métrica Valor (%)
+Accuracy 84.63%
+F1-score (macro) 86.00%
+V. CONCLUSIONES
+El desarrollo del componente inteligente de HARbit valida la
+arquitectura TCN y su eficacia para el Reconocimiento de
+Actividades Humanas (HAR) en entornos ocupacionales,
+logrando un F1-score macro de 86% en la validación con datos
+reales. Se confirma que la información capturada
+exclusivamente por el acelerómetro es suficiente para distinguir
+patrones de movimiento y estáticos, un diseño que garantiza
+una mayor robustez y exactitud en entornos reales con sensores
+no perfectamente sincronizados. El rendimiento demuestra ser
+sólido, especialmente al identificar actividades de alta
+movilidad (como “caminar”, que alcanzó el 96% de F1-score).
+La arquitectura, además, exhibe una notable capacidad para
+discriminar entre actividades de baja movilidad a pesar de la
+inherente superposición de señales que se produce en el
+contexto de un entorno laboral real.
+El diseño de la arquitectura orientada a servicios, con el
+despliegue del modelo en Amazon SageMaker y el backend en
+FastAPI sobre AWS EC2, establece las bases para lograr una
+solución que inherentemente ofrece escalabilidad y baja
+latencia. Este blueprint Cloud-Edge es fundamental para el
+monitoreo continuo de grandes poblaciones y la detección
+proactiva de patrones de sedentarismo prolongado con
+potencial para ser implementado en escenarios reales. Los
+resultados alcanzados confirman que un sistema basado en este
+diseño puede servir eficazmente como base para generar
+intervenciones preventivas y personalizadas, cumpliendo el
+objetivo principal de promover el bienestar ocupacional.
+VI. TRABAJO FUTURO
+Como trabajo futuro, se plantean tres líneas de investigación y
+desarrollo que buscan expandir y consolidar el potencial del
+diseño propuesto de HARbit:
+1) Desarrollo y evaluación del sistema integral: el siguiente
+paso es la implementación completa de la solución basada en el
+blueprint Cloud-Edge presentado. Esto incluirá la integración
+de la aplicación móvil y el backend de servicios, seguido de una
+validación empírica en entornos reales de trabajo para evaluar
+la usabilidad, la aceptación por parte del usuario y la
+escalabilidad del pipeline de inferencia con una cohorte de
+usuarios más amplia.
+2) Mejora de la precisión y robustez del modelo HAR: se
+explorarán métodos de aprendizaje por transferencia (transfer
+learning) y técnicas de personalización en el borde (edge) para
+mejorar la discriminación de actividades de baja movilidad. El
+objetivo es optimizar el rendimiento del modelo ante la
+variabilidad inter-usuario y los nuevos contextos laborales,
+manteniendo la eficiencia y el bajo consumo de recursos en el
+dispositivo.
+3) Implementación de alertas proactivas e intervención: se
+desarrollará un módulo avanzado de análisis temporal que
+permitirá pasar del monitoreo descriptivo a la intervención
+preventiva. Esto incluye la creación de un algoritmo de
+cuantificación de riesgo de sedentarismo que, al activarse,
+dispare alertas personalizadas para fomentar pausas activas,
+cerrando así el ciclo de retroalimentación en tiempo real para el
+bienestar ocupacional.
+REFERENCIAS
+[1] International Labour Organization, “2021 Labour Overview of Latin
+America and the Caribbean,” Geneva, Switzerland, 2021. [En línea].
+Disponible en: https://www.ilo.org/publications/2021-labour-overview-
+latin-america-and-caribbean
+[2] Ministerio de Salud del Perú, “Minsa insta a la población a realizar
+actividades físicas para evitar el sedentarismo y la obesidad,” Ministerio
+de Salud, 4 mar. 2023. [En línea]. Disponible en:
+https://www.gob.pe/institucion/minsa/noticias/720499-minsa-insta-a-la-
+poblacion-realizar-actividades-fisicas-para-evitar-el-sedentarismo-y-la-
+obesidad
+[3] E. Rossato De Victo, I. Kovalskys, M. Fisberg, G. Gómez, A. Rigotti, L.
+Y. Cortés, M. Y. García, R. G. Pareja, M. Herrera-Cuenca, D. Solé, C.
+Drenowatz, A. Marques y G. Ferrari, “Are the different cut-off points for
+sitting time associated with excess weight in adults? A population based
+study in Latin America,” BMC Public Health, vol. 23, pp. 110, ene. 2023.
+Accedido: 25 abr. 2025. doi: 10.1186/s12889-023-15029-8. [En línea].
+Disponible en:
+https://bmcpublichealth.biomedcentral.com/articles/10.1186/s12889-023-
+15029-8
+[4] J. Gilmore y M. Nasseri, “Human Activity Recognition Algorithm with
+Physiological and Inertial Signals Fusion: Photoplethysmography,
+Electrodermal Activity, and Accelerometry,” Sensors, vol. 24, no. 10, pp.
+3005-3017, may. 2024. Accedido: 17 may. 2025. doi:
+10.3390/s24103005. [En línea]. Disponible en:
+https://www.mdpi.com/1424-8220/24/10/3005
+[5] S. Mekruksavanich y A. Jitpattanakul, “Deep residual network with a
+CBAM mechanism for the recognition of symmetric and asymmetric
+human activity using wearable sensors,” Symmetry, vol. 16, no. 5, pp.
+554-579, may. 2024. Accedido: 10 may. 2025. doi:
+10.3390/sym16050554. [En línea]. Disponible en:
+https://www.mdpi.com/2073-8994/16/5/554
+[6] V. Mollyn, K. Ahuja, D. Verma, C. Harrison y M. Goel, “SAMoSA:
+Sensing Activities with Motion and Subsampled Audio,” Proceedings of
+the ACM on Interactive, Mobile, Wearable and Ubiquitous Technologies,
+
+===== PÁGINA 8 =====
+vol. 6, no. 3, pp. 132-150, sept. 2022. Accedido: 13 may. 2025. doi:
+10.1145/3550284. [En línea]. Disponible en:
+https://dl.acm.org/doi/10.1145/3550284
+[7] K. Lacroix, D. Gholamiangonabadi, A. Trejos y K. Grolinger, “Deep
+Transfer Learning for Detection of Upper and Lower Body Movements:
+Transformer with Convolutional Neural Network,” IEEE Sensors Journal,
+vol. 24, no. 20, pp. 33778-33790, oct. 2024. Accedido: 31 may. 2025.
+doi: 10.1109/JSEN.2024.3451291. [En línea]. Disponible en:
+https://ieeexplore.ieee.org/document/10666081
+[8] L. Alawneh, M. Al-Ayyoub, Z. Al-Sharif y A. Shatnawi, “Personalized
+human activity recognition using deep learning and edge-cloud
+architecture,” Journal of Ambient Intelligence and Humanized
+Computing, vol. 14, pp. 12021-12033, sept. 2023. Accedido: 30 may.
+2025. doi: 10.1007/s12652-022-03752-w. [En línea]. Disponible en:
+https://link.springer.com/article/10.1007/s12652-022-03752-w
+[9] S. Raja, Y. Pang, G. Ling y O. Yin, “MSTCN: A multiscale temporal
+convolutional network for user independent human activity recognition,”
+F1000Research, vol. 10, pp. 1261-1281, may. 2022. Accedido: 28 sept.
+2025. doi: 10.12688/f1000research.73175.2. [En línea]. Disponible en:
+https://f1000research.com/articles/10-1261/v2
+[10] A. Al-qaness, A. Dahou, N. Trouba, A. Helmi y M. Abd, “TCN-
+Inception: Temporal Convolutional Network and Inception modules for
+sensor-based Human Activity Recognition,” Future Generation Computer
+Systems, vol. 160, pp. 375-388, nov. 2024. Accedido: 28 sept. 2025. doi:
+10.1016/j.future.2024.06.016. [En línea]. Disponible en:
+https://www.sciencedirect.com/science/article/abs/pii/S0167739X240031
+82

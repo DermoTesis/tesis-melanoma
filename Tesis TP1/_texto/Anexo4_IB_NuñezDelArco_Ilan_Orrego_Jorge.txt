@@ -1,0 +1,1048 @@
+
+
+===== PÁGINA 1 =====
+UNIVERSIDAD PERUANA DE CIENCIAS APLICADAS
+FACULTAD DE INGENIERÍA
+PROGRAMA ACADÉMICO DE INGENIERÍA DE SOFTWARE Y CIENCIAS DE LA
+COMPUTACIÓN
+Aplicación móvil basada en aprendizaje automático para la detección temprana de melanoma
+maligno como estrategia de apoyo diagnóstico en la atención oncológica de segundo nivel en el
+sistema de salud público peruano
+BENCHMARKING
+AUTOR(ES)
+Orrego Noriega, Jorge David (0009-0001-4220-5827)
+Núñez Del Arco, Ilan André (0009-0009-4598-6479)
+ASESOR(ES)
+Priale De La Peña, Monica Rosario (0009-0000-0036-5673)
+Lima, 28 de junio del 2026
+
+===== PÁGINA 2 =====
+INDICE
+BENCHMARKING ....................................................................................................................................... 7
+1. INTRODUCCIÓN ................................................................................................................................ 7
+2. OBJETIVO DEL BENCHMARKING ................................................................................................. 7
+3. BENCHMARKING DE {Definido en el Objetivo del Benchmarking}............................................... 8
+3.1. Criterios y Parámetros de Medición ................................................................................................. 9
+3.2. Comparación de Propuestas............................................................................................................ 10
+3.3. Análisis de Alternativas .................................................................................................................. 12
+3.4. Selección de Alternativa ................................................................................................................. 13
+4. BENCHMARKING DE {Definido en el Objetivo del Benchmarking}............................................. 14
+4.1. Criterios y Parámetros de Medición ............................................................................................... 14
+4.2. Comparación de Propuestas............................................................................................................ 14
+4.3. Análisis de Alternativas .................................................................................................................. 14
+4.4. Selección de Alternativa ................................................................................................................. 14
+5. BENCHMARKING DE {Definido en el Objetivo del Benchmarking}............................................. 14
+5.1. Criterios y Parámetros de Medición ............................................................................................... 14
+5.2. Comparación de Propuestas............................................................................................................ 14
+5.3. Análisis de Alternativas .................................................................................................................. 14
+5.4. Selección de Alternativa ................................................................................................................. 14
+6. CONCLUSIONES .............................................................................................................................. 15
+7. REFERENCIAS BIBLIOGRÁFICAS ................................................................................................ 15
+
+===== PÁGINA 3 =====
+BENCHMARKING
+1. INTRODUCCIÓN
+La identificación temprana del melanoma maligno constituye uno de los retos más
+significativos en el campo de la salud, ya que un diagnóstico a tiempo puede aumentar
+notablemente las chances de un tratamiento efectivo y la supervivencia del paciente. No
+obstante, en muchos centros de salud hay restricciones relacionadas con la disponibilidad de
+expertos, los tiempos de atención y el acceso a herramientas diagnósticas, lo cual puede poner
+en peligro la detección de lesiones cutáneas que podrían ser cancerígenas.
+Recientemente, el progreso en inteligencia artificial y aprendizaje profundo ha permitido crear
+modelos que son capaces de examinar imágenes dermatológicas y auxiliar en la detección de
+melanoma con una precisión similar a la de los especialistas. Además, se han creado diversas
+plataformas tecnológicas para facilitar el acceso a estas soluciones para los usuarios finales,
+incluyendo aplicaciones móviles, sistemas en la web y servicios de teledermatología.
+Igualmente, existen distintos marcos de trabajo que simplifican el entrenamiento y la
+implementación de modelos de visión computacional en el sector de la salud.
+Dada la amplia gama de tecnologías disponibles, es indispensable llevar a cabo un proceso de
+benchmarking que ayude a identificar las opciones más adecuadas para desarrollar la solución
+propuesta en esta investigación. Para lograr esto, se llevará a cabo una comparación de varios
+modelos de inteligencia artificial diseñados para la detección de melanoma, plataformas de
+implementación orientadas al usuario y marcos de aprendizaje profundo que se utilizan en la
+creación de sistemas basados en visión computacional.
+A pesar de que hoy en día hay varias herramientas de inteligencia artificial para identificar
+melanoma, muchas de ellas han sido creadas y probadas utilizando bases de datos controladas
+y ambientes de investigación, sin tener en cuenta las circunstancias reales en los sistemas de
+salud con recursos escasos. Además, algunas de estas soluciones requieren un alto poder de
+cómputo, acceso a equipos especializados o infraestructura tecnológica que complica su
+implementación en situaciones donde hay pocos especialistas y recursos disponibles.
+Igualmente, no todas las opciones existentes han sido concebidas para integrarse de manera
+efectiva en plataformas accesibles para los usuarios finales, como aplicaciones móviles
+enfocadas en la detección temprana y el soporte al diagnóstico.
+Los resultados obtenidos permitirán elegir las tecnologías que brinden el óptimo equilibrio
+entre precisión diagnóstica, eficiencia computacional, accesibilidad y facilidad de
+implementación, ayudando así al desarrollo de una aplicación que favorezca la detección
+temprana del melanoma maligno.
+
+===== PÁGINA 4 =====
+2. OBJETIVO DEL BENCHMARKING
+El propósito de este análisis comparativo es encontrar el modelo de inteligencia artificial más
+adecuado para la identificación anticipada de melanoma maligno en imágenes de la piel. Con
+este fin, se evalúan diversas arquitecturas de aprendizaje profundo empleadas en estudios
+recientes, teniendo en cuenta aspectos como la efectividad diagnóstica, la habilidad de
+generalización, la eficiencia en el uso de computadoras, el tiempo requerido para inferencias y
+la posibilidad de implementación en dispositivos móviles. El resultado de este proceso
+permitirá elegir la opción que brinde el mejor balance entre precisión clínica y viabilidad
+técnica para la solución planteada en esta investigación.
+Benchmarking Tipo
+Benchmarking 1 Modelos / Algoritmos de IA
+Benchmarking 2 Tecnologías de despliegue
+Benchmarking 3 Frameworks de desarrollo
+
+===== PÁGINA 5 =====
+3. BENCHMARKING DE FRAMEWORKS PARA DESARROLLO MOVIL
+El propósito de este análisis comparativo es determinar el marco de desarrollo móvil más pertinente para llevar a cabo la aplicación
+sugerida para la detección precoz de melanoma maligno. Con este fin, se evalúan diversas tecnologías de desarrollo móvil tomando
+en cuenta factores como el rendimiento, la capacidad de funcionar en diferentes plataformas, la simplicidad en el desarrollo, la
+integración con modelos de inteligencia artificial y el respaldo de la comunidad. Esta evaluación ayudará a elegir la opción que
+presente el mejor balance entre eficacia técnica, facilidad de mantenimiento y satisfacción del usuario.
+A continuación, se plantean las propuestas que serán parte de la evaluación:
+Tabla 1
+Propuestas seleccionadas
+Propuesta Descripción Fuente (cita en APA 7)
+Flutter Framework de desarrollo móvil multiplataforma desarrollado por Google que permite
+crear aplicaciones para Android e iOS utilizando una única base de código en Dart.
+Google (2025), Leema et al. (2025)
+React
+Native
+Framework de desarrollo móvil multiplataforma desarrollado por Meta basado en
+JavaScript y React, orientado a la creación de aplicaciones nativas mediante
+componentes reutilizables.
+Meta Platforms (2025), Marsden et al. (2024)
+Kotlin
+Android
+Tecnología oficial para el desarrollo nativo de aplicaciones Android, destacada por su
+rendimiento, estabilidad e integración con los servicios del ecosistema Android.
+Google (2025), Takemoto (2025)
+
+===== PÁGINA 6 =====
+.NET
+MAUI
+Framework multiplataforma de Microsoft basado en .NET que permite desarrollar
+aplicaciones para Android, iOS, Windows y macOS mediante una única base de código.
+Microsoft (2025), Heinlein et al. (2024)
+3.1. Criterios y Parámetros de Medición
+Tabla 2
+Definición de criterios y parámetros de medición
+Criterio Descripción Unida
+d
+Valores Parámetro de Medición (*) Fuente (cita en APA 7)
+Rendimiento Capacidad del framework para renderizar la interfaz y
+procesar la captura y previsualización de imágenes
+manteniendo una tasa de fotogramas fluida durante el uso
+de la aplicación.
+Cuadros
+por
+segundo
+(FPS)
+[<30 –
+≥60]
+1 = <30 FPS (>33 ms/cuadro,
+parpadeo perceptible); 2 = 30–40
+FPS; 3 = 40–50 FPS; 4 = 50–60
+FPS; 5 = ≥60 FPS estables (<16
+ms/cuadro).
+Nawrocki et al. (2021);
+Biørn-Hansen et al. (2020)
+Compatibilidad
+Multiplataforma
+Cantidad de plataformas y sistemas operativos que el
+framework cubre con una sola base de código, incluyendo
+el rango de versiones de OS móvil soportadas.
+N.° de
+platafor
+mas /
+versione
+s de OS
+[1 – ≥4] 1 = 1 plataforma (solo Android o
+solo iOS); 2 = 2 plataformas con
+cobertura parcial de versiones; 3
+= 2 plataformas móviles (Android
+API 21+ / iOS 12+); 4 = 3
+plataformas (Android, iOS y Web
+o Escritorio); 5 = ≥4 plataformas
+(Android, iOS, Web,
+Lovrić et al. (2023);
+Leema et al. (2025)
+
+===== PÁGINA 7 =====
+Windows/macOS) con amplia
+cobertura de versiones de OS.
+Facilidad de
+Desarrollo
+Porcentaje de código reutilizable entre plataformas y
+disponibilidad de herramientas que aceleran el ciclo de
+desarrollo y mantenimiento.
+% de
+código
+compart
+ido
+[0% –
+>90%]
+1 = 0% (desarrollo separado por
+plataforma); 2 = <50%; 3 = 50–
+70%; 4 = 70–90%; 5 = >90% de
+código compartido con recarga en
+caliente (hot reload).
+Lovrić et al. (2023);
+Nawrocki et al. (2021)
+Integración con
+IA
+Número de motores de inferencia on-device soportados
+oficialmente para ejecutar el modelo de clasificación de
+lesiones cutáneas dentro del dispositivo.
+N.° de
+motores
+de
+inferenc
+ia on-
+device
+[0 – ≥3] 1 = sin soporte oficial (solo
+servidor/REST); 2 = 1 motor
+experimental; 3 = 1–2 motores
+mediante plugins de la
+comunidad; 4 = 2 motores
+oficiales; 5 = ≥3 motores en
+producción (TensorFlow Lite,
+ONNX Runtime, Core ML, etc.).
+Leema et al. (2025);
+Velasco et al. (2019)
+Soporte y
+Comunidad
+Magnitud y nivel de actividad de la comunidad, medidos
+por la popularidad del repositorio oficial y la frecuencia
+de mantenimiento.
+N.° de
+estrellas
+en
+GitHub
+/
+activida
+d
+[<10k –
+>150k]
+1 = <10k estrellas; 2 = 10–50k; 3
+= 50–100k; 4 = 100–150k; 5 =
+>150k estrellas con releases
+frecuentes y documentación
+oficial.
+Lovrić et al. (2023);
+Biørn-Hansen et al. (2020)
+
+===== PÁGINA 8 =====
+(*) Se debe realizar una parametrización para que los valores diferentes a escala puedan definirse dentro de los valores del 1 al 5.
+3.2. Comparación de Propuestas
+Tabla 3
+Matriz de enfrentamiento
+Criterio A B C D E Subtotal Ponderación Criterio
+A. Rendimiento X 1 1 0 0 2 20% A. Rendimiento
+B. Compatibilidad Multiplataforma 0 X 1 0 1 2 20% B. Compatibilidad
+Multiplataforma
+C. Facilidad de Desarrollo 0 0 X 0 1 1 10% C. Facilidad de Desarrollo
+D. Integración con IA 1 1 1 X 1 4 40% D. Integración con IA
+E. Soporte y Comunidad 1 0 0 0 X 1 10% E. Soporte y Comunidad
+Total 10 100% Total
+(0,1) En este campo solo se puede colocar valores de 0 y 1, donde 0 quiere decir que es menos importante que otro criterio y 1 hace énfasis a que
+este criterio es más importante que el criterio con el cual se compara. Ejemplo: Si consideramos que el Criterio 1(A) es menos importante que el
+Criterio 2 (B) entonces tendríamos que colocar 0 en la intersección entre A y B
+Tabla 4
+Matriz de Priorización
+Criterio Impacto Frameworks para desarrollo móvil
+
+===== PÁGINA 9 =====
+Flutter React Native Kotlin Android .NET MAUI
+Puntaje Promedio Puntaje Promedio Puntaje Promedio Puntaje Promedio
+Rendimiento 20% 4 0.80 4 0.80 5 1.00 4 0.80
+Compatibilidad
+Multiplataform
+a
+20% 5
+1.00 5
+1.00
+1
+0.20
+5
+1.00
+Facilidad de
+Desarrollo
+10% 5
+0.50 4
+0.40
+3
+0.30
+4
+0.40
+Integración con
+IA
+40% 5
+2.00 4
+1.60
+4
+1.60
+3
+1.20
+Soporte y
+Comunidad
+10% 5
+0.50 5
+0.50
+4
+0.40
+3
+0.30
+Promedio Total 100% 4.80 4.30 3.50 3.70
+[1 – 5] Valor del 1 al 5 que ha sido establecido en la tabla de parámetros de medición.
+Impacto. Este % se obtiene de la columna Ponderación de la Matriz de Enfrentamiento
+3.3. Análisis de Alternativas
+Tabla 5
+Cuadro de Análisis de Alternativas por Criterio
+Criterio Impacto Evaluación
+Rendimiento 20%
+Se evaluó la fluidez de renderizado de la interfaz y el procesamiento de imágenes. Kotlin Android obtuvo
+la máxima valoración por ser una solución nativa que alcanza la mejor eficiencia de CPU, memoria y
+batería, referencia frente a la cual se miden los frameworks multiplataforma (Nawrocki et al., 2021;
+
+===== PÁGINA 10 =====
+Biørn-Hansen et al., 2020). Flutter, React Native y .NET MAUI mantienen tasas cercanas a 60 FPS, con
+un rendimiento muy bueno aunque ligeramente inferior al nativo, suficiente para los requerimientos de la
+aplicación (Lovrić et al., 2023).
+Compatibilidad
+Multiplataforma
+20%
+Flutter, React Native y .NET MAUI obtuvieron la máxima valoración por desplegar Android e iOS —y,
+en el caso de .NET MAUI, también Windows y macOS— desde una sola base de código con amplia
+cobertura de versiones de OS, mientras que Kotlin Android se limita al ecosistema Android (Leema et al.,
+2025).
+Facilidad de Desarrollo
+10%
+Flutter destacó por su arquitectura declarativa, la recarga en caliente y un alto porcentaje de código
+compartido entre plataformas; en la evaluación comparativa de Lovrić et al. (2023) Flutter obtuvo el
+mayor puntaje ponderado global frente a React Native, Cordova e incluso el desarrollo nativo, seguido
+por React Native y .NET MAUI.
+Integración con IA
+40%
+Flutter obtuvo la mejor valoración por su plugin oficial de TensorFlow Lite (LiteRT), que permite
+ejecutar el modelo de clasificación de lesiones on-device evitando que las imágenes sensibles del paciente
+salgan del dispositivo (Leema et al., 2025; Velasco et al., 2019). React Native y Kotlin Android también
+soportan inferencia local, mientras que .NET MAUI presenta un ecosistema de inferencia móvil menos
+maduro. Por su peso (40%), este criterio resulta determinante en la elección final.
+Soporte y Comunidad
+10%
+Flutter y React Native obtuvieron las mejores valoraciones por sus amplias comunidades (cada una con
+más de 100k estrellas en GitHub), documentación extensa y releases frecuentes, factores que reducen el
+riesgo técnico del proyecto (Lovrić et al., 2023; Biørn-Hansen et al., 2020).
+3.4. Selección de Alternativa
+De acuerdo con el análisis realizado mediante la matriz de priorización, la propuesta más adecuada para emplear es Flutter,
+con un puntaje promedio de 4.80. Esta elección se justifica porque obtuvo la valoración más alta entre las alternativas
+
+===== PÁGINA 11 =====
+evaluadas, destacando especialmente en los criterios de compatibilidad multiplataforma, facilidad de desarrollo, integración
+con inteligencia artificial y soporte de la comunidad.
+Flutter permite crear aplicaciones móviles tanto para Android como para iOS usando un solo código base, lo que simplifica
+el mantenimiento y la mejora del sistema. Además, su plugin oficial de TensorFlow Lite (LiteRT) brinda una buena
+integración con motores de inferencia on-device, lo cual es esencial para ejecutar el modelo MobileNetV2 de detección
+temprana de melanoma directamente en el dispositivo y preservar la privacidad de las imágenes del paciente (Leema et al.,
+2025; Velasco et al., 2019). En la evaluación comparativa de frameworks multiplataforma de Lovrić et al. (2023), aplicada a
+una aplicación médica real, Flutter obtuvo el puntaje ponderado más alto, por encima incluso del desarrollo nativo, gracias a
+su equilibrio entre rendimiento, acceso a hardware y productividad.
+A pesar de que Kotlin Android mostró un rendimiento superior por ser una tecnología nativa (Nawrocki et al., 2021), su
+restricción a una única plataforma limitó su calificación general. De manera similar, React Native y .NET MAUI presentaron
+resultados positivos en varias áreas; sin embargo, no alcanzaron el mismo equilibrio total que Flutter. Por estas razones, Flutter
+es seleccionado como el marco de desarrollo móvil más adecuado para implementar la solución propuesta.
+4. BENCHMARKING DE MODELOS / ALGORITMOS DE IA PARA LA DETECCIÓN DE MELANOMA
+El propósito de este análisis comparativo es determinar el modelo de aprendizaje profundo que ofrece el mejor equilibrio entre
+precisión diagnóstica, capacidad de generalización, eficiencia computacional y viabilidad de implementación en una aplicación móvil
+para la detección temprana de melanoma maligno. Para ello se evalúan cuatro arquitecturas ampliamente utilizadas en la clasificación
+y detección de lesiones cutáneas, tomando como referencia los estudios revisados en el estado del arte.
+A continuación, se presentan las cuatro propuestas que serán parte de la evaluación:
+
+===== PÁGINA 12 =====
+Tabla 6Propuestas seleccionadas
+Propuesta Descripción Fuente (cita en APA 7)
+MobileNe
+tV2
+Red neuronal convolucional ligera basada en bloques residuales invertidos y
+convoluciones separables en profundidad, diseñada específicamente para inferencia
+eficiente en dispositivos móviles (3.4 millones de parámetros, ~14 MB).
+Sandler et al. (2018); Alshmrani et al. (2026); Babatunde
+et al. (2025)
+EfficientN
+etV2
+Familia de CNN que combina escalado compuesto y bloques Fused-MBConv para
+mejorar la precisión y la velocidad de entrenamiento, ofreciendo un buen equilibrio entre
+exactitud y eficiencia (7.2 millones de parámetros en su variante B0).
+Tan & Le (2021); Aruk et al. (2026)
+Vision
+Transform
+er (ViT)
+Arquitectura basada en mecanismos de auto-atención que procesa la imagen como una
+secuencia de parches; alcanza alta precisión cuando se preentrena con grandes
+volúmenes de datos, a costa de un elevado costo computacional (86.6 millones de
+parámetros, ~330 MB).
+Dosovitskiy et al. (2021); Aruk et al. (2026); Georgiadis
+et al. (2025)
+YOLOv8 Modelo de detección y segmentación de objetos en una sola etapa, optimizado para
+inferencia en tiempo real; en su variante nano es muy ligero (3.2 millones de parámetros)
+y exportable a formatos móviles (TensorFlow Lite, Core ML).
+Jocher et al. (2023); AlSadhan et al. (2024); Krukar &
+Omiotek (2025)
+3.1. Criterios y Parámetros de Medición
+
+===== PÁGINA 13 =====
+Para la evaluación se definieron cinco criterios cuantificables, sustentados en los artículos revisados en el estado del arte:
+Tabla 7Definición de criterios y parámetros de medición
+Criterio Descripción Unida
+d
+Valores Parámetro de Medición (*) Fuente (cita en APA 7)
+Precisión
+diagnóstica
+Exactitud del modelo para clasificar correctamente las
+lesiones cutáneas (accuracy, AUC o F1-score) reportada
+en estudios de detección de melanoma.
+Porcent
+aje (%)
+[<80 –
+>95]
+1 = <80%; 2 = 80–85%; 3 = 85–
+90%; 4 = 90–95%; 5 = >95%.
+Aruk et al. (2026);
+Alshmrani et al. (2026)
+Capacidad de
+generalización
+Desempeño del modelo ante datos no vistos, datasets
+externos o múltiples clases, y su robustez frente al
+sobreajuste.
+Nivel de
+validaci
+ón
+[1 – 5] 1 = un solo dataset sin validación
+externa; 2 = un dataset con
+augmentación; 3 = dos datasets; 4
+= validación cruzada multi-
+dataset; 5 = validación externa o
+multicéntrica robusta.
+Georgiadis et al. (2025);
+Heinlein et al. (2024)
+Eficiencia
+computacional
+Costo computacional del modelo medido por su número
+de parámetros, que determina el tamaño en memoria y la
+demanda de cómputo.
+Millone
+s de
+parámet
+ros (M)
+[>80 –
+<5]
+1 = >80M; 2 = 40–80M; 3 = 20–
+40M; 4 = 5–20M; 5 = <5M.
+Sandler et al. (2018); Tan
+& Le (2021); Beirami et
+al. (2025)
+
+===== PÁGINA 14 =====
+Velocidad de
+inferencia
+Tiempo que tarda el modelo en procesar una imagen y
+entregar una predicción, determinante para la experiencia
+en tiempo real.
+Miliseg
+undos
+(ms)
+[>1000 –
+<50]
+1 = >1000 ms; 2 = 500–1000 ms;
+3 = 200–500 ms; 4 = 50–200 ms;
+5 = <50 ms.
+Leema et al. (2025);
+AlSadhan et al. (2024)
+Viabilidad de
+despliegue
+móvil
+Facilidad para convertir, cuantizar y ejecutar el modelo
+on-device en un smartphone mediante motores de
+inferencia móvil (TensorFlow Lite, Core ML).
+Escala
+de
+viabilid
+ad
+[1 – 5] 1 = no viable on-device (solo
+servidor); 2 = requiere fuerte
+optimización; 3 = viable con
+variante ligera; 4 = exportable y
+eficiente on-device; 5 = diseñado
+para móvil con soporte nativo de
+cuantización.
+Leema et al. (2025);
+Takemoto (2025); Sandler
+et al. (2018)
+3.2. Comparación de Propuestas
+Tabla 8Matriz de enfrentamiento
+Criterio A B C D E Subtotal Ponderación Criterio
+A. Precisión diagnóstica X 1 1 1 1 4 40% A. Precisión diagnóstica
+B. Capacidad de generalización 0 X 1 0 0 1 10% B. Capacidad de generalización
+C. Eficiencia computacional 0 0 X 1 0 1 10% C. Eficiencia computacional
+D. Velocidad de inferencia 0 1 0 X 0 1 10% D. Velocidad de inferencia
+
+===== PÁGINA 15 =====
+E. Viabilidad de despliegue móvil 0 1 1 1 X 3 30% E. Viabilidad de despliegue móvil
+Total 10 100% Total
+Tabla 9Matriz de Priorización
+Criterio Impacto
+Modelos / Algoritmos de IA
+MobileNetV2 EfficientNetV2
+Vision Transformer
+(ViT)
+YOLOv8
+Puntaje Promedio Puntaje Promedio Puntaje Promedio Puntaje Promedio
+Precisión
+diagnóstica
+40% 4 1.60
+5
+2.00
+5
+2.00
+4
+1.60
+Capacidad de
+generalización
+10% 3
+0.30 5
+0.50
+4
+0.40
+3
+0.30
+Eficiencia
+computacional
+10% 5
+0.50 3
+0.30
+1
+0.10
+5
+0.50
+Velocidad de
+inferencia
+10% 5
+0.50 4
+0.40
+2
+0.20
+5
+0.50
+Viabilidad de
+despliegue
+móvil
+30% 5
+1.50 3
+0.90
+3
+0.90
+4
+1.20
+Promedio Total 100% 4.40 4.10 3.60 4.10
+3.3. Análisis de Alternativas
+
+===== PÁGINA 16 =====
+Tabla 10Cuadro de Análisis de Alternativas por Criterio
+Criterio Impacto Evaluación
+Precisión diagnóstica 40%
+Las cuatro arquitecturas superan el 88% de exactitud en datasets estandarizados. En la comparación
+directa de Ozdemir y Pacal (2025) sobre ISIC 2019, ViT-B/16 (89.61%) y EfficientNetV2 (88.58%)
+lideran entre los modelos puros; en estudios independientes EfficientNetV2 alcanza un F1 de 0.92 y un
+AUC de 0.99 (Venugopal et al., 2023) y ViT logra hasta 94.8% de exactitud (Cirrincione et al., 2023).
+MobileNetV2 reporta 95.16% de exactitud y 97.57% de AUC sobre SIIM-ISIC 2020 (M'hamedi et al.,
+2024), y YOLOv8 alcanza un mAP@0.5 de 98.6% en la detección de la lesión (Albahli, 2025).
+Capacidad de
+generalización
+10%
+EfficientNetV2 incorpora regularización progresiva que mejora su generalización (Tan y Le, 2021); ViT
+ofrece buena robustez cross-dataset cuando se preentrena con grandes volúmenes de datos, pero su propio
+diseño lo hace dependiente de muchos datos (data-hungry) y propenso al sobreajuste con datos escasos
+(Dosovitskiy et al., 2021). MobileNetV2 y YOLOv8 generalizan adecuadamente con aprendizaje por
+transferencia y augmentación, aunque sus mejores cifras provienen de datasets pequeños (Babatunde et
+al., 2025; Krukar y Omiotek, 2025).
+Eficiencia
+computacional 10%
+MobileNetV2 (3.4 M) y YOLOv8-nano (3.2 M) son los modelos más livianos; EfficientNetV2 ocupa un
+rango intermedio (7.2–22 M en sus variantes móviles) y ViT-B/16 es el más pesado (86.6 M), lo que
+limita su uso en hardware restringido (Sandler et al., 2018; Tan y Le, 2021; Dosovitskiy et al., 2021).
+Velocidad de
+inferencia 10%
+MobileNetV2 (≈74 ms en un dispositivo de gama media) y YOLOv8-nano (inferencia en tiempo real)
+ofrecen la mayor velocidad; EfficientNetV2 es moderado, mientras que ViT resulta entre 1.5 y 4 veces
+más lento que una CNN equivalente en smartphones (Li et al., 2022; AlSadhan et al., 2024).
+Viabilidad de
+despliegue móvil
+30%
+MobileNetV2 fue diseñado explícitamente para móviles, con soporte de primera clase en TensorFlow
+Lite y Core ML (Sandler et al., 2018); YOLOv8-nano se exporta a formatos móviles con buen
+rendimiento (Jocher et al., 2023). EfficientNetV2 solo es viable on-device en su variante B0, y ViT
+requiere variantes ligeras especializadas (p. ej., LMS-ViT) para alcanzar tiempos reales en smartphones
+
+===== PÁGINA 17 =====
+(Leema et al., 2025; Li et al., 2022).
+3.4. Selección de Alternativa
+De acuerdo con el análisis realizado mediante la matriz de priorización, el modelo más adecuado para la solución propuesta es
+MobileNetV2, con un puntaje promedio de 4.40. Aunque EfficientNetV2 y Vision Transformer alcanzan una precisión diagnóstica
+ligeramente superior, MobileNetV2 ofrece el mejor equilibrio global gracias a su altísima eficiencia computacional, su velocidad de
+inferencia y, sobre todo, su viabilidad de despliegue on-device, criterio que concentra el mayor peso junto con la precisión
+diagnóstica.
+Esta elección es coherente con la naturaleza de la solución: una aplicación móvil orientada a la detección temprana de melanoma en
+el primer nivel de atención. MobileNetV2 alcanza una exactitud de hasta 95.16% y un AUC de 97.57% en el dataset SIIM-ISIC 2020
+(M'hamedi et al., 2024), a la vez que mantiene un tamaño de apenas 14 MB y 3.4 millones de parámetros, lo que permite ejecutar el
+modelo directamente en el dispositivo sin enviar las imágenes del paciente a un servidor. Diversos estudios del estado del arte
+respaldan su uso en dermatología móvil (Alshmrani et al., 2026; Babatunde et al., 2025; Cheng et al., 2024).
+EfficientNetV2 y Vision Transformer, pese a su excelente precisión, presentan un mayor costo computacional —especialmente ViT,
+con 86.6 millones de parámetros y un comportamiento dependiente de grandes volúmenes de datos (Dosovitskiy et al., 2021)— que
+dificulta su ejecución fluida en smartphones de gama media. YOLOv8, por su parte, resulta más apropiado como detector y
+segmentador de la lesión que como clasificador final. Por estas razones, MobileNetV2 se selecciona como el modelo base, con la
+posibilidad de complementarlo con YOLOv8-nano para la localización previa de la lesión.
+5. BENCHMARKING DE TECNOLOGÍAS DE DESPLIEGUE PARA EL SISTEMA DE DETECCIÓN DE MELANOMA
+El propósito de este análisis comparativo es determinar el tipo de plataforma de despliegue que permite brindar una solución accesible,
+rápida y viable para los pacientes y el personal médico dentro del sistema de salud público peruano. Para ello se evalúan cuatro
+alternativas de despliegue, considerando el contexto de recursos limitados, conectividad variable y la necesidad de proteger los datos
+sensibles del paciente.
+A continuación, se presentan las cuatro propuestas que serán parte de la evaluación:
+
+===== PÁGINA 18 =====
+Tabla 11Propuestas seleccionadas
+Propuesta Descripción Fuente (cita en APA 7)
+Aplicació
+n Android
+Nativa
+Aplicación desarrollada con Kotlin/Java específicamente para Android, con acceso pleno
+al hardware y capacidad de ejecutar el modelo de IA on-device mediante TensorFlow
+Lite; Android es el sistema operativo móvil dominante en el Perú.
+Velasco et al. (2019); Öztel et al. (2023); Chavez-
+Ramirez et al. (2023)
+Aplicació
+n Flutter
+(multiplat
+aforma)
+Aplicación móvil multiplataforma (Android e iOS) desarrollada con una sola base de
+código en Flutter, con soporte oficial de inferencia on-device mediante el plugin de
+TensorFlow Lite.
+Lovrić et al. (2023); Leema et al. (2025)
+Aplicació
+n Web
+Responsiv
+a / PWA
+Aplicación accesible desde cualquier navegador sin instalación, con inferencia del lado
+del servidor o en el navegador (TensorFlow.js); las PWA permiten funcionamiento
+parcial sin conexión mediante service workers.
+Sebukpor et al. (2025); AboArab et al. (2024)
+Sistema
+de
+Telederm
+atología
+Plataforma de telemedicina que conecta la atención primaria con dermatólogos
+especialistas mediante el envío de imágenes (store-and-forward), integrando
+opcionalmente la IA como herramienta de triaje.
+Marsden et al. (2024); Giavina-Bianchi et al. (2020)
+
+===== PÁGINA 19 =====
+Hospitalar
+io
+4.1. Criterios y Parámetros de Medición
+Para la evaluación se definieron cinco criterios cuantificables, orientados al contexto del sistema de salud público peruano y
+sustentados en los artículos revisados:
+Tabla 12Definición de criterios y parámetros de medición
+Criterio Descripción Unida
+d
+Valores Parámetro de Medición (*) Fuente (cita en APA 7)
+Accesibilidad y
+alcance
+Proporción de usuarios y dispositivos que pueden acceder
+a la solución sin requisitos especiales de instalación o de
+gama de equipo, incluyendo la cobertura de pacientes en
+zonas con recursos limitados.
+Nivel de
+alcance
+[1 – 5] 1 = requiere infraestructura
+institucional; 2 = una plataforma
+con equipo de gama alta; 3 = una
+plataforma móvil masiva; 4 =
+multiplataforma móvil (Android
++ iOS); 5 = cualquier dispositivo
+con navegador, sin instalación.
+Tjiu y Lu (2025);
+Uwishema et al. (2025)
+Inferencia on-
+device y
+funcionamiento
+offline
+Capacidad de ejecutar el modelo de IA dentro del
+dispositivo y operar sin conexión a internet, clave en
+zonas rurales con conectividad limitada.
+Nivel de
+operació
+n offline
+[1 – 5] 1 = requiere conexión
+permanente; 2 = inferencia solo
+en servidor; 3 = offline parcial
+(service workers); 4 = inferencia
+Luo et al. (2020); Chavez-
+Ramirez et al. (2023)
+
+===== PÁGINA 20 =====
+on-device con conexión opcional;
+5 = inferencia on-device
+totalmente offline.
+Tiempo de
+respuesta
+Rapidez con que la plataforma entrega un resultado al
+usuario, desde la captura de la imagen hasta la predicción.
+Tiempo
+de
+respuest
+a
+[1 – 5] 1 = asíncrono (horas/días); 2 =
+lento dependiente de red (>30 s);
+3 = medio (5–30 s); 4 = rápido
+(1–5 s); 5 = casi instantáneo on-
+device (<1 s).
+Wang et al. (2024); Faye
+et al. (2018)
+Costo de
+despliegue y
+mantenimiento
+Costo de implementación, distribución y mantenimiento
+de la plataforma, incluyendo infraestructura y
+actualizaciones.
+Nivel de
+costo
+[1 – 5] 1 = costo muy alto (red de centros
+y especialistas); 2 = alto; 3 =
+medio (una app por plataforma);
+4 = bajo (código único
+multiplataforma); 5 = muy bajo
+(un despliegue web centralizado).
+Nizar et al. (2024); Sylla
+et al. (2025)
+Integración con
+el sistema de
+salud
+Facilidad de integración con los flujos clínicos, la
+derivación de pacientes y los sistemas de información del
+sistema de salud público.
+Nivel de
+integrac
+ión
+[1 – 5] 1 = solución aislada; 2 =
+integración manual; 3 =
+integración parcial; 4 = buena
+integración con flujos web; 5 =
+diseñada para integrarse con la
+red asistencial y la derivación de
+pacientes.
+Giavina-Bianchi et al.
+(2020); Marsden et al.
+(2024)
+4.2. Comparación de Propuestas
+
+===== PÁGINA 21 =====
+Tabla 13Matriz de enfrentamiento
+Criterio A B C D E Subtotal Ponderación Criterio
+A. Accesibilidad y alcance X 0 1 1 1 3 30% A. Accesibilidad y alcance
+B. Inferencia on-device y offline 1 X 1 1 0 3 30% B. Inferencia on-device y offline
+C. Tiempo de respuesta 0 0 X 0 1 1 10% C. Tiempo de respuesta
+D. Costo de despliegue y mantenimiento 0 0 1 X 1 2 20% D. Costo de despliegue y
+mantenimiento
+E. Integración con el sistema de salud 0 1 0 0 X 1 10% E. Integración con el sistema de
+salud
+Total 10 100% Total
+Tabla 14Matriz de Priorización
+Criterio Impacto
+Tecnologías de despliegue
+Android Nativa Flutter Web / PWA Teledermatología
+Puntaje Promedio Puntaje Promedio Puntaje Promedio Puntaje Promedio
+Accesibilidad y
+alcance
+30% 4 1.20
+5
+1.50
+5
+1.50
+2
+0.60
+
+===== PÁGINA 22 =====
+Inferencia on-
+device y offline
+30% 5
+1.50
+4
+1.20
+2
+0.60
+2
+0.60
+Tiempo de
+respuesta
+10% 5
+0.50 4
+0.40
+3
+0.30
+2
+0.20
+Costo de
+despliegue y
+mantenimiento
+20% 3
+0.60 5
+1.00
+5
+1.00
+2
+0.40
+Integración con
+el sistema de
+salud
+10% 3
+0.30
+3
+0.30
+4
+0.40
+5
+0.50
+Promedio Total 100% 4.10 4.40 3.80 2.30
+4.3. Análisis de Alternativas
+Tabla 15Cuadro de Análisis de Alternativas por Criterio
+Criterio Impacto Evaluación
+Accesibilidad y alcance 30%
+La aplicación web/PWA y Flutter obtienen la mayor accesibilidad: la primera por funcionar en cualquier
+navegador sin instalación, y Flutter por cubrir Android e iOS con una sola base de código. La aplicación
+Android nativa alcanza buen alcance dado que Android domina el mercado peruano, pero excluye iOS.
+La teledermatología depende de una red de centros y especialistas, por lo que su acceso directo por el
+paciente es menor; no obstante, es la plataforma con mayor evidencia de equidad y alcance poblacional
+en zonas remotas (Giavina-Bianchi et al., 2020; Silveira et al., 2014; Tjiu y Lu, 2025).
+Inferencia on-device y 30% La aplicación Android nativa ofrece la mejor evidencia publicada de inferencia on-device para cáncer de
+
+===== PÁGINA 23 =====
+offline piel (Velasco et al., 2019; Chavez-Ramirez et al., 2023), seguida de Flutter mediante su plugin oficial de
+TensorFlow Lite. La aplicación web es la más limitada, pues la inferencia en navegador es hasta 16.9
+veces más lenta que la nativa (Wang et al., 2024), y la teledermatología requiere conectividad para enviar
+las imágenes.
+Tiempo de respuesta
+10%
+Las aplicaciones nativas y Flutter entregan resultados casi instantáneos al ejecutar el modelo localmente;
+la web depende de la conectividad y del cómputo del servidor o del navegador, y la teledermatología es
+asíncrona, con tiempos de respuesta de horas (Faye et al., 2018).
+Costo de despliegue y
+mantenimiento
+20%
+La web/PWA y Flutter presentan el menor costo: la primera por un único despliegue centralizado de fácil
+actualización, y Flutter por un código único para dos sistemas operativos. La aplicación nativa implica
+desarrollo por plataforma, y la teledermatología conlleva el mayor costo organizativo por requerir
+infraestructura, especialistas e integración hospitalaria, aunque resulta costo-efectiva al evitar
+derivaciones presenciales (Nizar et al., 2024; Faye et al., 2018).
+Integración con el
+sistema de salud
+10%
+La teledermatología obtiene la máxima valoración por estar diseñada para integrarse con la derivación de
+pacientes y los flujos clínicos, con amplia evidencia de costo-efectividad y reducción de tiempos de
+espera (Marsden et al., 2024; Giavina-Bianchi et al., 2020). La web facilita la integración con sistemas de
+información en salud, mientras que las aplicaciones móviles requieren desarrollos adicionales para
+interoperar.
+4.4. Selección de Alternativa
+De acuerdo con el análisis realizado mediante la matriz de priorización, la plataforma de despliegue más adecuada es la aplicación
+móvil multiplataforma desarrollada con Flutter, con un puntaje promedio de 4.40. Esta alternativa ofrece el mejor equilibrio entre
+accesibilidad, capacidad de inferencia on-device, tiempo de respuesta y costo de despliegue, los criterios de mayor peso para el
+contexto del sistema de salud público peruano.
+Flutter permite alcanzar a los usuarios de Android e iOS con una sola base de código y ejecutar el modelo MobileNetV2 directamente
+en el dispositivo mediante TensorFlow Lite, lo que garantiza el funcionamiento incluso en zonas con conectividad limitada y preserva
+
+===== PÁGINA 24 =====
+la privacidad de las imágenes del paciente. En la evaluación comparativa de frameworks multiplataforma aplicada a una aplicación
+médica real, Flutter obtuvo el puntaje ponderado más alto, por encima del desarrollo nativo (Lovrić et al., 2023).
+La aplicación Android nativa (4.10) constituye una alternativa cercana, con un rendimiento on-device ligeramente superior, pero
+limitada a una sola plataforma. La aplicación web/PWA (3.80) destaca por su accesibilidad y bajo costo, aunque su inferencia en
+navegador es más lenta (Wang et al., 2024). La teledermatología hospitalaria (2.30), pese a su sólida evidencia clínica y de equidad,
+exige una infraestructura institucional que excede el alcance de la solución propuesta; sin embargo, se recomienda como vía de
+derivación complementaria para los casos que el modelo clasifique como sospechosos. Cabe señalar que, a la fecha, no se
+identificaron estudios revisados por pares sobre programas de teledermatología con resultados clínicos en el Perú, por lo que esta
+evidencia se sustenta en análogos de Brasil (Giavina-Bianchi et al., 2020; Silveira et al., 2014) y de otros contextos de bajos recursos
+(Faye et al., 2018), junto con el marco normativo peruano de telesalud.
+
+===== PÁGINA 25 =====
+6. CONCLUSIONES
+A partir de los tres procesos de benchmarking realizados se determinó la combinación
+tecnológica más adecuada para desarrollar la aplicación móvil de detección temprana de
+melanoma maligno propuesta en esta investigación. Los resultados son consistentes entre sí y
+convergen en una arquitectura única: una aplicación móvil multiplataforma desarrollada con
+Flutter, que ejecuta on-device el modelo de aprendizaje profundo MobileNetV2 para la
+clasificación de lesiones cutáneas.
+En el benchmarking de modelos y algoritmos de inteligencia artificial, MobileNetV2 obtuvo el
+mayor puntaje (4.40), al ofrecer el mejor equilibrio entre precisión diagnóstica (hasta 95.16%
+de exactitud y 97.57% de AUC sobre SIIM-ISIC 2020), eficiencia computacional (3.4 millones
+de parámetros, ~14 MB) y viabilidad de despliegue on-device, por encima de EfficientNetV2 y
+YOLOv8 (4.10) y de Vision Transformer (3.60), cuyo elevado costo computacional limita su
+uso en smartphones de gama media.
+En el benchmarking de tecnologías de despliegue, la aplicación móvil multiplataforma con
+Flutter alcanzó el mayor puntaje (4.40), por su equilibrio entre accesibilidad, capacidad de
+inferencia on-device, tiempo de respuesta y costo de implementación en el contexto del sistema
+de salud público peruano, seguida de la aplicación Android nativa (4.10). De forma
+complementaria, el benchmarking de frameworks de desarrollo móvil confirmó a Flutter (4.80)
+como el marco más adecuado frente a React Native, Kotlin Android y .NET MAUI,
+principalmente por su compatibilidad multiplataforma, su integración con motores de inferencia
+on-device (TensorFlow Lite) y el respaldo de su comunidad.
+En conjunto, la solución resultante —una aplicación Flutter con MobileNetV2 ejecutándose
+localmente en el dispositivo— busca garantizar precisión diagnóstica, accesibilidad para
+pacientes y personal médico, funcionamiento en zonas con conectividad limitada y protección
+de los datos sensibles del paciente, en línea con los objetivos de la investigación y con el marco
+normativo peruano de telesalud y de protección de datos personales en salud. Asimismo, se
+identificó la ausencia de estudios revisados por pares sobre teledermatología con resultados
+clínicos en el Perú, lo que representa una oportunidad para que la solución propuesta contribuya
+a cerrar dicha brecha de evidencia.
+7. REFERENCIAS BIBLIOGRÁFICAS
+AboArab, M. A., Potsika, V. T., Theodorou, A., Vagena, S., Gravanis, M., Sigala, F., &
+Fotiadis, D. I. (2024). Advancing progressive web applications to leverage medical imaging for
+visualization of DICOM and multiplanar reconstruction: Software development and validation
+study. Journal of Medical Internet Research – Medical Informatics, 12, e63834.
+https://doi.org/10.2196/63834
+Albahli, S. (2025). A robust YOLOv8-based framework for real-time melanoma detection and
+segmentation with multi-dataset training. Diagnostics, 15(6), 691.
+https://doi.org/10.3390/diagnostics15060691
+
+===== PÁGINA 26 =====
+AlSadhan, N. A., Alamri, S. A., Ben Ismail, M. M., & Bchir, O. (2024). Skin cancer recognition
+using unified deep convolutional neural networks. Cancers, 16(7), 1246.
+https://doi.org/10.3390/cancers16071246
+Alshmrani, A. S., Alotaibi, F. M., & Alfakeeh, A. S. (2026). Integrating features of radiomics
+and CNN models for early skin cancer detection based on watershed segmentation. Discover
+Oncology, 17(1).
+Aruk, I., Pacal, I., & Toprak, A. N. (2026). A comprehensive comparison of convolutional
+neural network and visual transformer models on skin cancer classification. Computational
+Biology and Chemistry, 118, 108713.
+Babatunde, A. N., Balogun, B. F., Babatunde, A. J., Isiaka, S. O., Awotunde, J. B., & Adeniyi,
+A. E. (2025). Improving skin lesion classification using k-means, transfer learning and
+MobileNet architecture. Network Modeling Analysis in Health Informatics and Bioinformatics,
+14(1).
+Beirami, M. J., Gruzmark, F., Manwar, R., Tsoukas, M., & Avanaki, K. (2025). Lightweight
+attention-based architecture for accurate melanoma recognition. Electronics (Switzerland),
+14(21).
+Biørn-Hansen, A., Rieger, C., Grønli, T.-M., Majchrzak, T. A., & Ghinea, G. (2020). An
+empirical investigation of performance overhead in cross-platform mobile development
+frameworks. Empirical Software Engineering, 25(4), 2997–3040.
+https://doi.org/10.1007/s10664-020-09827-6
+Chavez-Ramirez, A., Romero-Ramos, A., Aguirre-Ortega, M., Aguilar-Gameros, S., &
+Ramirez-Alonso, G. (2023). SkinSight: A melanoma detection app based on deep learning
+models with on-device inference. En XLVI Mexican Conference on Biomedical Engineering
+(CNIB 2023) (IFMBE Proceedings, Vol. 96). Springer. https://doi.org/10.1007/978-3-031-
+46933-6_2
+Cheng, H., Lian, J., & Jiao, W. (2024). Enhanced MobileNet for skin cancer image
+classification with fused spatial channel attention mechanism. Scientific Reports, 14(1), 28728.
+Cirrincione, G., Cannata, S., Cicceri, G., Prinzi, F., Currieri, T., Lovino, M., Militello, C.,
+Pasero, E., & Vitabile, S. (2023). Transformer-based approach to melanoma detection. Sensors,
+23(12), 5677. https://doi.org/10.3390/s23125677
+Dosovitskiy, A., Beyer, L., Kolesnikov, A., Weissenborn, D., Zhai, X., Unterthiner, T.,
+Dehghani, M., Minderer, M., Heigold, G., Gelly, S., Uszkoreit, J., & Houlsby, N. (2021). An
+image is worth 16x16 words: Transformers for image recognition at scale. En 9th International
+Conference on Learning Representations (ICLR 2021).
+Faye, O., Bagayoko, C. O., Dicko, A., Cissé, L., Berthé, S., Traoré, B., Fofana, Y., Niang, M.,
+Tracton, G., Traoré, S. T., Karabinta, Y., Touré, M. K., Keita, A. K., Geissbuhler, A., & Mahé,
+A. (2018). A teledermatology pilot programme for the management of skin diseases in primary
+
+===== PÁGINA 27 =====
+health care centres: Experiences from a resource-limited country (Mali, West Africa). Tropical
+Medicine and Infectious Disease, 3(3), 88. https://doi.org/10.3390/tropicalmed3030088
+Georgiadis, P., Gkouvrikos, E. V., Vrochidou, E., Kalampokas, T., & Papakostas, G. A. (2025).
+Building better deep learning models through dataset fusion: A case study in skin cancer
+classification with hyperdatasets. Diagnostics, 15(3), 352.
+https://doi.org/10.3390/diagnostics15030352
+Giavina-Bianchi, M., Santos, A. P., & Cordioli, E. (2020). Teledermatology reduces
+dermatology referrals and improves access to specialists. eClinicalMedicine, 29–30, 100641.
+https://doi.org/10.1016/j.eclinm.2020.100641
+Google. (2025). Flutter documentation. https://docs.flutter.dev/
+Heinlein, L., Maron, R. C., Hekler, A., Haggenmüller, S., Wies, C., Utikal, J. S., Meier, F.,
+Hobelsberger, S., Gellrich, F. F., Sergon, M., Hauschild, A., French, L. E., Heinzerling, L.,
+Schlager, J. G., Ghoreschi, K., Schlaak, M., Hilke, F. J., Poch, G., Korsing, S., … Brinker, T.
+J. (2024). Prospective multicenter study using artificial intelligence to improve dermoscopic
+melanoma diagnosis in patient care. Communications Medicine, 4, 177.
+https://doi.org/10.1038/s43856-024-00598-5
+Jocher, G., Chaurasia, A., & Qiu, J. (2023). Ultralytics YOLOv8 (Versión 8.0.0) [Software].
+https://github.com/ultralytics/ultralytics
+Krukar, N., & Omiotek, Z. (2025). Enhancing robustness in skin lesion detection: A benchmark
+of 32 models on a novel dataset including healthy skin images. Applied Sciences, 16(1), 99.
+Leema, A. A., Balakrishnan, P., Gopichand, G., & Rajarajan, G. (2025). LMS-ViT: A multi-
+scale vision transformer approach for real-time smartphone-based skin cancer detection.
+Frontiers in Artificial Intelligence, 8, 1612502. https://doi.org/10.3389/frai.2025.1612502
+Li, Y., Yuan, G., Wen, Y., Hu, J., Evangelidis, G., Tulyakov, S., Wang, Y., & Ren, J. (2022).
+EfficientFormer: Vision Transformers at MobileNet speed. En Advances in Neural Information
+Processing Systems (NeurIPS 2022).
+Lovrić, L., Fischer, M., Röderer, N., & Wünsch, A. (2023). Evaluation of the cross-platform
+framework Flutter using the example of a cancer counselling app. En Proceedings of the 9th
+International Conference on Information and Communication Technologies for Ageing Well
+and e-Health (ICT4AWE 2023) (pp. 135–142). SCITEPRESS.
+https://doi.org/10.5220/0011824500003476
+Luo, C., He, X., Zhan, J., Wang, L., Gao, W., & Dai, J. (2020). Comparison and benchmarking
+of AI models and frameworks on mobile devices [Preprint]. arXiv.
+https://arxiv.org/abs/2005.05085
+Marsden, H., Kemos, P., Venzi, M., Noy, M., Maheswaran, S., Francis, N., Hyde, C.,
+Mullarkey, D., Kalsi, D., & Thomas, L. (2024). Accuracy of an artificial intelligence as a
+
+===== PÁGINA 28 =====
+medical device as part of a UK-based skin cancer teledermatology service. Frontiers in
+Medicine, 11, 1302363. https://doi.org/10.3389/fmed.2024.1302363
+Meta Platforms. (2025). React Native documentation. https://reactnative.dev/
+M'hamedi, M., Merzoug, M., Hadjila, M., & Bekkouche, A. (2024). Enhancing melanoma skin
+cancer classification through data augmentation. TELKOMNIKA Telecommunication,
+Computing, Electronics and Control, 22(5). https://doi.org/10.12928/telkomnika.v22i5.26106
+Microsoft. (2025). .NET MAUI documentation. https://learn.microsoft.com/dotnet/maui/
+Nawrocki, P., Wrona, K., Marczak, M., & Sniezynski, B. (2021). A comparison of native and
+cross-platform frameworks for mobile applications. Computer, 54(3), 18–27.
+https://doi.org/10.1109/MC.2020.2983893
+Nizar, N. A., Farooki, R., Mahapatra, P., Halpern, S., & Hoogenboom, T. C. H. (2024). Patient
+cost analysis of a community-based teledermatology service versus conventional outpatient
+appointments in East Kent. BMC Health Services Research, 24, 1632.
+https://doi.org/10.1186/s12913-024-12112-7
+Ozdemir, B., & Pacal, I. (2025). A robust deep learning framework for multiclass skin cancer
+classification. Scientific Reports, 15, 4938. https://doi.org/10.1038/s41598-025-89230-7
+Öztel, I., Yolcu Öztel, G., & Şahin, V. H. (2023). Deep learning-based skin diseases
+classification using smartphones. Advanced Intelligent Systems, 5(12), 2300211.
+https://doi.org/10.1002/aisy.202300211
+Sandler, M., Howard, A., Zhu, M., Zhmoginov, A., & Chen, L.-C. (2018). MobileNetV2:
+Inverted residuals and linear bottlenecks. En Proceedings of the IEEE Conference on Computer
+Vision and Pattern Recognition (CVPR) (pp. 4510–4520).
+https://doi.org/10.1109/CVPR.2018.00474
+Sebukpor, D., Odezuligbo, I., Nagey, M., Chukwuka, M., Akinsuyi, O., & Ndubuisi, B. (2025).
+Browser-based multi-cancer classification framework using depthwise separable convolutions
+for precision diagnostics. Diagnostics, 15(23), 3066.
+https://doi.org/10.3390/diagnostics15233066
+Silveira, C. E. G., Silva, T. B., Fregnani, J. H. G. T., Vieira, R. A. C., Haikel, R. L., Jr., Syrjänen,
+K., Carvalho, A. L., & Mauad, E. C. (2014). Digital photography in skin cancer screening by
+mobile units in remote areas of Brazil. BMC Dermatology, 14, 19.
+https://doi.org/10.1186/s12895-014-0019-1
+Sylla, B., Ismaila, O., & Diallo, G. (2025). 25 years of digital health toward universal health
+coverage in low- and middle-income countries: Rapid systematic review. Journal of Medical
+Internet Research, 27, e59042. https://doi.org/10.2196/59042
+Takemoto, K. (2025). Mobile applications for skin cancer detection are vulnerable to physical
+camera-based adversarial attacks. Scientific Reports, 15(1), 18119.
+
+===== PÁGINA 29 =====
+Tan, M., & Le, Q. V. (2021). EfficientNetV2: Smaller models and faster training. En
+Proceedings of the 38th International Conference on Machine Learning (Vol. 139, pp. 10096–
+10106). PMLR.
+Tjiu, J.-W., & Lu, C.-F. (2025). Equity and generalizability of artificial intelligence for skin-
+lesion diagnosis using clinical, dermoscopic, and smartphone images: A systematic review and
+meta-analysis. Medicina, 61(12), 2186. https://doi.org/10.3390/medicina61122186
+Uwishema, O., Ghezzawi, M., Charbel, N., Alawieh, S., Roy, S., Wojtara, M., Hakayuwa, C.
+M., Ja'afar, I. K., Nkurunziza, G., & Prasad, M. (2025). Diagnostic performance of artificial
+intelligence for dermatological conditions: A systematic review focused on low- and middle-
+income countries. International Journal of Emergency Medicine, 18, 172.
+https://doi.org/10.1186/s12245-025-00975-4
+Velasco, J., Pascion, C., Alberio, J. W., Apuang, J., Cruz, J. S., Gomez, M. A., Molina, B., Jr.,
+Tuala, L., Thio-ac, A., & Jorda, R., Jr. (2019). A smartphone-based skin disease classification
+using MobileNet CNN. International Journal of Advanced Trends in Computer Science and
+Engineering, 8(5).
+Venugopal, V., Raj, N. I., Nath, M. K., & Stephen, N. (2023). A deep neural network using
+modified EfficientNet for skin cancer detection in dermoscopic images. Decision Analytics
+Journal, 8, 100278. https://doi.org/10.1016/j.dajour.2023.100278
+Wang, Q., Jiang, S., Chen, Z., Cao, X., Li, Y., Li, A., Ma, Y., Cao, T., & Liu, X. (2024).
+Anatomizing deep learning inference in web browsers [Preprint]. arXiv.
+https://doi.org/10.48550/arXiv.2402.05981

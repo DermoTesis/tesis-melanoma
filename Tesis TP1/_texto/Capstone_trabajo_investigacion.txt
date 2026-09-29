@@ -1,0 +1,993 @@
+
+
+===== PÁGINA 1 =====
+UNIVERSIDAD PERUANA DE CIENCIAS APLICADAS
+FACULTAD DE INGENIERÍA
+PROGRAMA ACADÉMICO DE INGENIERÍA DE SOFTWARE Y
+CIENCIAS DE LA COMPUTACIÓN
+Aplicación móvil basada en aprendizaje automático para la detección temprana
+de melanoma maligno como estrategia de apoyo diagnóstico en la atención
+oncológica de segundo nivel en el sistema de salud público peruano
+Capstone Project
+Para optar el título profesional de Licenciado en Ciencias de la Computación
+/Ingeniero de Software
+AUTOR(ES)
+Orrego Noriega, Jorge David (0009-0001-4220-5827)
+Núñez Del Arco, Ilan André (0009-0009-4598-6479)
+ASESOR(ES)
+Alarcón Delgado, Carlos Adrián (Colocar ORCID)
+Lima, 09 de setiembre de 2026
+
+===== PÁGINA 2 =====
+i
+Índice
+Introducción ............................................................................................................................. 2
+Capítulo 1: Definición del Proyecto........................................................................................ 3
+1.1 Resumen ejecutivo ......................................................................................................... 4
+1.2 Posicionamiento ............................................................................................................. 6
+1.2.1 Planteamiento del problema .................................................................................. 6
+1.2.2 Objetivos ............................................................................................................... 8
+1.2.3 Indicadores de éxito .............................................................................................. 8
+1.2.4 Alcance ................................................................................................................. 9
+1.2.5 Restricciones ....................................................................................................... 10
+1.3 Organización del proyecto ........................................................................................... 11
+1.3.1 Equipo del proyecto ............................................................................................ 11
+1.3.2 Recursos requeridos ............................................................................................ 12
+1.3.3 Fases e hitos del proyecto ................................................................................... 14
+1.3.4 Enfoques del trabajo ........................................................................................... 16
+1.3.5 Riesgos y mitigación ........................................................................................... 19
+Capítulo 2: Logros de los Student Outcomes ...................................................................... 20
+Para CC .............................................................................................................................. 21
+2.1 Student Outcome 1 ................................................................................................. 21
+2.2 Student Outcome 2 ................................................................................................. 21
+2.3 Student Outcome 3 ................................................................................................. 21
+2.4 Student Outcome 4 ................................................................................................. 21
+2.5 Student Outcome 5 ................................................................................................. 21
+2.6 Student Outcome 6 ................................................................................................. 21
+Para ISW ............................................................................................................................ 21
+2.1 Student Outcome 1 ................................................................................................. 21
+2.2 Student Outcome 2 ................................................................................................. 21
+2.3 Student Outcome 3 ................................................................................................. 21
+2.4 Student Outcome 4 ................................................................................................. 21
+2.5 Student Outcome 5 ................................................................................................. 21
+2.6 Student Outcome 6 ................................................................................................. 21
+2.7 Student Outcome 7 ................................................................................................. 21
+Capítulo 3: Logros de las Competencias Generales............................................................ 21
+3.1 Competencia General 1 ................................................................................................ 22
+3.2 Competencia General 2 ................................................................................................ 22
+3.3 Competencia General 3 ................................................................................................ 22
+3.4 Competencia General 4 ................................................................................................ 22
+3.5 Competencia General 5 ................................................................................................ 22
+
+===== PÁGINA 3 =====
+ii
+Capítulo 4: Gestión del Proyecto .......................................................................................... 22
+4.1 Metodología de desarrollo ........................................................................................... 23
+4.2 Fases del proceso de desarrollo.................................................................................... 23
+Para CC .............................................................................................................................. 23
+4.2.1 Business Understanding ...................................................................................... 23
+4.2.2 Data Understanding ............................................................................................ 23
+4.2.3 Data Preparation.................................................................................................. 23
+4.2.4 Modeling ............................................................................................................. 23
+4.2.5 Evaluation ........................................................................................................... 23
+4.2.6 Deployment ......................................................................................................... 23
+Para ISW ............................................................................................................................ 23
+4.2.1 Planificación ....................................................................................................... 23
+4.2.2 Diseño ................................................................................................................. 23
+4.2.3 Desarrollo ............................................................................................................ 23
+4.2.4 Pruebas ................................................................................................................ 23
+4.2.5 Despliegue........................................................................................................... 23
+4.2.6 Mantenimiento .................................................................................................... 23
+4.3 Diseño del modelo/arquitectura/algoritmo .................................................................. 23
+4.3.1 Resumen .............................................................................................................. 23
+4.3.2 Dataset................................................................................................................. 23
+4.3.3 Arquitectura/Modelo/Algoritmo ......................................................................... 23
+4.4 Análisis de frameworks................................................................................................ 23
+4.4.1 Análisis de Framework 1 .................................................................................... 23
+4.4.2 Análisis de Framework 2 .................................................................................... 24
+4.4.3 Análisis de Framework 3 .................................................................................... 24
+Conclusiones ........................................................................................................................... 24
+Recomendaciones ................................................................................................................... 25
+Referencias.............................................................................................................................. 26
+
+===== PÁGINA 4 =====
+1
+Introducción
+
+===== PÁGINA 5 =====
+2
+Capítulo 1: Definición del Proyecto
+1.1 Resumen ejecutivo
+A nivel global, el melanoma maligno representa uno de los tipos de cáncer de piel más
+agresivos y de mayor crecimiento en incidencia, siendo la detección temprana el factor
+determinante para mejorar el pronóstico y aumentar las probabilidades de supervivencia del
+paciente. En este contexto, la integración de soluciones tecnológicas en los sistemas de salud
+se ha consolidado como una respuesta estratégica ante la creciente demanda de atención
+oncológica especializada, impulsando el desarrollo de herramientas de apoyo diagnóstico
+basadas en aprendizaje automático que permiten identificar patrones en imágenes médicas con
+alta precisión (Babatunde et al., 2025).
+En el contexto nacional, sin embargo, el sistema de salud peruano enfrenta limitaciones
+estructurales que dificultan gravemente el diagnóstico oportuno de enfermedades como el
+melanoma maligno. La alta demanda de pacientes, la escasez de especialistas y los prolongados
+tiempos de espera en instituciones como el Ministerio de Salud del Perú y EsSalud afectan
+directamente la calidad y rapidez de la atención médica. Según el Instituto Nacional de
+Estadística e Informática, existen brechas importantes en el acceso a servicios de salud y en la
+capacidad de atención del sistema (INEI, 2024).
+Esta crisis se manifiesta con particular gravedad en el ámbito oncológico. Karla Ruiz, directora
+de la ONG Esperantra, organización dedicada a apoyar a pacientes con enfermedades crónicas
+y de alto costo, señaló en una entrevista con el diario La República (Peralta, 2025): "ocho de
+cada diez pacientes oncológicos del seguro social nos indican no estar conformes con la
+atención recibida", haciendo referencia al retraso en la atención, diagnósticos y tratamientos
+médicos en el Seguro Social de Salud administrado por EsSalud. La directora añade que la
+situación es tan crítica que hay pacientes que "se mueren esperando que el diagnóstico de su
+tipo de cáncer les llegue para tener acceso a la terapia", lo que refleja una sobrecarga del sistema
+con riesgo de colapso (Peralta, 2025).
+Como consecuencia directa de esta ineficiencia, los procesos de atención fallan en su función
+más básica: los pacientes se ven obligados a buscar alternativas privadas, y una gran proporción
+de asegurados prefiere no atenderse en EsSalud debido a la ineficiencia del servicio (Espinoza,
+2025). Estudios sobre calidad de atención confirman que la insatisfacción de los usuarios está
+estrechamente relacionada con los largos tiempos de espera y las deficiencias en la atención
+
+===== PÁGINA 6 =====
+3
+oportuna (Cárdenas, 2026). En el ámbito oncológico, este retraso incrementa el riesgo de
+complicaciones graves y reduce la efectividad de los tratamientos disponibles, dado que la
+calidad del servicio de salud influye directamente en los resultados clínicos y en la continuidad
+del tratamiento de los pacientes (Esquivel et al., 2023).
+El Perú enfrenta profundas barreras tecnológicas y de infraestructura en el sector público. Se
+evidencia una escasez y deficiencia crítica de herramientas tecnológicas operativas en los
+establecimientos de salud. Informes recientes de la Defensoría del Pueblo (2026) advierten de
+manera recurrente a EsSalud sobre la paralización de atenciones debido a la inoperatividad
+prolongada de equipos médicos especializados (como tomógrafos) en hospitales de alta
+complejidad. Ante este déficit de equipamiento, el personal de salud mantiene un limitado
+conocimiento sobre alternativas de software accesible —como el análisis automatizado de
+imágenes mediante aplicaciones móviles— que podrían complementar el flujo de trabajo y
+acelerar la detección temprana de patologías.
+El sistema de salud peruano tambien padece una severa fragmentación digital. La Organización
+para la Cooperación y el Desarrollo Económicos (OCDE, 2025) advierte que la división
+estructural entre subsistemas como el MINSA y EsSalud, sumada a la limitada infraestructura
+de información y la falta de estandarización, obstaculiza gravemente la interrelación de datos
+clínicos. Esta fragmentación informática estructural impide que exista una definición clara
+sobre cómo integrar nuevos componentes tecnológicos, como un modelo de apoyo diagnóstico
+por inteligencia artificial, dentro de los procesos de validación médica ya establecidos.
+Si bien existen esfuerzos académicos a nivel nacional para el diagnóstico de melanoma, como
+la propuesta teórica de Villanueva y Pardo (2024), la literatura técnica revela que estos modelos
+rara vez trascienden el laboratorio. La mayoría de los desarrollos dependen de bases de datos
+altamente controladas y disminuyen significativamente su rendimiento al ser expuestos a la
+calidad variable de imágenes de la consulta diaria, fenómeno conocido como desplazamiento
+de dominio (Chamarthi et al., 2024). En consecuencia, persiste una escasa disponibilidad de
+herramientas tecnológicas que hayan sido validadas en condiciones reales y que cuenten con
+la robustez técnica suficiente para operar de forma segura en las consultas oncológicas del
+sistema público peruano.
+La brecha entre la situación deseada, un sistema capaz de detectar oportunamente
+enfermedades como el melanoma desde el segundo nivel de atención, y la situación actual,
+marcada por diagnósticos tardíos, colapso institucional e insatisfacción generalizada, evidencia
+
+===== PÁGINA 7 =====
+4
+la urgencia de incorporar soluciones tecnológicas que contribuyan a mejorar los procesos
+diagnósticos sin depender exclusivamente de la disponibilidad de especialistas. En este sentido,
+el aprendizaje automático ha demostrado ser una alternativa prometedora: conforme al trabajo
+de Alshmrani et al. (2026), es posible desarrollar un modelo de clasificación basado en el
+algoritmo Random Forest con el apoyo de una Red Neuronal Convolucional (CNN) para la
+detección temprana de melanomas, obteniendo resultados positivos (en promedio, AUC =
+85.09%, Precisión = 94.7%, Sensibilidad = 84.53%). Sobre la base de estos resultados, se
+considera que ampliar la funcionalidad de dicho modelo mediante una aplicación móvil de uso
+exclusivo del médico especialista, que le permita capturar y enviar a análisis las imágenes de
+las lesiones de sus pacientes y obtener de forma ágil una predicción preliminar de apoyo,
+representaría un aporte concreto para reducir la brecha diagnóstica en contextos de segundo
+nivel de atención con recursos limitados, beneficiando a los pacientes del sistema público
+peruano a través de una atención más oportuna.
+Por lo mencionado anteriormente, se entiende que la solución planteada se alinea con el
+Objetivo de Desarrollo Sostenible de la Organización de las Naciones Unidas número 3:
+garantizar una vida sana y promover el bienestar para todos en todas las edades (ONU, 2024).
+La detección temprana de un melanoma maligno puede significar que el paciente tenga más
+posibilidades de recuperarse, por lo que cualquier herramienta que ayude a agilizar este proceso
+aportará positivamente al mejoramiento de la calidad de vida de pacientes oncológicos y, por
+ende, servirá para promover el bienestar y la salud en la población.
+1.2 Posicionamiento
+1.2.1 Planteamiento del problema
+Para analizar la problemática de la detección tardía de melanomas malignos en el sistema de
+salud público peruano, se emplea la herramienta del árbol de problemas, la cual permite
+identificar de manera estructurada las causas (raíces) y efectos (consecuencias) del problema
+central.
+Problema central: Detección tardía de melanomas malignos en pacientes que se atienden en
+el sistema de salud público peruano
+Causas (raíces del problema):
+
+===== PÁGINA 8 =====
+5
+• Limitado conocimiento de las alternativas tecnológicas disponibles (como el uso de
+aplicaciones móviles) para el apoyo en la detección de melanomas frente a la constante
+inoperatividad de equipos médicos físicos (Defensoría del Pueblo, 2026).
+• Falta de una definición estructurada de cómo integrar los componentes tecnológicos
+requeridos para el apoyo diagnóstico, producto de la severa fragmentación e
+incompatibilidad digital entre los subsistemas de salud (OCDE, 2025).
+• Escasa disponibilidad de herramientas accesibles y operativas que automaticen el
+análisis de imágenes de lesiones cutáneas dentro de un sistema público con déficit
+general de infraestructura (Defensoría del Pueblo, 2026).
+• Falta de soluciones de apoyo diagnóstico validadas en condiciones reales y con niveles
+de precisión suficientes para su uso práctico, ya que la mayoría de los modelos teóricos
+actuales (Villanueva y Pardo, 2024) sufren caídas de rendimiento clínico debido al
+desplazamiento de dominio al salir del laboratorio (Chamarthi et al., 2024).
+Efectos (consecuencias):
+• Detección en fases avanzadas de la enfermedad (Heistein et al., 2024).
+• Aumento en la tasa de mortalidad a causa del melanoma maligno (Heistein et al., 2024).
+• Descontento de los pacientes respecto a la atención brindada (Espinoza, 2025;
+Cárdenas, 2026).
+• Aumento de costos en tratamientos oncológicos.
+Foto del Árbol de Problemas Visual:
+Figura 1
+Árbol de problemas de la detección tardía de melanoma maligno
+Problemas
+efecto
+Detección en fases
+avanzadas de la
+enfermedad
+Aumento en la tasa
+de mortalidad
+Descontento de los
+pacientes
+Aumento de costos
+oncológicos
+Problema
+central
+Detección tardía de melanomas malignos en el sistema de salud público peruano
+Problemas
+causa
+Limitado
+conocimiento de
+alternativas
+tecnológicas
+Falta de integración
+tecnológica
+estructurada
+Escasa
+disponibilidad de
+herramientas
+accesibles
+Falta de soluciones
+validadas y precisas
+Este análisis demuestra que el problema se debe a factores que no solo son médicos, sino
+también a limitaciones estructurales, tecnológicas y administrativas, lo que refuerza la urgencia
+
+===== PÁGINA 9 =====
+6
+de implementar soluciones innovadoras que utilicen aprendizaje automático y herramientas
+accesibles (Babatunde et al., 2025; Alshmrani et al., 2026).
+1.2.2 Objetivos
+Objetivo General:
+Desarrollar una aplicación móvil integrada con un sistema de reconocimiento de imágenes con
+aprendizaje automático para el apoyo en la detección de melanomas en consultas oncológicas
+de segundo nivel dentro del sistema de salud público peruano.
+Objetivos Específicos
+• OE1: Analizar las tecnologías, modelos y frameworks existentes, así como soluciones
+semejantes a lo propuesto para el desarrollo del sistema de detección de melanomas.
+• OE2: Diseñar la arquitectura de software de la solución tomando como referencia los
+conceptos y tecnologías investigadas junto al entrenamiento del modelo, con el objetivo
+de integrar una aplicación móvil con un modelo de reconocimiento de imágenes con
+aprendizaje automático.
+• OE3: Desarrollar la aplicación móvil y el modelo de aprendizaje automático utilizando
+los conceptos previamente analizados, para luego poder integrar ambas partes de
+manera eficiente.
+• OE4: Evaluar y validar que la solución cumpla con la detección de melanomas con una
+precisión mayor al 90% en métricas para modelos de aprendizaje automático (en este
+caso vamos a priorizar el recall y el f1-score) tanto en un entorno de pruebas como en
+un entorno controlado y supervisado por especialistas médicos.
+1.2.3 Indicadores de éxito
+En la siguiente tabla se presentan los indicadores de éxito asociados a cada objetivo específico.
+Cada indicador corresponde a la aprobación de un entregable clave del proyecto, desde el acta
+de constitución y el documento de Benchmarking hasta el acta de conformidad firmada por los
+stakeholders principales.
+Tabla 1
+Indicadores de éxito por objetivo específico
+Objetivo Específico Indicador de Éxito
+OE1-I1 Aprobación del acta de constitución del proyecto por parte del comité proyectos
+
+===== PÁGINA 10 =====
+7
+Objetivo Específico Indicador de Éxito
+OE1-I2 Aprobación del documento de Benchmarking por parte del comité de proyectos
+OE2-I1 Aprobación del Documento de Arquitectura de Software
+OE2-I2 Aprobación del Plan de Gestión del Proyecto
+OE3-I1 Aprobación de los entregables de los Sprints planeados.
+OE3-I2 Aprobación de las pruebas de QA de los entregables de los Sprints planeados.
+OE4-I1
+Aprobación del acta de conformidad del Proyecto por los stakeholders principales
+(médico especialista, asesor metodológico, comité de proyectos)
+1.2.4 Alcance
+Dentro del alcance del producto se incluirán las tareas y funcionalidades a realizar por el equipo
+de trabajo, las cuales estarán descritas con más detalle dentro del Product Backlog adjunto.
+El producto está dirigido exclusivamente a los médicos especialistas del segundo nivel de
+atención. El médico registra al paciente atendido junto con su consentimiento informado,
+captura la imagen de la lesión, obtiene una predicción preliminar del modelo, la valida con su
+propio criterio clínico y genera un informe en PDF para adjuntarlo a la historia clínica o
+entregarlo al paciente durante la consulta. Las cuentas de los médicos son creadas por un
+administrador, que verifica manualmente su colegiatura.
+Quedan fuera del alcance del producto: el acceso de los pacientes a la aplicación (registro,
+cuentas, consulta o recepción de resultados), el agendamiento de citas o derivaciones, la
+atención por telemedicina, la integración con sistemas externos como RENIEC, HIS/NOTI-
+MINSA o el servicio de consulta de colegiatura del Colegio Médico del Perú, y la distribución
+en iOS, ya que el piloto se distribuirá únicamente en Android.
+Anexo 01: El Product Backlog se adjuntará en un archivo de Excel con el nombre de
+PB_NuñezDelArco_Ilan_Orrego_Jorge.xlsx
+Dentro del Product Backlog se han colocado en total 35 historias de usuario agrupadas en 7
+épicas en total. A continuación, se colocará un listado de las épicas:
+Tabla 2
+Épicas del Product Backlog
+N.° de épica Nombre de la épica
+1 Gestión de Usuarios y Autenticación
+2 Registro de Paciente, Captura y Envío de Imágenes
+3 Modelo de Aprendizaje Automático (Clasificación de Imágenes)
+
+===== PÁGINA 11 =====
+8
+N.° de épica Nombre de la épica
+4 Supervisión y Validación Médica Obligatoria
+5 Informes y Seguimiento de Casos
+6 Apoyo a la Decisión del Especialista
+7 Arquitectura Integración y Seguridad
+Por otra parte, también se desarrollarán documentos de gestión y documentación del proyecto,
+los cuales van a ser listados a continuación:
+• Capstone Project (Informe del Trabajo de Investigación)
+• Acta de Constitución del Proyecto
+• Plan de Gestión del Proyecto
+• Cronograma del Proyecto
+• Documentación de entregables de cada Sprint
+• Actas de Reunión del equipo
+• Acta de Cierre del Proyecto
+• Artículo (Short Paper)
+• Presentaciones del Proyecto (Trabajo Parcial y Final de cada curso de TP1/TP2)
+1.2.5 Restricciones
+A continuación, se detallan las suposiciones sobre las que se plantea el proyecto. Estas parten
+de que la aplicación funcionará como una herramienta de apoyo para la detección de melanoma
+maligno, siempre bajo la supervisión y el criterio del médico especialista.
+Tabla 3
+Suposiciones del proyecto
+Suposiciones Descripción
+El sistema funcionará como una
+aplicación de detección de
+melanomas malignos en la piel.
+En base al resultado del análisis, el sistema sugerirá al médico
+especialista medidas como realizar exámenes adicionales para
+descartar un falso positivo; cualquier indicación al paciente la
+comunica el médico durante la consulta.
+La herramienta servirá como
+soporte para el diagnóstico médico.
+Tiene la misión de ayudar a los médicos especialistas a detectar
+posibles casos de melanoma de piel maligno de forma más rápida, sin
+reemplazar el criterio del especialista.
+El uso de la herramienta requiere la
+supervisión de un médico
+especialista.
+Los resultados generados por la aplicación deben ser validados por un
+profesional médico antes de tomar cualquier decisión clínica.
+
+===== PÁGINA 12 =====
+9
+Asimismo, se establecen las restricciones que delimitan el uso del sistema: la aplicación no
+agenda citas, no brinda atención a distancia, no reemplaza el criterio médico ni los exámenes
+clínicos y no es utilizada directamente por los pacientes.
+Tabla 4
+Restricciones del proyecto
+Restricciones Descripción
+El sistema no funcionará como una
+plataforma para agendar consultas o
+exámenes médicos.
+La conducta a seguir la registra el médico especialista; el sistema no
+agenda citas y no tiene la potestad de brindar diagnósticos médicos ni
+de solicitar exámenes o revisiones sin la supervisión de un médico
+especialista.
+El sistema no será una plataforma
+de telemedicina.
+No tiene como objetivo brindar atención médica a distancia, ya que
+únicamente sirve como una herramienta de apoyo adicional para los
+médicos tratantes.
+El sistema no reemplaza el criterio
+médico ni los exámenes clínicos
+pertinentes.
+La aplicación no sustituye el juicio profesional del especialista ni los
+procedimientos diagnósticos formales requeridos para confirmar un
+caso de melanoma.
+El sistema no será utilizado
+directamente por pacientes.
+Únicamente los médicos especialistas y el administrador acceden a la
+aplicación; el paciente no crea una cuenta ni recibe resultados a través
+del sistema, sino mediante el médico especialista durante la consulta.
+1.3 Organización del proyecto
+1.3.1 Equipo del proyecto
+La siguiente tabla muestra los roles que participan en el proyecto, los miembros que los asumen
+y sus responsabilidades principales. Además de los stakeholders y asesores, se incluyen los
+roles de gestión y de Scrum que asumen los integrantes del equipo.
+Tabla 5
+Roles y responsabilidades del equipo del proyecto
+Rol Miembro Responsabilidades
+Stakeholder Comité de proyectos Revisión y aprobación del proyecto de tesis.
+Stakeholder
+Expertos (Médicos
+Especialistas)
+Revisión y aprobación de la funcionalidad de la
+aplicación; son, además, sus usuarios finales.
+Asesor/Cliente Carlos Alarcón
+Brindar apoyo y feedback al equipo de desarrollo del
+proyecto.
+Profesor
+Metodológico
+Profesor del Curso de
+TP1/TP2
+Brindar apoyo y feedback al equipo sobre la
+metodología de la investigación del proyecto.
+Project Manager Jorge Orrego
+Encargado de dirigir al equipo de desarrollo, vela por
+el cumplimiento de los objetivos del proyecto.
+Scrum Master Jorge Orrego Facilitador y líder del equipo ágil.
+
+===== PÁGINA 13 =====
+10
+Rol Miembro Responsabilidades
+Product Owner Ilan Nuñez del Arco
+Encargado de traducir las necesidades de los
+stakeholders en tareas y funcionalidades a realizar por
+el equipo de desarrollo.
+Desarrolladores
+Jorge Orrego y Ilan Núñez
+del Arco
+Encargados del desarrollo del producto final del
+proyecto. Requieren de una colaboración cercana y
+dinámica entre sí.
+En la siguiente tabla se identifican los stakeholders del proyecto, junto con sus necesidades y
+los entregables que permitirán atenderlas.
+Tabla 6
+Stakeholders del proyecto
+Stakeholders Necesidades Entregables
+Comité de Proyectos
+Contar con un proyecto de tesis bien
+estructurado, viable y alineado con los
+lineamientos académicos establecidos.
+Acta de Constitución del Proyecto y
+Documento de Benchmarking
+aprobados.
+Asesor Especializado /
+Asesor Metodológico
+Recibir avances periódicos del proyecto
+que permitan brindar retroalimentación
+oportuna sobre la metodología y el
+desarrollo de la solución.
+Plan de Gestión del Proyecto y
+Documento de Arquitectura de
+Software validados.
+Médicos Especialistas
+(Expertos)
+Disponer de una herramienta confiable que
+apoye la detección temprana de melanomas
+sin reemplazar su criterio clínico.
+Validación funcional de la aplicación
+y participación en el entorno de
+pruebas supervisado.
+Paciente del sistema de
+salud público peruano
+Recibir una evaluación más oportuna de
+sus lesiones cutáneas y que sus datos
+personales y de salud se traten con su
+consentimiento informado, conforme a la
+Ley N.° 29733.
+Informe validado por el médico
+especialista y entregado durante la
+consulta; el paciente no utiliza la
+aplicación.
+Por otro lado, los usuarios directos de la aplicación son el médico especialista de segundo nivel
+de atención y el administrador del sistema. La siguiente tabla describe sus necesidades y los
+entregables que recibirán.
+Tabla 7
+Usuarios de la aplicación
+Usuarios Necesidades Entregables
+Médico especialista
+(segundo nivel de
+atención)
+Contar con una herramienta de apoyo
+diagnóstico que agilice la identificación de
+posibles casos de melanoma maligno
+durante la consulta, reduciendo los tiempos
+de espera y la sobrecarga laboral, sin
+reemplazar su criterio clínico.
+Aplicación móvil integrada con el
+modelo de reconocimiento de
+imágenes, con registro de pacientes,
+validación de la predicción
+preliminar e informe en PDF.
+Administrador del
+sistema
+Dar de alta a los médicos especialistas
+verificando su colegiatura y gestionar los
+roles y permisos de acceso.
+Panel de administración de cuentas y
+roles, con bitácora de auditoría.
+
+===== PÁGINA 14 =====
+11
+1.3.2 Recursos requeridos
+Recursos Humanos. Los roles y responsabilidades de los integrantes se detallan en la Tabla
+5. Dentro del equipo de desarrollo, uno de los integrantes está a cargo de la aplicación móvil y
+el backend, y el otro del modelo de aprendizaje automático, la preparación de datos y su
+integración.
+Recursos Materiales e Infraestructura. Comprenden el hardware, los datos, los servicios en
+la nube, el software y el licenciamiento necesarios para el desarrollo, las pruebas y el piloto:
+• Hardware: se requieren laptops de desarrollo con GPU dedicada para los
+entrenamientos exploratorios del modelo. También se requieren smartphones Android
+de gama media con cámara de buena resolución para las pruebas de captura de imágenes
+y el piloto con médicos especialistas, lo que además mitiga el Riesgo 4.
+• Datos: se usa el conjunto de imágenes dermatoscópicas público HAM10000 para el
+entrenamiento y la evaluación del modelo.
+• Servicios en la nube (Google Cloud, región southamerica-west1):
+o El backend y la inferencia se despliegan como un único servicio en Cloud Run.
+o Los datos clínicos y de los casos se almacenan en Firestore.
+o Las imágenes capturadas se guardan en Cloud Storage.
+o La autenticación de los médicos especialistas se gestiona con Firebase
+Authentication.
+o Las notificaciones de los casos pendientes de validación se envían con Firebase
+Cloud Messaging.
+o El entrenamiento final del modelo se realiza en una instancia GPU on-demand
+de Vertex AI.
+o Se aprovechan los créditos académicos de Google Cloud y el escalado a cero de
+los servicios serverless.
+• Software y herramientas: la aplicación se desarrolla en Flutter. El modelo se
+construye con TensorFlow y se exporta a TensorFlow Lite. Además se usan un sistema
+de control de versiones y un entorno de desarrollo integrado, todo sobre un stack de
+código abierto.
+
+===== PÁGINA 15 =====
+12
+• Licenciamiento y distribución: se requiere la cuenta de Google Play Console para
+distribuir el piloto mediante los canales de prueba, además de un dominio web. Los
+certificados TLS los gestiona Google Cloud al mapear el dominio en Cloud Run.
+1.3.3 Fases e hitos del proyecto
+Fases del proyecto: el trabajo se organiza en cuatro etapas principales:
+• Inicio y Validación: elaboración del Acta de Constitución, el Plan de Outcomes ABET
+y el Product Backlog, validados por el Comité de Proyectos.
+• Planificación: elaboración del Plan de Gestión del Proyecto y refinamiento del Product
+Backlog.
+• Ejecución: desarrollo incremental en nueve Sprints (cuatro en TP1 y cinco en TP2),
+aplicando el ciclo CRISP-DM para el modelo de aprendizaje automático.
+• Cierre: pruebas de QA, validación con especialistas, Acta de Cierre, memoria y
+sustentación final.
+Tabla 8
+Lista de hitos del proyecto
+Hito Descripción del Hito Fecha
+Validación con el Comité de
+Proyectos
+Project Charter, Plan ABET y Product Backlog aprobados TP1 – Sem 3
+Entregable Sprint 1 Entorno, arquitectura base y dataset (ISIC) preparado TP1 – Sem 6
+Sustentación Metodológica
+(Objetivo 2)
+Diseño de la arquitectura de software validado TP1 – Sem 7
+Sustentación Parcial TP1 Trabajo Parcial de TP1 TP1 – Sem 8
+Entregable Sprint 2 Modelado inicial del clasificador TP1 – Sem 9
+Entregable Sprint 3 Aplicación móvil base y modelo entrenado (iteración) TP1 – Sem 12
+Sustentación Metodológica
+(Objetivo 3)
+Objetivo 3, Capítulo 4 y Paper (lista de aprobados) TP1 – Sem 14
+Sustentación Final TP1
+Entregable del Sprint 4 y Trabajo Final de TP1 (app +
+modelo integrados)
+TP1 – Sem 15
+Entregable Sprint 5 Modelo optimizado (recall / precision) TP2 – Sem 3
+Entregable Sprint 6 Aplicación mejorada y flujo de captura de imágenes TP2 – Sem 6
+Sustentación Metodológica
+(Objetivo 4)
+Capítulo 5: Diseño y desarrollo del proyecto TP2 – Sem 7
+Sustentación Parcial TP2 Trabajo Parcial de TP2 TP2 – Sem 8
+Entregable Sprint 7 Modelo desplegado en la nube TP2 – Sem 9
+
+===== PÁGINA 16 =====
+13
+Hito Descripción del Hito Fecha
+Entregable Sprint 8 Validación con especialistas médicos TP2 – Sem 12
+Sustentación Metodológica
+(Capítulo 6)
+Validación y resultados, costos y conclusiones TP2 – Sem 14
+Sustentación Final TP2
+Entregable del Sprint 9, Trabajo Final, memoria y Paper
+(lista de aprobados)
+TP2 – Sem 15
+En la tabla se muestra una lista de 14 entregables clave, incluyendo la aprobación del Project
+Charter, el desarrollo de nueve Sprints y las sustentaciones de los cursos TP1 y TP2.
+Figura 2
+Línea base global del cronograma (hitos más resaltantes de TP1 y TP2)
+En la figura se muestra una línea de tiempo horizontal que mapea visualmente los hitos
+descritos en la Tabla 8, distribuidos de manera equitativa a lo largo de las 15 semanas de TP1
+y las 15 semanas de TP2.
+
+===== PÁGINA 17 =====
+14
+Figura 3
+Desarrollo del cronograma
+Nota. El cronograma detallado y editable (EDT hasta el nivel 3, con fechas por fórmula) se presenta en el Anexo
+02: Cronograma_NuñezDelArco_Ilan_Orrego_Jorge.xlsx.
+En la figura se muestra un diagrama de Gantt (EDT) que detalla el inicio, las fases de
+planificación, el trabajo iterativo de los nueve Sprints, el diseño/integración y el cierre del
+proyecto.
+1.3.4 Enfoques del trabajo
+En este trabajo se implementará SCRUM + CRISP-DM con el objetivo de realizar entregas
+periódicas que aporten valor a los stakeholder y que a su vez siga una estructura propia para la
+
+===== PÁGINA 18 =====
+15
+evaluación y despliegue de un modelo de aprendizaje automático. A continuación, se describirá
+con más detalle ambos marcos de trabajo:
+SCRUM: Un enfoque ágil que se emplea para crear y gestionar productos complejos a través
+de entregas que se realizan de manera iterativa y progresiva. De acuerdo con la Guía Scrum, se
+define como "un enfoque ligero que permite a personas, equipos y organizaciones generar valor
+mediante soluciones flexibles para problemas complejos" (Schwaber y Sutherland, 2020). Está
+compuesto por tres funciones (Product Owner, Scrum Master y equipo de desarrollo), cinco
+eventos (Sprint, Planificación del Sprint, Reunión Diaria, Revisión del Sprint y Retrospectiva
+del Sprint) y tres artefactos (Product Backlog, Sprint Backlog e Incremento). En este estudio,
+se emplea Scrum para estructurar el desarrollo de la aplicación móvil en incrementos de sprints,
+lo que facilita la adaptación de la solución a los descubrimientos realizados durante la fase de
+entrenamiento y validación del modelo de aprendizaje automático.
+Figura 4
+Proceso del marco de trabajo Scrum
+Nota. Tomado de PM-Partners (https://www.pm-partners.com.au/insights/the-agile-journey-a-scrum-overview/).
+CRISP-DM: Representa el acrónimo de Proceso Estándar Interindustrial para la Minería de
+Datos, es la metodología más comúnmente utilizada en proyectos de minería de datos y
+aprendizaje automático. Este enfoque organiza el desarrollo en seis fases cíclicas:
+entendimiento del negocio, entendimiento de los datos, preparación de los datos, modelado,
+evaluación y despliegue (Chapman et al., 2000). En este trabajo, se utiliza CRISP-DM como
+guía a lo largo del ciclo de vida del modelo para detectar melanomas malignos, abarcando
+desde la comprensión del problema médico y la organización de los conjuntos de datos
+dermatológicos (ISIC), hasta el entrenamiento, la evaluación mediante métricas (precisión,
+exactitud, recuperación, F1-score) y la implementación del modelo en la aplicación móvil.
+
+===== PÁGINA 19 =====
+16
+Figura 5
+Fases de la metodología CRISP-DM
+Nota. Tomado de Enterprise Knowledge.
+Por otra parte, para el manejo de la gestión del proyecto se utilizará la guía PMBOK en su
+versión 6, con el objetivo de documentar la ejecución de una manera más estructurada y
+tomando en cuenta los 5 grupos de procesos principales como el inicio, la planificación, la
+ejecución, el monitoreo y control, y el cierre del proyecto. A continuación, se describirá con
+más detalle:
+Guía PMBOK 6ta edición: Este estándar fue publicado por el Project Management Institute
+(PMI) en 2017 y sirve como una referencia global para la gestión de proyectos. Incluye 49
+procesos que se agrupan en 5 Grupos de Procesos (Inicio, Planificación, Ejecución, Monitoreo
+y Control, y Cierre) y 10 Áreas de Conocimiento: Integración, Alcance, Cronograma, Costos,
+Calidad, Recursos, Comunicaciones, Riesgos, Adquisiciones e Interesados (Project
+Management Institute [PMI], 2017). En este trabajo, se aplica para organizar la gestión del
+alcance, cronograma, costos, calidad y riesgos del proyecto, complementándose con el enfoque
+ágil Scrum.
+Para asegurar la calidad del software a desarrollar, se seguirán los lineamientos de la norma
+ISO/IEC 25001:2014. A continuación, se describirá con más detalle la norma:
+ISO/IEC 25001:2014: Esta norma internacional de la familia SQuaRE se añade al modelo de
+calidad ISO/IEC 25010, definiendo pautas para la planificación y gestión de los procesos de
+especificación y evaluación de la calidad del software. De acuerdo con la norma misma, esta
+"ofrece requisitos y recomendaciones para una organización encargada de implementar y
+gestionar" las actividades relacionadas con la calidad de los productos de software
+(Organización Internacional de Normalización [ISO] y Comisión Electrotécnica Internacional
+
+===== PÁGINA 20 =====
+17
+[IEC], 2014). En este trabajo, se utiliza como un marco que organiza la planificación de la
+evaluación de características clave de la aplicación móvil y del modelo de aprendizaje
+automático, tales como la fiabilidad del clasificador, la seguridad de los datos dermatológicos
+y la usabilidad.
+1.3.5 Riesgos y mitigación
+La gestión de riesgos identifica los eventos que pueden afectar los objetivos del proyecto,
+valorados según su nivel de impacto (escala de 1 a 5) y su probabilidad de ocurrencia (Alta,
+Media, Baja o Muy baja), y define para cada uno una acción de respuesta. La Tabla 9 presenta
+la matriz de riesgos, elaborada a partir del Acta de Constitución.
+Niveles de Impacto:
+• Crítico (5): Pérdida total de datos, interrupción prolongada del servicio o multas legales
+severas.
+• Mayor (4): Impacto significativo en la operación que requiere intervención urgente.
+• Moderado (3): Afecta a una parte del sistema, pero permite seguir operando con
+limitaciones.
+• Menor (2): Inconvenientes técnicos que se resuelven en el corto plazo.
+• Insignificante (1): Problemas estéticos o de flujo que no afectan la funcionalidad.
+Tabla 9
+Matriz de riesgos
+ID Descripción del Riesgo Impacto
+Probabilidad
+de
+Ocurrencia
+(Alta, Media,
+Baja, Muy
+baja)
+Acciones de Respuesta
+R1
+El modelo presenta más
+falsos negativos que
+positivos, dejando sin
+detectar posibles casos
+de melanoma maligno y
+generando una falsa
+sensación de seguridad
+en el médico especialista.
+Crítico (5) Baja
+Mitigar: ajustar el modelo priorizando la
+sensibilidad (recall) para maximizar la
+detección de casos positivos. Además, la
+predicción se presenta siempre como
+preliminar y no validada, y el médico debe
+registrar su propio sustento clínico antes de
+cerrar el caso.
+
+===== PÁGINA 21 =====
+18
+ID Descripción del Riesgo Impacto
+Probabilidad
+de
+Ocurrencia
+(Alta, Media,
+Baja, Muy
+baja)
+Acciones de Respuesta
+R2
+No se encuentra un
+dataset adecuado a la
+realidad nacional, por lo
+que el modelo no detecta
+casos en tonalidades de
+piel propias del país.
+Mayor (4) Media
+Mitigar: buscar imágenes de lesiones
+cutáneas en instituciones oncológicas
+nacionales (p. ej. el INEN).
+R3
+El personal de salud no
+dispone de la
+infraestructura
+tecnológica para usar la
+aplicación móvil.
+Moderado
+(3)
+Muy baja
+Mitigar / Transferir: al ser una app móvil
+solo requiere un smartphone con conexión
+a internet; de ser necesario, el equipo
+proveerá los equipos y la conexión.
+R4
+La captura de imágenes
+no es lo suficientemente
+nítida para un análisis
+satisfactorio de la lesión.
+Mayor (4) Alta
+Mitigar: proveer un smartphone con mejor
+cámara y aplicar técnicas de
+posprocesamiento de imágenes que resalten
+las características de la lesión. Asimismo,
+el médico podrá acoplar un dermatoscopio
+al smartphone, lo que acerca las imágenes
+capturadas a las imágenes dermatoscópicas
+del conjunto HAM10000 utilizado en el
+entrenamiento.
+R5
+Falta de participación de
+médicos expertos de
+hospitales públicos para
+validar la propuesta.
+Mayor (4) Alta
+Mitigar / Aceptar: contactar con
+anticipación a los especialistas y adecuar el
+cronograma a su disponibilidad para las
+validaciones.
+R6
+Lentitud del modelo o de
+la aplicación en el
+análisis de las imágenes,
+que impide respuestas en
+un tiempo razonable al
+médico especialista
+durante la consulta.
+Moderado
+(3)
+Media
+Mitigar: evaluar el despliegue en la nube y
+aplicar técnicas de optimización para
+reducir los tiempos de respuesta.
+
+===== PÁGINA 22 =====
+19
+Capítulo 2: Logros de los Student Outcomes
+Para CC
+2.1 Student Outcome 1
+ABET 1 Análisis de Problemas: ANALIZAR UN PROBLEMA DE COMPUTACIÓN
+COMPLEJO Y APLICAR PRINCIPIOS DE COMPUTACIÓN Y OTRAS DISCIPLINAS
+RELEVANTES PARA IDENTIFICAR SOLUCIONES.
+2.2 Student Outcome 2
+ABET 2 Diseño de solución: DISEÑAR, IMPLEMENTAR Y EVALUAR UNA SOLUCIÓN
+BASADA EN LA COMPUTACIÓN PARA CUMPLIR CON UN CONJUNTO DE
+REQUISITOS
+2.3 Student Outcome 3
+ABET 3 Comunicación efectiva: La capacidad de comunicarse efectivamente con un rango de
+audiencias y variedad de contextos profesionales
+2.4 Student Outcome 4
+ABET 4 Responsabilidad y ética: RECONOCER LAS RESPONSABILIDADES
+PROFESIONALES Y TOMAR DECISIONES INFORMADAS SOBRE PRÁCTICAS DE
+COMPUTACIÓN BASADAS EN PRINCIPIOS LEGALES Y ÉTICOS.
+2.5 Student Outcome 5
+ABET 5 Trabajo multidisciplinario: La capacidad de funcionar efectivamente como miembro
+o líder en un equipo cuyos miembros juntos proporcionan liderazgo, crean un entorno de
+colaboración e inclusivo, establecen objetivos, planifican tareas y cumplen objetivos
+2.6 Student Outcome 6
+ABET 6 Técnicas en computación: APLICAR LA TEORÍA DE CIENCIAS DE LA
+COMPUTACIÓN Y LOS FUNDAMENTOS DEL DESARROLLO DE SOFTWARE PARA
+PRODUCIR SOLUCIONES BASADAS EN COMPUTACIÓN.
+
+===== PÁGINA 23 =====
+20
+Para ISW
+2.1 Student Outcome 1
+Student Outcome EAC 1: Demuestra capacidad de identificar, formular y resolver problemas
+complejos aplicando los principios de ingeniería, ciencia y matemática
+2.2 Student Outcome 2
+Student Outcome EAC 2: Demuestra capacidad de aplicar el diseño de ingeniería de software
+para producir soluciones que satisfagan necesidades específicas con consideración de salud
+pública, seguridad y bienestar, así como factores globales, culturales, sociales, ambientales y
+económicos
+2.3 Student Outcome 3
+Student Outcome EAC 3: Demuestra capacidad de comunicarse efectivamente con un rango
+de audiencias
+2.4 Student Outcome 4
+Student Outcome EAC 4: Demuestra capacidad de reconocer responsabilidades éticas y
+profesionales en ingeniería de software y emite juicios informados, que deben considerar el
+impacto de las soluciones de ingeniería en contextos globales, económicos, ambientales y
+sociales
+2.5 Student Outcome 5
+Student Outcome EAC 5: Demuestra capacidad de funcionar efectivamente en un equipo cuyos
+miembros juntos proporcionan liderazgo, crean un entorno de colaboración e inclusivo,
+establecen objetivos, planifican tareas y cumplen objetivos
+2.6 Student Outcome 6
+Student Outcome EAC 6: Demuestra capacidad de desarrollar y llevar a cabo la
+experimentación adecuada, analizar e interpretar datos, usando juicio de ingeniería de software
+para sacar conclusiones.
+2.7 Student Outcome 7
+Student Outcome EAC 7: Demuestra capacidad de adquirir y aplicar nuevos conocimientos
+según sea necesario, utilizando estrategias de aprendizaje apropiadas.
+
+===== PÁGINA 24 =====
+21
+Capítulo 3: Logros de las Competencias Generales
+3.1 Competencia General 1 (Ciudadanía)
+3.2 Competencia General 2 (Comunicación)
+3.3 Competencia General 3 (Uso de la Información para el Pensamiento
+Crítico)
+3.4 Competencia General 4 (Pensamiento Innovador)
+3.5 Competencia General 5 (Razonamiento Cuantitativo)
+https://sica.upc.edu.pe/publico/rubricas-de-competencias-upc
+
+===== PÁGINA 25 =====
+22
+Capítulo 4: Gestión del Proyecto
+4.1 Metodología de desarrollo
+Para CC: CRISP-DM
+CRISP-DM: Representa el acrónimo de Proceso Estándar Interindustrial para la Minería de
+Datos, es la metodología más comúnmente utilizada en proyectos de minería de datos y
+aprendizaje automático. Este enfoque organiza el desarrollo en seis fases cíclicas:
+entendimiento del negocio, entendimiento de los datos, preparación de los datos, modelado,
+evaluación y despliegue (Chapman et al., 2000). En este trabajo, se utiliza CRISP-DM como
+guía a lo largo del ciclo de vida del modelo para detectar melanomas malignos, abarcando
+desde la comprensión del problema médico y la organización de los conjuntos de datos
+dermatológicos (ISIC), hasta el entrenamiento, la evaluación mediante métricas (precisión,
+exactitud, recuperación, F1-score) y la implementación del modelo en la aplicación móvil.
+Figura 2
+Ciclo de vida de la metodología CRISP-DM
+Fuente: Enterprise Knowledge (https://www.pm-partners.com.au/insights/the-agile-journey-a-
+scrum-overview/)
+Para ISW: SCRUM
+SCRUM: Un enfoque ágil que se emplea para crear y gestionar productos complejos a través
+de entregas que se realizan de manera iterativa y progresiva. De acuerdo con la Guía Scrum, se
+define como "un enfoque ligero que permite a personas, equipos y organizaciones generar valor
+
+===== PÁGINA 26 =====
+23
+mediante soluciones flexibles para problemas complejos" (Schwaber y Sutherland, 2020). Está
+compuesto por tres funciones (Product Owner, Scrum Master y equipo de desarrollo), cinco
+eventos (Sprint, Planificación del Sprint, Reunión Diaria, Revisión del Sprint y Retrospectiva
+del Sprint) y tres artefactos (Product Backlog, Sprint Backlog e Incremento). En este estudio,
+se emplea Scrum para estructurar el desarrollo de la aplicación móvil en incrementos de sprints,
+lo que facilita la adaptación de la solución a los descubrimientos realizados durante la fase de
+entrenamiento y validación del modelo de aprendizaje automático.
+Figura 1
+Marco de trabajo Scrum
+Fuente: PM-PARTNERS (https://www.pm-partners.com.au/insights/the-agile-journey-a-scrum-
+overview/)
+
+===== PÁGINA 27 =====
+24
+4.2 Fases del proceso de desarrollo
+Para CC
+4.2.1 Business Understanding
+4.2.2 Data Understanding
+4.2.3 Data Preparation
+4.2.4 Modeling
+4.2.5 Evaluation
+4.2.6 Deployment
+Para ISW
+4.2.1 Planificación
+Se d
+4.2.2 Diseño
+4.2.3 Desarrollo
+4.2.4 Pruebas
+4.2.5 Despliegue
+4.2.6 Mantenimiento
+4.3 Diseño del modelo/arquitectura/algoritmo
+4.3.1 Resumen
+4.3.2 Dataset
+HAM 10000 + otros para mejorar el desbalanceo
+
+===== PÁGINA 28 =====
+25
+4.3.3 Arquitectura/Modelo/Algoritmo
+4.4 Análisis de frameworks
+4.4.1 Análisis de Framework 1
+4.4.2 Análisis de Framework 2
+4.4.3 Análisis de Framework 3
+
+===== PÁGINA 29 =====
+26
+Conclusiones
+
+===== PÁGINA 30 =====
+27
+Recomendaciones
+
+===== PÁGINA 31 =====
+28
+Referencias
+Abad, P. (2024, mayo). Perú: Enfermedades No transmisibles y Transmisibles 2023. Instituto
+Nacional de Estadística e Informática.
+https://www.inei.gob.pe/media/MenuRecursivo/publicaciones_digitales/Est/Lib1951/l
+ibro.pdf
+Alshmrani, A. S., Alotaibi, F. M., & Alfakeeh, A. S. (2026). Integrating features of radiomics
+and CNN models for early skin cancer detection based on watershed segmentation.
+Discover Oncology, 17(1). https://doi.org/10.1007/S12672-026-04652-7
+Babatunde, A. N., Balogun, B. F., Babatunde, A. J., Isiaka, S. O., Awotunde, J. B., &
+Adeniyi, A. E. (2025). Improving skin lesion classification using k-means, transfer
+learning and mobilenet architecture. Network Modeling Analysis in Health
+Informatics and Bioinformatics, 14(1). https://doi.org/10.1007/S13721-025-00569-3
+Cárdenas, R. (2026). Calidad del servicio y satisfacción del usuario: el caso del Seguro
+Integral de Salud en un hospital peruano. Revista APCSH. https://apcsh-
+journal.org/index.php/apcsh/article/view/24
+Espinoza, A. (2025, 25 de noviembre). EsSalud: Ocho de cada diez asegurados prefieren no
+atenderse en el Seguro Social por colapso del sistema. Infobae.
+https://www.infobae.com/peru/2025/11/25/essalud-ocho-de-cada-diez-asegurados-
+prefieren-no-atenderse-en-el-seguro-social-por-colapso-del-sistema/
+Esquivel, E., Vera, D., & Salas, U. (2023). Influencia de la calidad de servicio en la
+fidelización de clientes en un centro oncológico (Lima-Perú), 2023. Revista Científica
+de Ciencias de la Salud. http://www.scielo.org.bo/scielo.php?pid=S2521-
+27372024000200018&script=sci_arttext
+Heistein, J. B., Acharya, U., & Mukkamalla, S. K. R. (2024). Malignant melanoma. En
+StatPearls. StatPearls Publishing. https://www.ncbi.nlm.nih.gov/books/NBK470409/
+IBM. (2025). Mobile application development. Think | IBM. Recuperado el 6 de mayo de
+2026, de https://www.ibm.com/es-es/think/topics/mobile-application-development
+International Organization for Standardization, & International Electrotechnical Commission.
+(2014). ISO/IEC 25001:2014 Systems and software engineering — Systems and
+
+===== PÁGINA 32 =====
+29
+software Quality Requirements and Evaluation (SQuaRE) — Planning and
+management. ISO. https://www.iso.org/standard/64787.html
+La República. (2025, 12 de noviembre). Crisis en EsSalud: expertos y pacientes alertan
+sistema al borde del colapso mientras miles siguen esperando atención.
+https://larepublica.pe/sociedad/2025/11/12/crisis-en-essalud-expertos-y-pacientes-
+alertan-sistema-al-borde-del-colapso-mientras-miles-siguen-esperando-atencion-ntpe-
+271733
+Ministerio de Salud. (2020, 3 de septiembre). Resolución Ministerial N.° 688-2020-MINSA,
+que aprueba la Directiva Administrativa N.° 294-MINSA/2020/OGTI sobre el
+tratamiento de datos personales relacionados con la salud. Diario Oficial El Peruano.
+https://www.gob.pe/institucion/minsa/normas-legales/1133776-688-2020-minsa
+Presidencia del Consejo de Ministros. (2025, 9 de septiembre). Decreto Supremo N.° 115-
+2025-PCM, que aprueba el Reglamento de la Ley N.° 31814, Ley que promueve el
+uso de la inteligencia artificial en favor del desarrollo económico y social del país.
+Diario Oficial El Peruano.
+Project Management Institute. (2017). Guía de los fundamentos para la dirección de
+proyectos (Guía del PMBOK®) (6.ª ed.). Project Management Institute.
+Schwaber, K., & Sutherland, J. (2020). La guía Scrum: La guía definitiva de Scrum: Las
+reglas del juego. Scrum.org. https://scrumguides.org/docs/scrumguide/v2020/2020-
+Scrum-Guide-Spanish-European.pdf
+Stryker, C., & Kavlakoglu, E. (2026, 18 de marzo). Inteligencia artificial. Think | IBM.
+Recuperado el 6 de mayo de 2026, de https://www.ibm.com/es-
+es/think/topics/artificial-intelligence
+Stryker, C., Lee, F., Bergmann, D., & Scapicchio, M. (2026, 20 de enero). La guía de
+Machine Learning en 2026. Think | IBM. Recuperado el 6 de mayo de 2026, de
+https://www.ibm.com/es-es/think/machine-learning

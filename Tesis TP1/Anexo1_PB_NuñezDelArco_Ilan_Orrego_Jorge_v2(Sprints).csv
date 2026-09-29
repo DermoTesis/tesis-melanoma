@@ -1,0 +1,65 @@
+Sprint,Duración,Objetivo del Sprint,ID HU,Épica,Historia de Usuario
+Sprint 1,Semanas 1-3  —  Fundamentos de Arquitectura y Datos,,,,
+"Objetivo: Establecer la arquitectura que garantiza el flujo obligatorio captura -> prediccion preliminar -> validacion medica -> liberacion, antes de construir cualquier funcionalidad visible.",,,,,
+,,,HU32,E7,"Como equipo de desarrollo, quiero diseñar la arquitectura del backend monolítico modular desplegado en la nube, que integre la aplicación móvil, el módulo de inferencia y el módulo de validación médica, para garantizar que ningún resultado se libere sin pasar por revisión humana."
+,,,HU11,E3,"Como equipo de desarrollo, quiero recopilar y organizar un dataset de imágenes de lesiones benignas y malignas, para entrenar el modelo de apoyo diagnóstico."
+,,,HU12,E3,"Como equipo de desarrollo, quiero preprocesar las imágenes del dataset (normalización, redimensionamiento, aumento de datos), para mejorar la calidad de entrada del modelo."
+,,,HU33,E7,"Como equipo de desarrollo, quiero implementar comunicación cifrada (HTTPS/TLS) entre la aplicación, el backend y los servicios en la nube, para proteger la información médica de los pacientes."
+,,,,,
+Sprint 2,Semanas 4-6  —  Autenticación y Gestión de Roles,,,,
+"Objetivo: Tener cuentas funcionales, distinguiendo claramente el rol de especialista validador del de paciente, ya que esa distincion es estructural en el nuevo diseno.",,,,,
+,,,HU01,E1,"Como paciente, quiero registrarme en la aplicación con mis datos personales básicos, para poder enviar imágenes de mis lesiones a evaluación médica."
+,,,HU02,E1,"Como paciente, quiero iniciar sesión con mi correo y contraseña, para acceder de forma segura al estado de mis casos enviados."
+,,,HU03,E1,"Como paciente, quiero recuperar mi contraseña en caso de olvido, para no perder el acceso a mi cuenta."
+,,,HU04,E1,"Como administrador del sistema, quiero dar de alta las cuentas de los médicos especialistas verificando manualmente su número de colegiatura, para que solo profesionales habilitados obtengan acceso clínico."
+,,,HU05,E1,"Como administrador del sistema, quiero gestionar los roles y permisos de los usuarios, para garantizar que solo médicos habilitados puedan validar resultados clínicos."
+,,,,,
+Sprint 3,Semanas 7-9  —  Captura de Imágenes + Modelo CNN,,,,
+Objetivo: Avance en paralelo de la captura del lado del paciente y la extraccion de caracteristicas del lado del modelo.,,,,,
+,,,HU06,E2,"Como paciente, quiero capturar una foto de mi lesión cutánea con la cámara del celular, para enviarla a evaluación médica apoyada por el sistema."
+,,,HU07,E2,"Como paciente, quiero recibir indicaciones visuales sobre encuadre, distancia e iluminación adecuada, para que la imagen capturada sea apta para el análisis del especialista."
+,,,HU08,E2,"Como paciente, quiero subir una imagen previamente guardada en mi galería, para enviar fotos tomadas con anterioridad a evaluación médica."
+,,,HU13,E3,"Como equipo de desarrollo, quiero implementar una CNN para la extracción de características de las imágenes, para alimentar el modelo de clasificación de apoyo."
+,,,,,
+Sprint 4,Semanas 10-12  —  Envío de Casos y Clasificador Random Forest,,,,
+"Objetivo: Cerrar el flujo de envio del paciente (que ahora crea un caso, no un resultado) y completar el modelo que genera la prediccion preliminar.",,,,,
+,,,HU09,E2,"Como paciente, quiero adjuntar información complementaria sobre la lesión (ubicación corporal, tiempo de aparición, síntomas), para que el médico cuente con mayor contexto al momento de revisar mi caso."
+,,,HU10,E2,"Como paciente, quiero enviar mi imagen y datos para que ingresen a la cola de revisión médica, para iniciar el proceso de evaluación de mi caso."
+,,,HU14,E3,"Como equipo de desarrollo, quiero implementar un clasificador Random Forest sobre las características extraídas, para generar una predicción preliminar (benigno/maligno) que sirva de apoyo, no de diagnóstico, al especialista."
+,,,HU34,E7,"Como administrador del sistema, quiero que los datos personales y médicos se almacenen cifrados y con acceso restringido por roles en la región de nube definida, para garantizar la privacidad y el cumplimiento de la Ley N.° 29733 y su Reglamento."
+,,,,,
+Sprint 5,Semanas 13-15  —  Evaluación del Modelo e Integración de la Inferencia,,,,
+Objetivo: Validar tecnicamente el modelo y dejarlo listo para alimentar -nunca sustituir- al modulo de validacion medica.,,,,,
+Nota: HU18 se adelanta a este sprint porque es el primer punto donde el especialista ve algo en pantalla; conviene construirlo junto con la API que lo alimenta.,,,,,
+,,,HU15,E3,"Como equipo de desarrollo, quiero evaluar el modelo con métricas como Accuracy, Precision, Recall, F1-Score y AUC-ROC, para validar su desempeño antes de integrarlo como apoyo clínico."
+,,,HU16,E3,"Como equipo de desarrollo, quiero integrar el modelo entrenado como módulo de inferencia dentro del backend, para que el sistema genere predicciones preliminares que luego serán revisadas por un especialista."
+,,,HU17,E3,"Como equipo de desarrollo, quiero versionar el modelo como artefacto almacenado en la nube y monitorear su desempeño en producción, para poder actualizarlo sin modificar el código y detectar su degradación."
+,,,HU18,E4,"Como especialista validador, quiero visualizar la predicción preliminar del modelo junto con la imagen y los datos del paciente, para emitir mi propio juicio clínico informado."
+,,,,,
+Sprint 6,Semanas 16-18  —  Núcleo de Validación Médica Obligatoria,,,,
+Objetivo: Construir el corazon del rediseno: el bloqueo estructural que impide que cualquier resultado llegue al paciente sin pasar por un medico.,,,,,
+,,,HU19,E4,"Como especialista validador, quiero confirmar, corregir o descartar la predicción preliminar del modelo, para garantizar que ningún resultado se libere sin criterio médico."
+,,,HU20,E4,"Como especialista validador, quiero registrar mi sustento clínico al validar un caso, para dejar trazabilidad de la decisión médica tomada."
+,,,HU21,E4,"Como especialista validador, quiero que el sistema mantenga un registro inmutable de cada validación realizada, para fines de auditoría y responsabilidad profesional."
+,,,HU22,E4,"Como administrador del sistema, quiero que el sistema identifique casos sin validación médica pendientes por más de un tiempo determinado, para asegurar que ningún caso quede sin revisión oportuna."
+,,,,,
+Sprint 7,Semanas 19-21  —  Apoyo a la Decisión del Especialista,,,,
+Objetivo: Enriquecer el panel del especialista con herramientas que faciliten -sin automatizar- su criterio clinico.,,,,,
+Nota: HU23 se incluye aqui porque es un prerequisito sencillo de UI para el paciente que puede avanzar en paralelo mientras se cierra el modulo de validacion.,,,,,
+,,,HU29,E6,"Como especialista validador, quiero que el sistema sugiera, en casos de alta incertidumbre del modelo, la recomendación de exámenes adicionales para descartar un falso positivo, para apoyar mi decisión clínica sin sustituirla."
+,,,HU30,E6,"Como especialista validador, quiero priorizar en mi panel los casos con predicción preliminar de alta probabilidad de malignidad, para revisarlos primero sin que el sistema tome decisiones por mí."
+,,,HU31,E6,"Como especialista validador, quiero agregar observaciones clínicas internas a un caso, para enriquecer el expediente con información que no necesariamente se comparte con el paciente."
+,,,HU23,E5,"Como paciente, quiero ver el estado de mi caso (pendiente de análisis, en revisión médica, evaluado), para saber en qué etapa se encuentra mi solicitud sin acceder al resultado crudo del modelo."
+,,,,,
+Sprint 8,Semanas 22-24  —  Comunicación de Resultados Validados al Paciente,,,,
+"Objetivo: Cerrar el flujo completo del paciente, asegurando que solo reciba informacion ya validada por un medico, con las recomendaciones correspondientes.",,,,,
+,,,HU24,E5,"Como paciente, quiero recibir el resultado de mi caso únicamente después de que un médico especialista lo haya validado, para asegurarme de que la información que recibo tiene respaldo clínico."
+,,,HU25,E5,"Como paciente, quiero recibir junto con mi resultado validado una nota explícita de que esta herramienta es de apoyo diagnóstico y no reemplaza el criterio médico, para tener claridad sobre el alcance del sistema."
+,,,HU26,E5,"Como paciente, quiero recibir, dentro del resultado validado, la recomendación redactada por el especialista sobre tratarme con un médico, para saber qué hacer a continuación sin que el sistema gestione directamente esa atención."
+,,,HU27,E5,"Como paciente, quiero exportar o compartir mi resultado validado en formato PDF, para poder presentarlo a un médico tratante en una consulta presencial."
+,,,,,
+Sprint 9,"Semanas 25-27  —  Historial, Validación Clínica Final y Cierre",,,,
+Objetivo: Completar funcionalidades de seguimiento y realizar la validacion end-to-end del sistema completo con especialistas reales antes del cierre.,,,,,
+Nota: Sprint mas liviano intencionalmente: la validacion con especialistas reales (HU35) requiere coordinacion externa y la distribucion de la app por los canales de prueba de Google Play; se deja margen para ajustes posteriores a los hallazgos.,,,,,
+,,,HU28,E5,"Como paciente, quiero visualizar el historial de mis casos validados anteriormente, para llevar seguimiento de la evolución de mis lesiones cutáneas a lo largo del tiempo."
+,,,HU35,E7,"Como equipo de desarrollo, quiero validar la solución completa (app + modelo + flujo de supervisión médica) en un entorno controlado con especialistas reales, distribuyendo la aplicación Android mediante los canales de prueba de Google Play, para confirmar que el sistema cumple su rol de apoyo sin sustituir el criterio clínico."

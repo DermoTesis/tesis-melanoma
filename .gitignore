@@ -1,0 +1,13 @@
+# Datasets, modelos y resultados: fuera de git
+data/
+outputs/
+*.keras
+*.h5
+*.tflite
+*.joblib
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
