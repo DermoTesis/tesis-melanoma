@@ -153,10 +153,29 @@ def _nvidia_smi() -> list[str]:
 def _git_info(root: Path) -> dict[str, Any]:
     commit = _run(["git", "rev-parse", "HEAD"], cwd=root)
     if commit is None:
-        return {}
+        # Sin git (p. ej., en la imagen de NVIDIA): el commit se lee de .git, sin saber si hay
+        # cambios sin commit.
+        commit = _read_head(root / ".git")
+        return {"commit": commit, "dirty": None} if commit else {}
     # Solo cuentan los archivos versionados modificados; los resultados nuevos no ensucian.
     status = _run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=root)
     return {"commit": commit, "dirty": bool(status)}
+
+
+def _read_head(git_dir: Path) -> str | None:
+    try:
+        head = (git_dir / "HEAD").read_text().strip()
+        if not head.startswith("ref: "):
+            return head or None
+        ref = head.removeprefix("ref: ")
+        if (git_dir / ref).is_file():
+            return (git_dir / ref).read_text().strip()
+        for line in (git_dir / "packed-refs").read_text().splitlines():
+            if line.endswith(" " + ref):
+                return line.split()[0]
+    except OSError:
+        pass
+    return None
 
 
 if __name__ == "__main__":

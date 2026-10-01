@@ -1,0 +1,10 @@
+# EXP-02: MobileNetV3-Large de extremo a extremo, una foto por imagen, en los 5 folds.
+# Sin comparación de arquitecturas ni Random Forest (memoria v5; backlog v4, HU14). Es la línea
+# base que EXP-03 (desbalance) y EXP-06 (dos fotos) intentan mejorar.
+extends: base.yaml
+experiment: exp02
+
+folds: [0, 1, 2, 3, 4]
+
+training:
+  imbalance: none   # el desbalance se estudia aparte en EXP-03

@@ -3,7 +3,7 @@ import json
 
 import yaml
 
-from melanoma.runs import consolidate_results, start_run
+from melanoma.runs import _read_head, consolidate_results, start_run
 
 CFG = {"paths": {"results": "resultados", "outputs": "outputs"}, "seed": 42}
 
@@ -31,3 +31,14 @@ def test_consolidation_unions_columns_across_runs(tmp_path):
         table = list(csv.DictReader(f))
     assert [r["experiment"] for r in table] == ["exp02", "exp03"]
     assert table[0]["strategy"] == "" and table[1]["strategy"] == "focal_loss"
+
+
+def test_commit_is_read_from_git_dir_without_git(tmp_path):
+    git = tmp_path / ".git"
+    (git / "refs" / "heads").mkdir(parents=True)
+    (git / "HEAD").write_text("ref: refs/heads/main\n")
+    (git / "packed-refs").write_text("# pack-refs\nabc123 refs/heads/main\n")
+    assert _read_head(git) == "abc123"
+    (git / "refs" / "heads" / "main").write_text("def456\n")
+    assert _read_head(git) == "def456"
+    assert _read_head(tmp_path / "no-existe") is None

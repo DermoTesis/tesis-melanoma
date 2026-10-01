@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "melanoma"
 version = "0.1.0"
-description = "Clasificador binario de melanoma para la tesis UPC: experimentos EXP-01 a EXP-05."
+description = "Clasificador binario de melanoma para la tesis UPC: experimentos EXP-01 a EXP-06."
 requires-python = ">=3.11,<3.14"
 authors = [
     { name = "Ilan Núñez del Arco" },

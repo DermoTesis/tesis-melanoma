@@ -20,6 +20,19 @@ data:
       metadata: data/ham10000/HAM10000_metadata.csv
       metadata_md5: 8f85fb1aa29d80a2797247e434deb79d
       images: data/ham10000/images
+  # La imagen completa se redimensiona a image_size × image_size, sin recortar, para no cortar
+  # el borde de las lesiones grandes. El modelo recibe píxeles 0-255 (MobileNetV3 trae su propio
+  # preprocesamiento), igual que el `.tflite` en el backend.
+  cache: true          # guarda en RAM las imágenes ya redimensionadas (~1 GB con 224 px)
+  # Aumento de datos, solo en entrenamiento. La dermatoscopía no tiene orientación canónica, así
+  # que se usan giros completos; el color cambia poco porque es parte del diagnóstico.
+  augmentation:
+    flip: true          # horizontal y vertical
+    rotation: 0.5       # fracción de vuelta: 0.5 = ±180°
+    zoom: 0.2           # acercamiento aleatorio de hasta 20%
+    brightness: 0.1
+    contrast: 0.1
+  max_images: null      # solo para pruebas rápidas: limita las imágenes de cada partición
 
 split:
   name: ham10000_v1         # carpeta en splits/
@@ -31,22 +44,24 @@ split:
   n_folds: 5                # StratifiedGroupKFold sobre el resto
 
 model:
-  backbone: mobilenet_v3_large   # candidato principal; mobilenet_v2 es la línea base
+  backbone: mobilenet_v3_large   # sin comparación de arquitecturas (memoria v5)
   weights: imagenet
-  head: dense                    # dense | random_forest
-  dropout: 0.2
+  dropout: 0.2                   # antes de la capa densa final (1 neurona, sigmoide)
 
-# Valores iniciales; se ajustan al implementar EXP-02.
 training:
   batch_size: 32
-  mixed_precision: true
+  mixed_precision: true   # solo si hay GPU
+  # El backbone se usa siempre en modo inferencia (training=False): sus BatchNorm no cambian sus
+  # estadísticas aunque se descongele, como recomienda la guía de transfer learning de Keras.
   phases:
     head:        # fase 1: backbone congelado, solo se entrena la cabeza
       epochs: 5
       learning_rate: 1.0e-3
-    finetune:    # fase 2: fine-tuning del backbone
+    finetune:    # fase 2: se descongela todo el backbone, con tasa de aprendizaje baja
       epochs: 20
       learning_rate: 1.0e-5
+  # En la fase 2 se detiene si el AUC de validación no mejora en tantas épocas, y se queda con
+  # la mejor época.
   early_stopping_patience: 5
   imbalance: none   # none | class_weight | oversampling | focal_loss (EXP-03)
 
