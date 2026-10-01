@@ -10,18 +10,23 @@ paths:
   results: resultados   # config, entorno y métricas de cada corrida (en git)
 
 data:
-  # Melanoma (1) vs. todas las demás clases (0). Se confirma al revisar los datasets en EXP-01.
-  positive_class: mel
+  # Clases de HAM10000 que cuentan como positivas (1); el resto es 0. Melanoma vs. todas las demás.
+  positive_classes: [mel]
   image_size: 224
   sources:
+    # HAM10000 de Harvard Dataverse (doi:10.7910/DVN/DBW86T). El md5 fija la versión de los
+    # metadatos: si el archivo cambia, EXP-01 se detiene.
     ham10000:
       metadata: data/ham10000/HAM10000_metadata.csv
+      metadata_md5: 8f85fb1aa29d80a2797247e434deb79d
       images: data/ham10000/images
-    # isic: se agrega al confirmar el año. Si es 2019, ya contiene HAM10000 y se deduplica
-    # por id de imagen antes de particionar.
 
 split:
+  name: ham10000_v1         # carpeta en splits/
   group_column: lesion_id   # todas las imágenes de una lesión caen en la misma partición
+  # Estratos: clase × fuente dentro de HAM10000. La fuente importa porque vidir_molemax tiene
+  # 3,954 imágenes y solo 24 melanomas: así cada fold recibe la misma mezcla.
+  stratify_by: [dx, dataset]
   test_fraction: 0.15       # test fijo; se usa una sola vez, al final de EXP-04
   n_folds: 5                # StratifiedGroupKFold sobre el resto
 

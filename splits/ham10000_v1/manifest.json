@@ -1,0 +1,29 @@
+{
+  "sha256": "0dcfa1119398dbd0d17db590d89734c8a9930c80a5ecb28b3074787972993041",
+  "created_utc": "2026-09-30T21:15:52+00:00",
+  "params": {
+    "name": "ham10000_v1",
+    "group_column": "lesion_id",
+    "stratify_by": [
+      "dx",
+      "dataset"
+    ],
+    "test_fraction": 0.15,
+    "n_folds": 5,
+    "seed": 42,
+    "positive_classes": [
+      "mel"
+    ]
+  },
+  "source": {
+    "metadata": "data/ham10000/HAM10000_metadata.csv",
+    "metadata_md5": "8f85fb1aa29d80a2797247e434deb79d",
+    "images": 10015,
+    "lesions": 7470
+  },
+  "versions": {
+    "scikit-learn": "1.9.1",
+    "pandas": "3.0.6",
+    "numpy": "2.5.3"
+  }
+}

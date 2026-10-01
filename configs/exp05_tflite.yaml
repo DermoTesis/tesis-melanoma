@@ -14,3 +14,19 @@ benchmark:
   warmup_runs: 10
   timed_runs: 200
   cold_start_runs: 5   # proceso nuevo: cargar el modelo + primera inferencia
+
+# Umbrales satisficing (decididos el 2026-10-01). Se verifican en Cloud Run con la configuración de
+# producción (southamerica-west1, 2 vCPU, 2 GB, concurrencia 4); lo medido localmente solo sirve de
+# filtro previo. Medición local (Ryzen 5 5600, 2 hilos): float32 11.4 MB y 3.3 ms por foto; float16
+# 5.7 MB y 3.3 ms; rango dinámico 3.1 MB y 5.0 ms; int8 3.3 MB y 8.2 ms (en x86, int8 es más lento).
+# Un caso de 2 fotos: p95 6.5 ms solo y 32 ms con 4 casos simultáneos en 2 núcleos. Arranque en frío
+# del intérprete: ~0.1 s. Entre los formatos que cumplen, se elige el más liviano.
+satisficing:
+  max_size_mb: 15                    # admite float32; acota la descarga desde Cloud Storage
+  max_p95_ms_single_case: 100        # inferencia de las 2 fotos, 1 caso a la vez
+  max_p95_ms_concurrent_cases: 300   # inferencia de las 2 fotos, 4 casos a la vez en una instancia
+  concurrent_cases: 4
+  max_p95_case_s: 1.5                # decodificar y redimensionar 2 fotos + inferencia, con 4 a la vez
+  max_cold_start_s: 2.0              # descargar el modelo + cargarlo + 1.ª inferencia
+  max_auc_drop: 0.005                # frente al modelo Keras, en validación
+  max_sensitivity_drop_points: 1.0   # en el umbral operativo, frente al modelo Keras

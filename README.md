@@ -84,26 +84,34 @@ Si TensorFlow no trae kernels para `sm_120`, CUDA compila PTX la primera vez, lo
 mucho. El script sube `CUDA_CACHE_MAXSIZE` para que esa compilación quede en caché; en Docker hay
 que montar además un volumen en `/root/.nv` para no perderla al cerrar el contenedor.
 
-## Datasets
+## Dataset
 
-Van en `data/` (fuera de git):
+Solo HAM10000 (Tschandl et al., 2018), de Harvard Dataverse (doi:10.7910/DVN/DBW86T, licencia
+CC BY-NC 4.0). Tiene 10,015 imágenes de 7,470 lesiones en 7 clases. Melanoma: 1,113 imágenes de
+614 lesiones, todas confirmadas por histopatología. Va en `data/` (fuera de git):
 
 ```
-data/ham10000/HAM10000_metadata.csv
-data/ham10000/images/            # ISIC_xxxxxxx.jpg
-data/<isic>/...                  # año por confirmar
+data/ham10000/HAM10000_metadata.csv   # su md5 está fijado en configs/base.yaml
+data/ham10000/images/                 # ISIC_xxxxxxx.jpg
 ```
 
-HAM10000: 10,015 imágenes en 7 clases. Si el ISIC es 2019, ya incluye las imágenes de HAM10000:
-se deduplican por id de imagen antes de particionar.
+Para descargarlo (~2.6 GB):
+
+```bash
+B=https://dataverse.harvard.edu/api/access/datafile
+mkdir -p data/ham10000/images && cd data/ham10000
+curl -L -o HAM10000_metadata.csv "$B/4338392?format=original"
+curl -L -o part_1.zip "$B/3172585" && curl -L -o part_2.zip "$B/3172584"
+unzip -q part_1.zip -d images && unzip -q part_2.zip -d images && rm part_1.zip part_2.zip
+```
 
 ## Experimentos
 
 Se ejecutan en este orden. Cada uno lee su YAML de `configs/`.
 
-| Orden | Experimento | Decisión que produce | Estado |
+| Orden | Experimento | Decisión que produce | Estado / comando |
 |---|---|---|---|
-| 1 | EXP-01 Partición sin fuga | Test fijo (15%) + 5 folds por `lesion_id`, congelados en `splits/` | pendiente |
+| 1 | EXP-01 Partición sin fuga | Test fijo (15%) + 5 folds por `lesion_id`, congelados en `splits/` | `python experiments/exp01_particion.py` |
 | 2 | EXP-02 Arquitecturas | {MobileNetV2, MobileNetV3-Large} × {cabeza densa, Random Forest} | pendiente |
 | 3 | EXP-03 Desbalance | Sin balanceo, pesos de clase, sobremuestreo o focal loss | pendiente |
 | 4 | EXP-05 Conversión a `.tflite` | Formato de cuantización, tamaño y latencia en CPU (2 hilos) | pendiente |
