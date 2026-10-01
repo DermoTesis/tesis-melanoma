@@ -1,0 +1,164 @@
+{
+  "experiment": "exp01",
+  "run_id": "20261001T203031Z_ham10000-v1",
+  "rows": [
+    {
+      "split_name": "ham10000_v1",
+      "part": "fold_0",
+      "images": 1703,
+      "lesions": 1271,
+      "positive_images": 189,
+      "positive_lesions": 104,
+      "prevalence": 0.111,
+      "fraction": 0.17
+    },
+    {
+      "split_name": "ham10000_v1",
+      "part": "fold_1",
+      "images": 1703,
+      "lesions": 1270,
+      "positive_images": 191,
+      "positive_lesions": 106,
+      "prevalence": 0.1122,
+      "fraction": 0.17
+    },
+    {
+      "split_name": "ham10000_v1",
+      "part": "fold_2",
+      "images": 1702,
+      "lesions": 1269,
+      "positive_images": 189,
+      "positive_lesions": 104,
+      "prevalence": 0.111,
+      "fraction": 0.1699
+    },
+    {
+      "split_name": "ham10000_v1",
+      "part": "fold_3",
+      "images": 1702,
+      "lesions": 1270,
+      "positive_images": 189,
+      "positive_lesions": 104,
+      "prevalence": 0.111,
+      "fraction": 0.1699
+    },
+    {
+      "split_name": "ham10000_v1",
+      "part": "fold_4",
+      "images": 1702,
+      "lesions": 1271,
+      "positive_images": 189,
+      "positive_lesions": 105,
+      "prevalence": 0.111,
+      "fraction": 0.1699
+    },
+    {
+      "split_name": "ham10000_v1",
+      "part": "test",
+      "images": 1503,
+      "lesions": 1119,
+      "positive_images": 166,
+      "positive_lesions": 91,
+      "prevalence": 0.1104,
+      "fraction": 0.1501
+    }
+  ],
+  "details": {
+    "sha256": "0dcfa1119398dbd0d17db590d89734c8a9930c80a5ecb28b3074787972993041",
+    "by_dx": {
+      "fold_0": {
+        "akiec": 55,
+        "bcc": 87,
+        "bkl": 188,
+        "df": 18,
+        "mel": 189,
+        "nv": 1141,
+        "vasc": 25
+      },
+      "fold_1": {
+        "akiec": 55,
+        "bcc": 87,
+        "bkl": 186,
+        "df": 18,
+        "mel": 191,
+        "nv": 1141,
+        "vasc": 25
+      },
+      "fold_2": {
+        "akiec": 56,
+        "bcc": 89,
+        "bkl": 188,
+        "df": 19,
+        "mel": 189,
+        "nv": 1138,
+        "vasc": 23
+      },
+      "fold_3": {
+        "akiec": 56,
+        "bcc": 87,
+        "bkl": 186,
+        "df": 22,
+        "mel": 189,
+        "nv": 1139,
+        "vasc": 23
+      },
+      "fold_4": {
+        "akiec": 56,
+        "bcc": 86,
+        "bkl": 186,
+        "df": 20,
+        "mel": 189,
+        "nv": 1141,
+        "vasc": 24
+      },
+      "test": {
+        "akiec": 49,
+        "bcc": 78,
+        "bkl": 165,
+        "df": 18,
+        "mel": 166,
+        "nv": 1005,
+        "vasc": 22
+      }
+    },
+    "by_source": {
+      "fold_0": {
+        "rosendahl": 381,
+        "vidir_modern": 571,
+        "vidir_molemax": 674,
+        "vienna_dias": 77
+      },
+      "fold_1": {
+        "rosendahl": 383,
+        "vidir_modern": 573,
+        "vidir_molemax": 672,
+        "vienna_dias": 75
+      },
+      "fold_2": {
+        "rosendahl": 384,
+        "vidir_modern": 572,
+        "vidir_molemax": 672,
+        "vienna_dias": 74
+      },
+      "fold_3": {
+        "rosendahl": 382,
+        "vidir_modern": 573,
+        "vidir_molemax": 673,
+        "vienna_dias": 74
+      },
+      "fold_4": {
+        "rosendahl": 383,
+        "vidir_modern": 572,
+        "vidir_molemax": 671,
+        "vienna_dias": 76
+      },
+      "test": {
+        "rosendahl": 346,
+        "vidir_modern": 502,
+        "vidir_molemax": 592,
+        "vienna_dias": 63
+      }
+    },
+    "missing_images": []
+  }
+}
