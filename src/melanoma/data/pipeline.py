@@ -65,7 +65,9 @@ def make_dataset(df: pd.DataFrame, images_dir: str | Path, data_cfg: dict[str, A
         ds = ds.cache()
     if training:
         ds = ds.shuffle(len(df), seed=seed, reshuffle_each_iteration=True)
-    ds = ds.batch(batch_size, drop_remainder=False)
+    # En entrenamiento se descarta el último lote incompleto (cambia en cada época por el
+    # barajado): con XLA, cada tamaño de lote distinto obliga a recompilar el modelo.
+    ds = ds.batch(batch_size, drop_remainder=training)
     ds = ds.map(lambda x, y: (tf.cast(x, tf.float32), y), num_parallel_calls=AUTOTUNE)
     aug = augmenter(data_cfg.get("augmentation") or {}, seed) if training else None
     if aug is not None:

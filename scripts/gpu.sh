@@ -16,4 +16,6 @@ if [ ! -x "$VENV/bin/python" ]; then
   numpy_version=$(python -c 'import numpy; print(numpy.__version__)')
   "$VENV/bin/python" -m pip install --quiet --no-cache-dir -e . "numpy==$numpy_version"
 fi
+# Oculta los avisos de TensorFlow de nivel INFO/WARNING (en esta GPU llenan la pantalla).
+export TF_CPP_MIN_LOG_LEVEL="${TF_CPP_MIN_LOG_LEVEL:-2}"
 exec "$VENV/bin/python" "$@"

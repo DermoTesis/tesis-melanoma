@@ -30,7 +30,8 @@ def main(argv: list[str] | None = None) -> int:
     from melanoma.training import setup_devices, train_fold
 
     devices = setup_devices(cfg["training"])
-    print(f"GPU: {devices['gpus'] or 'ninguna'}; precisión mixta: {devices['mixed_precision']}")
+    print(f"GPU: {devices['gpus'] or 'ninguna'}; precisión mixta: {devices['mixed_precision']}; "
+          f"XLA: {devices['jit_compile']}")
 
     splits = load_splits(PROJECT_ROOT / cfg["paths"]["splits"] / cfg["split"]["name"])
     images_dir = PROJECT_ROOT / cfg["data"]["sources"]["ham10000"]["images"]
@@ -45,7 +46,8 @@ def main(argv: list[str] | None = None) -> int:
     rows, predictions, training_info = [], [], {}
     for fold in cfg["folds"]:
         print(f"\n=== Fold {fold} ===")
-        pred, info = train_fold(cfg, splits, fold, images_dir, run.artifacts_dir / f"fold_{fold}")
+        pred, info = train_fold(cfg, splits, fold, images_dir, run.artifacts_dir / f"fold_{fold}",
+                                jit_compile=devices["jit_compile"])
         predictions.append(pred)
         training_info[str(fold)] = info
         metrics = point_metrics(pred.label, pred.prob, target)

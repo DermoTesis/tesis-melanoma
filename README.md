@@ -85,6 +85,9 @@ el paquete del repo, sin reemplazar el numpy de la imagen.
   con y sin XLA.
 
 Al final da un veredicto (plan A, plan B o ninguno) y guarda el reporte en `resultados/entorno/`.
+Su velocidad (con `train_on_batch`) no es representativa. Para medir la velocidad real está
+`scripts/benchmark_gpu.py`: en la RTX 5060, MobileNetV3-Large entrena a ~150 img/s sin XLA y a
+~810 img/s con precisión mixta y XLA, por eso el entrenamiento usa XLA (`training.jit_compile`).
 Si TensorFlow no trae kernels para `sm_120`, CUDA compila PTX la primera vez, lo que puede tardar
 mucho. El script sube `CUDA_CACHE_MAXSIZE` para que esa compilación quede en caché; en Docker hay
 que montar además un volumen en `/root/.nv` para no perderla al cerrar el contenedor.

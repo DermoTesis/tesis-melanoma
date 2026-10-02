@@ -51,6 +51,7 @@ model:
 training:
   batch_size: 32
   mixed_precision: true   # solo si hay GPU
+  jit_compile: true       # XLA, solo si hay GPU: ~6 veces más rápido en la RTX 5060
   # El backbone se usa siempre en modo inferencia (training=False): sus BatchNorm no cambian sus
   # estadísticas aunque se descongele, como recomienda la guía de transfer learning de Keras.
   phases:

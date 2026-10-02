@@ -28,27 +28,34 @@ PREDICTION_COLUMNS = ["image_id", "lesion_id", "dx", "label"]
 
 
 def setup_devices(training_cfg: dict[str, Any]) -> dict[str, Any]:
-    """Memoria de GPU bajo demanda y precisión mixta (solo si hay GPU y la config lo pide)."""
+    """Memoria de GPU bajo demanda, precisión mixta y XLA, solo si hay GPU y la config lo pide.
+
+    En la RTX 5060 con la imagen de NVIDIA, XLA multiplica por ~6 la velocidad de entrenamiento
+    de MobileNetV3 (`scripts/benchmark_gpu.py`); en CPU la reduce, así que ahí no se usa.
+    """
     gpus = tf.config.list_physical_devices("GPU")
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
     mixed = bool(gpus) and bool(training_cfg.get("mixed_precision"))
     keras.mixed_precision.set_global_policy("mixed_float16" if mixed else "float32")
-    return {"gpus": [g.name for g in gpus], "mixed_precision": mixed}
+    jit = bool(gpus) and bool(training_cfg.get("jit_compile"))
+    return {"gpus": [g.name for g in gpus], "mixed_precision": mixed, "jit_compile": jit}
 
 
 def compile_model(model: keras.Model, learning_rate: float,
-                  loss: str | keras.losses.Loss = "binary_crossentropy") -> None:
+                  loss: str | keras.losses.Loss = "binary_crossentropy",
+                  jit_compile: bool = False) -> None:
     model.compile(optimizer=keras.optimizers.Adam(learning_rate), loss=loss,
                   metrics=[keras.metrics.AUC(name="auc"),
-                           keras.metrics.AUC(curve="PR", name="pr_auc")])
+                           keras.metrics.AUC(curve="PR", name="pr_auc")],
+                  jit_compile=jit_compile)
 
 
 def train_two_phases(model: keras.Model, train_ds: tf.data.Dataset, val_ds: tf.data.Dataset,
                      training_cfg: dict[str, Any], out_dir: Path,
                      loss: str | keras.losses.Loss = "binary_crossentropy",
                      class_weight: dict[int, float] | None = None,
-                     verbose: int = 2) -> dict[str, Any]:
+                     jit_compile: bool = False, verbose: int = 2) -> dict[str, Any]:
     """Fase 1: solo la cabeza. Fase 2: todo el backbone, con parada temprana por `val_auc`.
 
     Devuelve el historial por época (una lista por métrica, ambas fases seguidas) y la mejor
@@ -59,12 +66,12 @@ def train_two_phases(model: keras.Model, train_ds: tf.data.Dataset, val_ds: tf.d
     head, finetune = training_cfg["phases"]["head"], training_cfg["phases"]["finetune"]
 
     backbone(model).trainable = False
-    compile_model(model, head["learning_rate"], loss)
+    compile_model(model, head["learning_rate"], loss, jit_compile)
     h1 = model.fit(train_ds, validation_data=val_ds, epochs=head["epochs"],
                    class_weight=class_weight, callbacks=[log], shuffle=False, verbose=verbose)
 
     backbone(model).trainable = True
-    compile_model(model, finetune["learning_rate"], loss)
+    compile_model(model, finetune["learning_rate"], loss, jit_compile)
     early = keras.callbacks.EarlyStopping(monitor="val_auc", mode="max",
                                           patience=training_cfg["early_stopping_patience"],
                                           restore_best_weights=True)
@@ -90,7 +97,7 @@ def predict(model: keras.Model, ds: tf.data.Dataset) -> np.ndarray:
 def train_fold(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_dir: Path,
                out_dir: Path, build: Callable[[], keras.Model] | None = None,
                loss: str | keras.losses.Loss = "binary_crossentropy",
-               class_weight: dict[int, float] | None = None,
+               class_weight: dict[int, float] | None = None, jit_compile: bool = False,
                verbose: int = 2) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Entrena con los demás folds y predice el fold `fold`. El test nunca entra."""
     seed = cfg["seed"] + fold
@@ -108,7 +115,7 @@ def train_fold(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_dir:
     model = (build or (lambda: build_single_view(cfg["model"], cfg["data"]["image_size"])))()
     start = time.perf_counter()
     info = train_two_phases(model, train_ds, val_ds, cfg["training"], out_dir, loss=loss,
-                            class_weight=class_weight, verbose=verbose)
+                            class_weight=class_weight, jit_compile=jit_compile, verbose=verbose)
     info["train_seconds"] = round(time.perf_counter() - start, 1)
     info["n_train_images"] = int(len(train_df))
     model.save(out_dir / "modelo.keras")
