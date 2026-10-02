@@ -23,7 +23,7 @@ dependencies = [
 # En la GPU se usa el TensorFlow o el PyTorch que trae la imagen de Docker (ver README).
 tf = ["tensorflow==2.21.*"]
 # Intérprete LiteRT, el mismo runtime que usará el backend en Cloud Run (EXP-05).
-litert = ["ai-edge-litert>=2.2"]
+litert = ["ai-edge-litert>=2.2", "pillow>=10"]
 # Figuras de la memoria (matrices de confusión), en CPU.
 plots = ["matplotlib>=3.8"]
 dev = ["pytest>=8"]

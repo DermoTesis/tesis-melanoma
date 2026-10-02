@@ -122,7 +122,7 @@ Se ejecutan en este orden. Cada uno lee su YAML de `configs/`.
 | 1 | EXP-01 Partición sin fuga | Test fijo (15%) + 5 folds por `lesion_id`, congelados en `splits/` | `python experiments/exp01_particion.py` |
 | 2 | EXP-02 MobileNetV3-Large | Línea base de extremo a extremo con una foto, en los 5 folds | `bash scripts/gpu.sh experiments/exp02_mobilenetv3.py` |
 | 3 | EXP-03 Desbalance | Sin balanceo, pesos de clase, sobremuestreo o focal loss (comparación pareada con la línea base) | `bash scripts/gpu.sh experiments/exp03_desbalance.py` |
-| 4 | EXP-05 Conversión a `.tflite` | Formato de cuantización, tamaño y latencia en CPU (2 hilos) | pendiente |
+| 4 | EXP-05 Conversión a `.tflite` | Formato de cuantización, tamaño, latencia en CPU (2 núcleos) y pérdida de AUC; corre en CPU | `python experiments/exp05_tflite.py` |
 | 5 | EXP-06 Una foto vs. dos fotos | Fusión aprendida de la foto panorámica y el acercamiento (aporte del trabajo) | pendiente |
 | 6 | EXP-04 Calibración y umbral | Probabilidad calibrada, umbral con recall ≥ 90%, banda de confianza baja | pendiente |
 
