@@ -24,6 +24,8 @@ dependencies = [
 tf = ["tensorflow==2.21.*"]
 # Intérprete LiteRT, el mismo runtime que usará el backend en Cloud Run (EXP-05).
 litert = ["ai-edge-litert>=2.2"]
+# Figuras de la memoria (matrices de confusión), en CPU.
+plots = ["matplotlib>=3.8"]
 dev = ["pytest>=8"]
 
 [tool.setuptools.packages.find]

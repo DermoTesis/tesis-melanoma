@@ -129,6 +129,10 @@ Se ejecutan en este orden. Cada uno lee su YAML de `configs/`.
 EXP-06 va antes de EXP-04 para que la calibración y la única evaluación en el test usen el
 modelo definitivo.
 
+Las matrices de confusión de cada corrida se generan aparte, en CPU, desde sus predicciones:
+`python scripts/matriz_confusion.py resultados/exp02/<corrida>` (necesita `matplotlib`, extra
+`plots`).
+
 Reglas del protocolo:
 
 - EXP-02, EXP-03 y EXP-06 se comparan con los 5 folds (media ± desviación) y con todas las
