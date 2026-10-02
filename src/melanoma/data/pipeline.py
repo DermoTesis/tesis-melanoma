@@ -43,7 +43,8 @@ def augmenter(cfg: dict[str, Any], seed: int) -> keras.Sequential | None:
     if cfg.get("brightness"):
         layers.append(L.RandomBrightness(cfg["brightness"], value_range=(0, 255), **common))
     if cfg.get("contrast"):
-        layers.append(L.RandomContrast(cfg["contrast"], value_range=(0, 255), **common))
+        # Asume píxeles 0-255 (Keras 3.3, el de la imagen de NVIDIA, no acepta value_range).
+        layers.append(L.RandomContrast(cfg["contrast"], **common))
     return keras.Sequential(layers, name="augmentation") if layers else None
 
 
