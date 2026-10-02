@@ -5,6 +5,6 @@ El modelo recibe la imagen en rango 0-255: MobileNetV3 trae su preprocesamiento,
 `.tflite` recibe los píxeles tal cual. EXP-06 agrega la variante de dos fotos.
 """
 
-from melanoma.models.single_view import backbone, build_single_view
+from melanoma.models.single_view import backbone, build_single_view, unfreeze_backbone
 
-__all__ = ["backbone", "build_single_view"]
+__all__ = ["backbone", "build_single_view", "unfreeze_backbone"]

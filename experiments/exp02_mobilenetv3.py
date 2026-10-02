@@ -27,7 +27,7 @@ def main(argv: list[str] | None = None) -> int:
     from melanoma.data import ham10000
     from melanoma.data.splits import load_splits
     from melanoma.metrics import cv_summary, evaluate, point_metrics
-    from melanoma.training import setup_devices, train_fold
+    from melanoma.training import setup_devices, train_fold_isolated
 
     devices = setup_devices(cfg["training"])
     print(f"GPU: {devices['gpus'] or 'ninguna'}; precisión mixta: {devices['mixed_precision']}; "
@@ -46,8 +46,8 @@ def main(argv: list[str] | None = None) -> int:
     rows, predictions, training_info = [], [], {}
     for fold in cfg["folds"]:
         print(f"\n=== Fold {fold} ===")
-        pred, info = train_fold(cfg, splits, fold, images_dir, run.artifacts_dir / f"fold_{fold}",
-                                jit_compile=devices["jit_compile"])
+        pred, info = train_fold_isolated(cfg, splits, fold, images_dir,
+                                         run.artifacts_dir / f"fold_{fold}")
         predictions.append(pred)
         training_info[str(fold)] = info
         metrics = point_metrics(pred.label, pred.prob, target)

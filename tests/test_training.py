@@ -10,13 +10,16 @@ keras = pytest.importorskip("keras")
 
 from melanoma.data.pipeline import limit_images, make_dataset  # noqa: E402
 from melanoma.models import backbone, build_single_view  # noqa: E402
-from melanoma.training import train_two_phases  # noqa: E402
+from melanoma.training import train_fold_isolated, train_two_phases  # noqa: E402
 
 SIZE = 64
 DATA_CFG = {"image_size": SIZE, "cache": True,
             "augmentation": {"flip": True, "rotation": 0.5, "zoom": 0.2, "brightness": 0.1,
                              "contrast": 0.1}}
 MODEL_CFG = {"backbone": "mobilenet_v3_large", "weights": None, "dropout": 0.2}
+PHASES = {"phases": {"head": {"epochs": 1, "learning_rate": 1e-3},
+                     "finetune": {"epochs": 2, "learning_rate": 1e-3}},
+          "early_stopping_patience": 5}
 
 
 @pytest.fixture()
@@ -75,12 +78,11 @@ def test_two_phase_training_freezes_then_unfreezes_backbone(images, tmp_path):
     model = build_single_view(MODEL_CFG, SIZE)
     base = backbone(model)
     before = [w.numpy().copy() for w in base.trainable_weights[:3]]
-    cfg = {"phases": {"head": {"epochs": 1, "learning_rate": 1e-3},
-                      "finetune": {"epochs": 2, "learning_rate": 1e-3}},
-           "early_stopping_patience": 5}
+    batchnorms = [la for la in base.layers if isinstance(la, keras.layers.BatchNormalization)]
+    stats = [w.numpy().copy() for la in batchnorms for w in (la.moving_mean, la.moving_variance)]
     ds = make_dataset(df, images_dir, DATA_CFG, 4, training=True, seed=0)
     val = make_dataset(df, images_dir, DATA_CFG, 4, training=False, seed=0)
-    info = train_two_phases(model, ds, val, cfg, tmp_path / "fold", verbose=0)
+    info = train_two_phases(model, ds, val, PHASES, tmp_path / "fold", verbose=0)
     assert base.trainable
     assert info["head_epochs"] == 1 and info["finetune_epochs"] == 2
     assert 2 <= info["best_epoch"] <= 3
@@ -88,3 +90,20 @@ def test_two_phase_training_freezes_then_unfreezes_backbone(images, tmp_path):
     assert (tmp_path / "fold" / "historial.csv").exists()
     after = [w.numpy() for w in base.trainable_weights[:3]]
     assert any(not np.allclose(a, b) for a, b in zip(before, after))
+    # Las BatchNorm siguen en modo inferencia: ni se entrenan ni cambian sus estadísticas.
+    assert batchnorms and not any(la.trainable for la in batchnorms)
+    now = [w.numpy() for la in batchnorms for w in (la.moving_mean, la.moving_variance)]
+    assert all(np.array_equal(a, b) for a, b in zip(stats, now))
+
+
+def test_fold_in_separate_process_returns_predictions_and_saves_model(images, tmp_path):
+    images_dir, df = images
+    splits = df.assign(split="trainval", fold=[i % 2 for i in range(len(df))])
+    cfg = {"seed": 0, "model": MODEL_CFG, "data": {**DATA_CFG, "max_images": None},
+           "training": {**PHASES, "batch_size": 4, "mixed_precision": True,
+                        "jit_compile": True}}
+    pred, info = train_fold_isolated(cfg, splits, 1, images_dir, tmp_path / "fold_1", verbose=0)
+    assert list(pred.image_id) == list(splits[splits.fold == 1].image_id)
+    assert pred.prob.between(0, 1).all() and (pred.fold == 1).all()
+    assert info["n_train_images"] == 6
+    assert (tmp_path / "fold_1" / "modelo.keras").exists()

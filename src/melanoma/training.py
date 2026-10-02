@@ -1,8 +1,8 @@
 """Entrenamiento en dos fases (EXP-02): cabeza con el backbone congelado y luego fine-tuning.
 
 `train_fold` entrena un fold completo: arma los datos, entrena, guarda el modelo y devuelve las
-predicciones del fold de validación. Lo reutilizan EXP-03 (con otra pérdida o pesos de clase) y
-EXP-06.
+predicciones del fold de validación. `train_fold_isolated` hace lo mismo en un proceso aparte.
+Lo reutilizan EXP-03 (con otra pérdida o pesos de clase) y EXP-06.
 
 En la fase 2 se detiene por AUC del fold de validación y se queda con la mejor época. Ese mismo
 fold da las métricas, lo que las vuelve algo optimistas; afecta igual a todos los candidatos, y
@@ -11,7 +11,9 @@ la estimación sin sesgo es la única evaluación en el test (EXP-04).
 
 from __future__ import annotations
 
+import multiprocessing
 import time
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import Any, Callable
 
@@ -22,7 +24,7 @@ import tensorflow as tf
 
 from melanoma.data.pipeline import limit_images, make_dataset
 from melanoma.data.splits import train_val
-from melanoma.models import backbone, build_single_view
+from melanoma.models import backbone, build_single_view, unfreeze_backbone
 
 PREDICTION_COLUMNS = ["image_id", "lesion_id", "dx", "label"]
 
@@ -56,7 +58,8 @@ def train_two_phases(model: keras.Model, train_ds: tf.data.Dataset, val_ds: tf.d
                      loss: str | keras.losses.Loss = "binary_crossentropy",
                      class_weight: dict[int, float] | None = None,
                      jit_compile: bool = False, verbose: int = 2) -> dict[str, Any]:
-    """Fase 1: solo la cabeza. Fase 2: todo el backbone, con parada temprana por `val_auc`.
+    """Fase 1: solo la cabeza. Fase 2: el backbone menos sus BatchNorm, con parada temprana por
+    `val_auc`.
 
     Devuelve el historial por época (una lista por métrica, ambas fases seguidas) y la mejor
     época de la fase 2, cuyos pesos quedan en el modelo.
@@ -70,7 +73,7 @@ def train_two_phases(model: keras.Model, train_ds: tf.data.Dataset, val_ds: tf.d
     h1 = model.fit(train_ds, validation_data=val_ds, epochs=head["epochs"],
                    class_weight=class_weight, callbacks=[log], shuffle=False, verbose=verbose)
 
-    backbone(model).trainable = True
+    unfreeze_backbone(model)
     compile_model(model, finetune["learning_rate"], loss, jit_compile)
     early = keras.callbacks.EarlyStopping(monitor="val_auc", mode="max",
                                           patience=training_cfg["early_stopping_patience"],
@@ -122,3 +125,25 @@ def train_fold(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_dir:
 
     predictions = val_df[PREDICTION_COLUMNS].assign(fold=fold, prob=predict(model, val_ds))
     return predictions.reset_index(drop=True), info
+
+
+def train_fold_isolated(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_dir: Path,
+                        out_dir: Path, **kwargs: Any) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """`train_fold` en un proceso nuevo, que al terminar devuelve toda su memoria.
+
+    En un solo proceso la RAM crece fold a fold (la caché de imágenes y los modelos compilados con
+    XLA no se liberan del todo) hasta que el sistema mata el entrenamiento: pasó en el fold 4 de la
+    primera corrida de EXP-02. `build` y `loss`, si se pasan, deben poder serializarse con pickle
+    (una función de módulo, no una lambda).
+    """
+    context = multiprocessing.get_context("spawn")
+    with ProcessPoolExecutor(max_workers=1, mp_context=context) as pool:
+        return pool.submit(_train_fold_child, cfg, splits, fold, images_dir, out_dir,
+                           kwargs).result()
+
+
+def _train_fold_child(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_dir: Path,
+                      out_dir: Path, kwargs: dict[str, Any]) -> tuple[pd.DataFrame, dict[str, Any]]:
+    devices = setup_devices(cfg["training"])   # la precisión mixta es global de cada proceso
+    return train_fold(cfg, splits, fold, images_dir, out_dir, jit_compile=devices["jit_compile"],
+                      **kwargs)

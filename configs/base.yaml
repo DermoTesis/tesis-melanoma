@@ -52,13 +52,13 @@ training:
   batch_size: 32
   mixed_precision: true   # solo si hay GPU
   jit_compile: true       # XLA, solo si hay GPU: ~6 veces más rápido en la RTX 5060
-  # El backbone se usa siempre en modo inferencia (training=False): sus BatchNorm no cambian sus
-  # estadísticas aunque se descongele, como recomienda la guía de transfer learning de Keras.
+  # Las BatchNorm del backbone quedan congeladas también en la fase 2: siguen en modo inferencia,
+  # con las estadísticas de ImageNet, como recomienda la guía de transfer learning de Keras.
   phases:
     head:        # fase 1: backbone congelado, solo se entrena la cabeza
       epochs: 5
       learning_rate: 1.0e-3
-    finetune:    # fase 2: se descongela todo el backbone, con tasa de aprendizaje baja
+    finetune:    # fase 2: se descongela el backbone (menos las BatchNorm), con tasa baja
       epochs: 20
       learning_rate: 1.0e-5
   # En la fase 2 se detiene si el AUC de validación no mejora en tantas épocas, y se queda con
