@@ -97,6 +97,21 @@ def test_two_phase_training_freezes_then_unfreezes_backbone(images, tmp_path):
     assert all(np.array_equal(a, b) for a, b in zip(stats, now))
 
 
+@pytest.mark.parametrize("strategy", ["class_weight", "oversampling", "focal_loss"])
+def test_fold_trains_with_each_imbalance_strategy(images, tmp_path, strategy):
+    from melanoma.training import train_fold
+    images_dir, df = images
+    splits = df.assign(split="trainval", fold=[i % 2 for i in range(len(df))])
+    keras.mixed_precision.set_global_policy("float32")
+    cfg = {"seed": 0, "model": MODEL_CFG, "data": {**DATA_CFG, "max_images": None},
+           "training": {**PHASES, "batch_size": 2, "imbalance": strategy,
+                        "oversampling_positive_fraction": 0.5, "focal_gamma": 2.0}}
+    pred, info = train_fold(cfg, splits, 0, images_dir, tmp_path / strategy, verbose=0)
+    assert len(pred) == 6 and pred.prob.between(0, 1).all()
+    assert len(info["history"]["loss"]) == 3
+    assert (info["class_weight"] is not None) == (strategy == "class_weight")
+
+
 def test_fold_in_separate_process_returns_predictions_and_saves_model(images, tmp_path):
     images_dir, df = images
     splits = df.assign(split="trainval", fold=[i % 2 for i in range(len(df))])

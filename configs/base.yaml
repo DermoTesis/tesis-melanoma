@@ -65,6 +65,8 @@ training:
   # la mejor época.
   early_stopping_patience: 5
   imbalance: none   # none | class_weight | oversampling | focal_loss (EXP-03)
+  oversampling_positive_fraction: 0.5   # con oversampling: fracción de melanomas en cada lote
+  focal_gamma: 2.0                      # con focal_loss (Lin et al., 2017)
 
 metrics:
   target_recall: 0.90   # obligatorio en el umbral operativo

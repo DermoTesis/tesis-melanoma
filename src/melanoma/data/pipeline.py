@@ -49,23 +49,39 @@ def augmenter(cfg: dict[str, Any], seed: int) -> keras.Sequential | None:
 
 
 def make_dataset(df: pd.DataFrame, images_dir: str | Path, data_cfg: dict[str, Any],
-                 batch_size: int, training: bool, seed: int) -> tf.data.Dataset:
+                 batch_size: int, training: bool, seed: int,
+                 positive_fraction: float | None = None) -> tf.data.Dataset:
     """(imagen float32 0-255, etiqueta float32) por lotes.
 
     En entrenamiento baraja en cada época y aplica el aumento de datos; en evaluación respeta el
     orden de `df`, para poder unir las predicciones con sus `image_id`.
+
+    Con `positive_fraction` (sobremuestreo, EXP-03) el entrenamiento es un flujo infinito en el que
+    cada imagen es melanoma con esa probabilidad: los melanomas se repiten, con un aumento de datos
+    distinto cada vez, y los demás se recorren en orden barajado. Quien entrena debe fijar
+    `steps_per_epoch`. Solo se remuestrea el entrenamiento; la validación nunca.
     """
-    images_dir = Path(images_dir)
-    paths = [str(images_dir / f"{image_id}.jpg") for image_id in df.image_id]
-    labels = df.label.to_numpy(dtype="float32")
+    if positive_fraction is not None and not training:
+        raise ValueError("El sobremuestreo solo se aplica al conjunto de entrenamiento")
     size = data_cfg["image_size"]
 
-    ds = tf.data.Dataset.from_tensor_slices((paths, labels))
-    ds = ds.map(lambda p, y: (load_image(p, size), y), num_parallel_calls=AUTOTUNE)
-    if data_cfg.get("cache"):
-        ds = ds.cache()
-    if training:
-        ds = ds.shuffle(len(df), seed=seed, reshuffle_each_iteration=True)
+    def images(part: pd.DataFrame) -> tf.data.Dataset:
+        paths = [str(Path(images_dir) / f"{image_id}.jpg") for image_id in part.image_id]
+        ds = tf.data.Dataset.from_tensor_slices((paths, part.label.to_numpy(dtype="float32")))
+        ds = ds.map(lambda p, y: (load_image(p, size), y), num_parallel_calls=AUTOTUNE)
+        if data_cfg.get("cache"):
+            ds = ds.cache()
+        if training:
+            ds = ds.shuffle(len(part), seed=seed, reshuffle_each_iteration=True)
+        return ds
+
+    if positive_fraction is None:
+        ds = images(df)
+    else:
+        positives, negatives = df[df.label == 1], df[df.label == 0]
+        ds = tf.data.Dataset.sample_from_datasets(
+            [negatives.pipe(images).repeat(), positives.pipe(images).repeat()],
+            weights=[1 - positive_fraction, positive_fraction], seed=seed)
     # En entrenamiento se descarta el último lote incompleto (cambia en cada época por el
     # barajado): con XLA, cada tamaño de lote distinto obliga a recompilar el modelo.
     ds = ds.batch(batch_size, drop_remainder=training)

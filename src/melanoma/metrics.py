@@ -115,6 +115,37 @@ def evaluate(y: np.ndarray, p: np.ndarray, groups: Sequence, target_recall: floa
     return out
 
 
+def compare_paired(y: np.ndarray, p_reference: np.ndarray, p_candidate: np.ndarray,
+                   groups: Sequence, target_recall: float = 0.90, n_resamples: int = 2000,
+                   confidence: float = 0.95, seed: int = 42,
+                   keys: Sequence[str] = ("auc_roc", "pr_auc", "specificity_s90")) -> dict[str, float]:
+    """Diferencia candidato − referencia sobre las mismas imágenes, con IC por bootstrap pareado.
+
+    En cada remuestreo de lesiones se evalúan los dos modelos sobre la misma muestra, así el IC
+    refleja solo la diferencia entre ellos y no la dificultad de la muestra. Si el IC incluye el 0,
+    la diferencia no está demostrada. `specificity_s90` usa el sufijo de `target_recall`.
+    """
+    y = np.asarray(y).astype(int)
+    a, b = np.asarray(p_reference, dtype=float), np.asarray(p_candidate, dtype=float)
+    suffix = f"s{round(target_recall * 100)}"
+    keys = [k.replace("s90", suffix) for k in keys]
+
+    def delta(idx: np.ndarray) -> list[float]:
+        ma = point_metrics(y[idx], a[idx], target_recall)
+        mb = point_metrics(y[idx], b[idx], target_recall)
+        return [mb[k] - ma[k] for k in keys]
+
+    point = delta(np.arange(len(y)))
+    samples = np.array([delta(idx) for idx in bootstrap_indices(groups, n_resamples, seed)])
+    alpha = (1 - confidence) / 2
+    out: dict[str, float] = {}
+    for i, key in enumerate(keys):
+        out[f"delta_{key}"] = float(point[i])
+        out[f"delta_{key}_ci_low"] = float(np.nanquantile(samples[:, i], alpha))
+        out[f"delta_{key}_ci_high"] = float(np.nanquantile(samples[:, i], 1 - alpha))
+    return out
+
+
 def cv_summary(fold_rows: list[dict[str, Any]], keys: Sequence[str] | None = None) -> dict[str, dict]:
     """Media y desviación estándar (muestral) de cada métrica entre folds."""
     df = pd.DataFrame(fold_rows)

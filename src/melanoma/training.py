@@ -2,7 +2,7 @@
 
 `train_fold` entrena un fold completo: arma los datos, entrena, guarda el modelo y devuelve las
 predicciones del fold de validación. `train_fold_isolated` hace lo mismo en un proceso aparte.
-Lo reutilizan EXP-03 (con otra pérdida o pesos de clase) y EXP-06.
+La estrategia de desbalance sale de `training.imbalance` (EXP-03). Lo reutiliza EXP-06.
 
 En la fase 2 se detiene por AUC del fold de validación y se queda con la mejor época. Ese mismo
 fold da las métricas, lo que las vuelve algo optimistas; afecta igual a todos los candidatos, y
@@ -24,6 +24,7 @@ import tensorflow as tf
 
 from melanoma.data.pipeline import limit_images, make_dataset
 from melanoma.data.splits import train_val
+from melanoma.imbalance import setup as imbalance_setup
 from melanoma.models import backbone, build_single_view, unfreeze_backbone
 
 PREDICTION_COLUMNS = ["image_id", "lesion_id", "dx", "label"]
@@ -60,12 +61,14 @@ def train_two_phases(model: keras.Model, train_ds: tf.data.Dataset, val_ds: tf.d
                      training_cfg: dict[str, Any], out_dir: Path,
                      loss: str | keras.losses.Loss = "binary_crossentropy",
                      class_weight: dict[int, float] | None = None,
+                     steps_per_epoch: int | None = None,
                      jit_compile: bool = False, verbose: int = 2) -> dict[str, Any]:
     """Fase 1: solo la cabeza. Fase 2: el backbone menos sus BatchNorm, con parada temprana por
     `val_auc`.
 
     Devuelve el historial por época (una lista por métrica, ambas fases seguidas) y la mejor
-    época de la fase 2, cuyos pesos quedan en el modelo.
+    época de la fase 2, cuyos pesos quedan en el modelo. `steps_per_epoch` hace falta cuando
+    `train_ds` es infinito (sobremuestreo).
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     log = keras.callbacks.CSVLogger(str(out_dir / "historial.csv"), append=True)
@@ -74,7 +77,8 @@ def train_two_phases(model: keras.Model, train_ds: tf.data.Dataset, val_ds: tf.d
     backbone(model).trainable = False
     compile_model(model, head["learning_rate"], loss, jit_compile)
     h1 = model.fit(train_ds, validation_data=val_ds, epochs=head["epochs"],
-                   class_weight=class_weight, callbacks=[log], shuffle=False, verbose=verbose)
+                   steps_per_epoch=steps_per_epoch, class_weight=class_weight, callbacks=[log],
+                   shuffle=False, verbose=verbose)
 
     unfreeze_backbone(model)
     compile_model(model, finetune["learning_rate"], loss, jit_compile)
@@ -82,8 +86,9 @@ def train_two_phases(model: keras.Model, train_ds: tf.data.Dataset, val_ds: tf.d
                                           patience=training_cfg["early_stopping_patience"],
                                           restore_best_weights=True)
     h2 = model.fit(train_ds, validation_data=val_ds, initial_epoch=head["epochs"],
-                   epochs=head["epochs"] + finetune["epochs"], class_weight=class_weight,
-                   callbacks=[log, early], shuffle=False, verbose=verbose)
+                   epochs=head["epochs"] + finetune["epochs"], steps_per_epoch=steps_per_epoch,
+                   class_weight=class_weight, callbacks=[log, early], shuffle=False,
+                   verbose=verbose)
     # Algunas versiones de Keras solo restauran si la parada fue temprana: se fuerza aquí.
     if early.best_weights is not None:
         model.set_weights(early.best_weights)
@@ -102,9 +107,7 @@ def predict(model: keras.Model, ds: tf.data.Dataset) -> np.ndarray:
 
 def train_fold(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_dir: Path,
                out_dir: Path, build: Callable[[], keras.Model] | None = None,
-               loss: str | keras.losses.Loss = "binary_crossentropy",
-               class_weight: dict[int, float] | None = None, jit_compile: bool = False,
-               verbose: int = 2) -> tuple[pd.DataFrame, dict[str, Any]]:
+               jit_compile: bool = False, verbose: int = 2) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Entrena con los demás folds y predice el fold `fold`. El test nunca entra."""
     seed = cfg["seed"] + fold
     keras.backend.clear_session()
@@ -115,13 +118,19 @@ def train_fold(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_dir:
     train_df = limit_images(train_df, max_images, seed)
     val_df = limit_images(val_df, max_images, seed)
     batch = cfg["training"]["batch_size"]
-    train_ds = make_dataset(train_df, images_dir, cfg["data"], batch, training=True, seed=seed)
+    imbalance = imbalance_setup(cfg["training"], train_df.label.to_numpy())
+    train_ds = make_dataset(train_df, images_dir, cfg["data"], batch, training=True, seed=seed,
+                            positive_fraction=imbalance["positive_fraction"])
     val_ds = make_dataset(val_df, images_dir, cfg["data"], batch, training=False, seed=seed)
+    # Con sobremuestreo, tantos lotes por época como sin él: el mismo cómputo en cada estrategia.
+    steps = len(train_df) // batch if imbalance["positive_fraction"] is not None else None
 
     model = (build or (lambda: build_single_view(cfg["model"], cfg["data"]["image_size"])))()
     start = time.perf_counter()
-    info = train_two_phases(model, train_ds, val_ds, cfg["training"], out_dir, loss=loss,
-                            class_weight=class_weight, jit_compile=jit_compile, verbose=verbose)
+    info = train_two_phases(model, train_ds, val_ds, cfg["training"], out_dir,
+                            loss=imbalance["loss"], class_weight=imbalance["class_weight"],
+                            steps_per_epoch=steps, jit_compile=jit_compile, verbose=verbose)
+    info["class_weight"] = imbalance["class_weight"]
     info["train_seconds"] = round(time.perf_counter() - start, 1)
     info["n_train_images"] = int(len(train_df))
     model.save(out_dir / "modelo.keras")
@@ -136,8 +145,8 @@ def train_fold_isolated(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, im
 
     En un solo proceso la RAM crece fold a fold (la caché de imágenes y los modelos compilados con
     XLA no se liberan del todo) hasta que el sistema mata el entrenamiento: pasó en el fold 4 de la
-    primera corrida de EXP-02. `build` y `loss`, si se pasan, deben poder serializarse con pickle
-    (una función de módulo, no una lambda).
+    primera corrida de EXP-02. `build`, si se pasa, debe poder serializarse con pickle (una
+    función de módulo, no una lambda).
     """
     context = multiprocessing.get_context("spawn")
     with ProcessPoolExecutor(max_workers=1, mp_context=context) as pool:

@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 from sklearn.metrics import roc_auc_score
 
-from melanoma.metrics import (at_threshold, bootstrap_indices, cv_summary, evaluate, point_metrics,
-                              threshold_for_recall)
+from melanoma.metrics import (at_threshold, bootstrap_indices, compare_paired, cv_summary, evaluate,
+                              point_metrics, threshold_for_recall)
 
 
 def test_confusion_metrics_by_hand():
@@ -85,3 +85,16 @@ def test_cv_summary_mean_and_sample_std():
     assert s["auc_roc"]["mean"] == pytest.approx(0.85)
     assert s["auc_roc"]["std"] == pytest.approx(np.std([0.8, 0.9], ddof=1))
     assert "fold" not in s
+
+
+def test_paired_comparison_is_zero_for_same_model_and_detects_a_better_one():
+    rng = np.random.default_rng(3)
+    y = rng.integers(0, 2, 400)
+    weak = np.clip(y * 0.15 + rng.random(400) * 0.85, 0, 1)
+    strong = np.clip(y * 0.5 + rng.random(400) * 0.5, 0, 1)
+    groups = np.arange(400) // 2
+    same = compare_paired(y, weak, weak, groups, n_resamples=200, seed=0)
+    assert same["delta_auc_roc"] == 0 and same["delta_auc_roc_ci_high"] == 0
+    better = compare_paired(y, weak, strong, groups, n_resamples=200, seed=0)
+    assert better["delta_auc_roc"] > 0 and better["delta_auc_roc_ci_low"] > 0
+    assert {"delta_pr_auc", "delta_specificity_s90_ci_low"} <= set(better)

@@ -1,8 +1,13 @@
-# EXP-03: manejo del desbalance sobre los 1 o 2 mejores candidatos de EXP-02, en los 5 folds.
+# EXP-03: manejo del desbalance sobre el MobileNetV3-Large de EXP-02, en los 5 folds (HU15).
+# Cada estrategia es una corrida aparte, con la misma partición, semillas y entrenamiento que
+# EXP-02; solo cambia training.imbalance (parámetros en base.yaml).
 extends: base.yaml
 experiment: exp03
 
-# Se completa al cerrar EXP-02, p. ej. [{backbone: mobilenet_v3_large, head: dense}].
-candidates: []
+# none se vuelve a entrenar con el mismo código que las demás: es la referencia de la comparación
+# y, frente a EXP-02, muestra cuánto varía el resultado entre dos corridas iguales.
 strategies: [none, class_weight, oversampling, focal_loss]
 folds: [0, 1, 2, 3, 4]
+
+# Corrida de EXP-02 (dentro de resultados/) con la que se compara none, o todas si none no se corre.
+baseline_run: exp02/20261002T030739Z_mobilenet-v3-large
