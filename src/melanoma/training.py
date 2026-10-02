@@ -47,9 +47,12 @@ def setup_devices(training_cfg: dict[str, Any]) -> dict[str, Any]:
 def compile_model(model: keras.Model, learning_rate: float,
                   loss: str | keras.losses.Loss = "binary_crossentropy",
                   jit_compile: bool = False) -> None:
+    # HU14 pide registrar por época la pérdida, el AUC-ROC y la sensibilidad en validación. La
+    # sensibilidad va con umbral 0.5; el umbral operativo se fija en EXP-04.
     model.compile(optimizer=keras.optimizers.Adam(learning_rate), loss=loss,
                   metrics=[keras.metrics.AUC(name="auc"),
-                           keras.metrics.AUC(curve="PR", name="pr_auc")],
+                           keras.metrics.AUC(curve="PR", name="pr_auc"),
+                           keras.metrics.Recall(name="recall")],
                   jit_compile=jit_compile)
 
 

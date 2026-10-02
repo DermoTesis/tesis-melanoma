@@ -87,6 +87,7 @@ def test_two_phase_training_freezes_then_unfreezes_backbone(images, tmp_path):
     assert info["head_epochs"] == 1 and info["finetune_epochs"] == 2
     assert 2 <= info["best_epoch"] <= 3
     assert len(info["history"]["val_auc"]) == 3
+    assert "val_recall" in info["history"]
     assert (tmp_path / "fold" / "historial.csv").exists()
     after = [w.numpy() for w in base.trainable_weights[:3]]
     assert any(not np.allclose(a, b) for a, b in zip(before, after))
