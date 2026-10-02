@@ -1,0 +1,266 @@
+{
+  "experiment": "exp05",
+  "run_id": "20261002T050439Z_tflite",
+  "rows": [
+    {
+      "variant": "keras",
+      "auc_roc": 0.8837247899408924,
+      "threshold": 0.03038744442164898,
+      "recall_at_keras_threshold": 0.9007391763463569,
+      "n_images": 8512
+    },
+    {
+      "variant": "float32",
+      "delta_auc_roc": 1.395857514019383e-07,
+      "delta_auc_roc_ci_low": -5.857301787898227e-07,
+      "delta_auc_roc_ci_high": 1.1064317950837382e-06,
+      "auc_roc": 0.8837249295266438,
+      "recall_at_keras_threshold": 0.9007391763463569,
+      "sensitivity_drop_points": 0.0,
+      "class_changes": 0,
+      "max_abs_prob_diff": 8.702278137207031e-06,
+      "size_mb": 11.9354,
+      "photo_p50_ms": 2.7740485002141213,
+      "photo_p95_ms": 3.609118850181403,
+      "case_p95_ms": 6.681261750054546,
+      "case_concurrent_p95_ms": 38.560366149067704,
+      "case_full_concurrent_p95_s": 0.05360967350043211,
+      "cold_start_p95_s": 0.10893038220092421,
+      "fails": "",
+      "passes": true
+    },
+    {
+      "variant": "float16",
+      "delta_auc_roc": 6.39302741254344e-05,
+      "delta_auc_roc_ci_low": -0.00013735309064416,
+      "delta_auc_roc_ci_high": 0.00027977490359891715,
+      "auc_roc": 0.8837887202150179,
+      "recall_at_keras_threshold": 0.8996832101372756,
+      "sensitivity_drop_points": 0.10559662090813271,
+      "class_changes": 38,
+      "max_abs_prob_diff": 0.025312364101409912,
+      "size_mb": 6.05906,
+      "photo_p50_ms": 2.5787590002437355,
+      "photo_p95_ms": 3.3729452019542805,
+      "case_p95_ms": 6.515772148304677,
+      "case_concurrent_p95_ms": 37.19692825088714,
+      "case_full_concurrent_p95_s": 0.054633373601063795,
+      "cold_start_p95_s": 0.10770182920095976,
+      "fails": "",
+      "passes": true
+    },
+    {
+      "variant": "dynamic_range",
+      "delta_auc_roc": -0.0012318442558020282,
+      "delta_auc_roc_ci_low": -0.003568381148217833,
+      "delta_auc_roc_ci_high": 0.0010915068328322417,
+      "auc_roc": 0.8824929456850904,
+      "recall_at_keras_threshold": 0.9081309398099261,
+      "sensitivity_drop_points": -0.7391763463569179,
+      "class_changes": 343,
+      "max_abs_prob_diff": 0.3804163932800293,
+      "size_mb": 3.320728,
+      "photo_p50_ms": 5.058146498413407,
+      "photo_p95_ms": 6.129253102153597,
+      "case_p95_ms": 11.359447902395914,
+      "case_concurrent_p95_ms": 62.97105030062083,
+      "case_full_concurrent_p95_s": 0.09026979189948178,
+      "cold_start_p95_s": 0.11214697839968721,
+      "fails": "",
+      "passes": true
+    },
+    {
+      "variant": "int8",
+      "delta_auc_roc": -0.29547965502777407,
+      "delta_auc_roc_ci_low": -0.32583751849661685,
+      "delta_auc_roc_ci_high": -0.2638378831908574,
+      "auc_roc": 0.5882451349131184,
+      "recall_at_keras_threshold": 0.46462513199577615,
+      "sensitivity_drop_points": 43.61140443505808,
+      "class_changes": 3474,
+      "max_abs_prob_diff": 0.9918951392173767,
+      "size_mb": 3.527424,
+      "photo_p50_ms": 36.389158998645144,
+      "photo_p95_ms": 41.9278662007855,
+      "case_p95_ms": 84.07893160219828,
+      "case_concurrent_p95_ms": 604.7628658507165,
+      "case_full_concurrent_p95_s": 0.6251130856004238,
+      "cold_start_p95_s": 0.1451249646008364,
+      "fails": "auc,sensitivity,case_concurrent",
+      "passes": false
+    },
+    {
+      "variant": "float32_pillow",
+      "delta_auc_roc": 9.045156688503031e-05,
+      "delta_auc_roc_ci_low": -0.0006010374986119197,
+      "delta_auc_roc_ci_high": 0.0008117641547433644,
+      "auc_roc": 0.8838152415077775,
+      "recall_at_keras_threshold": 0.8933474128827877,
+      "sensitivity_drop_points": 0.7391763463569179,
+      "class_changes": 99,
+      "max_abs_prob_diff": 0.11742916703224182,
+      "fails": "",
+      "passes": true
+    }
+  ],
+  "details": {
+    "chosen_format": "dynamic_range",
+    "keras_threshold": 0.03038744442164898,
+    "latency": {
+      "float32": {
+        "cpus": [
+          0,
+          1
+        ],
+        "xnnpack": true,
+        "photo_ms": {
+          "p50": 2.7740485002141213,
+          "p95": 3.609118850181403
+        },
+        "case_ms": {
+          "p50": 5.482389000462717,
+          "p95": 6.681261750054546
+        },
+        "case_concurrent_ms": {
+          "p50": 26.147990000026766,
+          "p95": 38.560366149067704
+        },
+        "case_full_concurrent_ms": {
+          "p50": 41.425870500461315,
+          "p95": 53.60967350043211
+        },
+        "cold_start": {
+          "total_s": {
+            "p50": 0.10285516600197298,
+            "p95": 0.10893038220092421,
+            "max": 0.11037533900162089
+          },
+          "import_s": 0.04468788700251025,
+          "load_and_first_inference_s": 0.027306398998916848
+        },
+        "size_mb": 11.9354,
+        "cpu_load_before": 2.13
+      },
+      "float16": {
+        "cpus": [
+          0,
+          1
+        ],
+        "xnnpack": true,
+        "photo_ms": {
+          "p50": 2.5787590002437355,
+          "p95": 3.3729452019542805
+        },
+        "case_ms": {
+          "p50": 5.180560998269357,
+          "p95": 6.515772148304677
+        },
+        "case_concurrent_ms": {
+          "p50": 23.323151501244865,
+          "p95": 37.19692825088714
+        },
+        "case_full_concurrent_ms": {
+          "p50": 42.6326485012396,
+          "p95": 54.633373601063795
+        },
+        "cold_start": {
+          "total_s": {
+            "p50": 0.10603418699975009,
+            "p95": 0.10770182920095976,
+            "max": 0.1077989190016524
+          },
+          "import_s": 0.046766208000917686,
+          "load_and_first_inference_s": 0.028694619999441784
+        },
+        "size_mb": 6.05906,
+        "cpu_load_before": 2.13
+      },
+      "dynamic_range": {
+        "cpus": [
+          0,
+          1
+        ],
+        "xnnpack": true,
+        "photo_ms": {
+          "p50": 5.058146498413407,
+          "p95": 6.129253102153597
+        },
+        "case_ms": {
+          "p50": 10.168469500058563,
+          "p95": 11.359447902395914
+        },
+        "case_concurrent_ms": {
+          "p50": 48.69479950139066,
+          "p95": 62.97105030062083
+        },
+        "case_full_concurrent_ms": {
+          "p50": 67.36135049868608,
+          "p95": 90.26979189948179
+        },
+        "cold_start": {
+          "total_s": {
+            "p50": 0.11045304799699807,
+            "p95": 0.11214697839968721,
+            "max": 0.1124462810003024
+          },
+          "import_s": 0.04626616799941985,
+          "load_and_first_inference_s": 0.03561869300028775
+        },
+        "size_mb": 3.320728,
+        "cpu_load_before": 2.12
+      },
+      "int8": {
+        "cpus": [
+          0,
+          1
+        ],
+        "xnnpack": false,
+        "photo_ms": {
+          "p50": 36.389158998645144,
+          "p95": 41.9278662007855
+        },
+        "case_ms": {
+          "p50": 79.46176550103701,
+          "p95": 84.07893160219828
+        },
+        "case_concurrent_ms": {
+          "p50": 542.9441770011181,
+          "p95": 604.7628658507165
+        },
+        "case_full_concurrent_ms": {
+          "p50": 577.5098144986259,
+          "p95": 625.1130856004238
+        },
+        "cold_start": {
+          "total_s": {
+            "p50": 0.14492107100159046,
+            "p95": 0.1451249646008364,
+            "max": 0.1451554320010473
+          },
+          "import_s": 0.0460386809972988,
+          "load_and_first_inference_s": 0.06930150500193122
+        },
+        "size_mb": 3.527424,
+        "cpu_load_before": 2.19
+      }
+    },
+    "cpu_load_before": 1.0,
+    "satisficing": {
+      "max_size_mb": 15,
+      "max_p95_ms_single_case": 100,
+      "max_p95_ms_concurrent_cases": 300,
+      "concurrent_cases": 4,
+      "max_p95_case_s": 1.5,
+      "max_cold_start_s": 2.0,
+      "max_auc_drop": 0.005,
+      "max_sensitivity_drop_points": 1.0
+    },
+    "folds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+}
