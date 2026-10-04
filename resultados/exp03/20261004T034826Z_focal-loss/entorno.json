@@ -1,0 +1,27 @@
+{
+  "utc": "2026-10-04T03:48:26+00:00",
+  "host": "ae151aff6058",
+  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "python": "3.12.3",
+  "wsl": true,
+  "docker": true,
+  "colab": false,
+  "keras_backend": null,
+  "cpu_count": 6,
+  "gpu": [
+    "NVIDIA GeForce RTX 5060, 591.86, 8151 MiB"
+  ],
+  "packages": {
+    "numpy": "1.26.4",
+    "pandas": "2.2.3",
+    "scikit-learn": "1.5.2",
+    "tensorflow": "2.17.0+nv25.2",
+    "keras": "3.3.2",
+    "torch": null,
+    "ai-edge-litert": null
+  },
+  "git": {
+    "commit": "daae3a5ad29cd26b55a1bf41e125a8578272db23",
+    "dirty": true
+  }
+}
