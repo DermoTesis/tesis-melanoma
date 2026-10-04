@@ -57,7 +57,7 @@ def compile_model(model: keras.Model, learning_rate: float,
                   jit_compile=jit_compile)
 
 
-def train_two_phases(model: keras.Model, train_ds: tf.data.Dataset, val_ds: tf.data.Dataset,
+def train_two_phases(model: keras.Model, train_ds: tf.data.Dataset, val_ds: tf.data.Dataset | None,
                      training_cfg: dict[str, Any], out_dir: Path,
                      loss: str | keras.losses.Loss = "binary_crossentropy",
                      class_weight: dict[int, float] | None = None,
@@ -69,6 +69,9 @@ def train_two_phases(model: keras.Model, train_ds: tf.data.Dataset, val_ds: tf.d
     Devuelve el historial por época (una lista por métrica, ambas fases seguidas) y la mejor
     época de la fase 2, cuyos pesos quedan en el modelo. `steps_per_epoch` hace falta cuando
     `train_ds` es infinito (sobremuestreo).
+
+    Sin `val_ds` (modelo final de EXP-04, con todos los datos) no hay parada temprana: entrena
+    exactamente las épocas configuradas, que salen de la validación cruzada.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     log = keras.callbacks.CSVLogger(str(out_dir / "historial.csv"), append=True)
@@ -82,22 +85,27 @@ def train_two_phases(model: keras.Model, train_ds: tf.data.Dataset, val_ds: tf.d
 
     unfreeze_backbone(model)
     compile_model(model, finetune["learning_rate"], loss, jit_compile)
-    early = keras.callbacks.EarlyStopping(monitor="val_auc", mode="max",
-                                          patience=training_cfg["early_stopping_patience"],
-                                          restore_best_weights=True)
+    callbacks: list[keras.callbacks.Callback] = [log]
+    if val_ds is not None:
+        early = keras.callbacks.EarlyStopping(monitor="val_auc", mode="max",
+                                              patience=training_cfg["early_stopping_patience"],
+                                              restore_best_weights=True)
+        callbacks.append(early)
     h2 = model.fit(train_ds, validation_data=val_ds, initial_epoch=head["epochs"],
                    epochs=head["epochs"] + finetune["epochs"], steps_per_epoch=steps_per_epoch,
-                   class_weight=class_weight, callbacks=[log, early], shuffle=False,
+                   class_weight=class_weight, callbacks=callbacks, shuffle=False,
                    verbose=verbose)
+    history = {k: [float(v) for v in h1.history.get(k, [])] + [float(v) for v in vals]
+               for k, vals in h2.history.items()}
+    info = {"history": history, "head_epochs": len(h1.history["loss"]),
+            "finetune_epochs": len(h2.history["loss"])}
+    if val_ds is None:
+        return {**info, "best_epoch": head["epochs"] + finetune["epochs"]}
     # Algunas versiones de Keras solo restauran si la parada fue temprana: se fuerza aquí.
     if early.best_weights is not None:
         model.set_weights(early.best_weights)
-
-    history = {k: [float(v) for v in h1.history.get(k, [])] + [float(v) for v in vals]
-               for k, vals in h2.history.items()}
     best = int(np.argmax(h2.history["val_auc"]))
-    return {"history": history, "head_epochs": len(h1.history["loss"]),
-            "finetune_epochs": len(h2.history["loss"]), "best_epoch": head["epochs"] + best + 1,
+    return {**info, "best_epoch": head["epochs"] + best + 1,
             "best_val_auc_keras": float(h2.history["val_auc"][best])}
 
 

@@ -124,7 +124,7 @@ Se ejecutan en este orden. Cada uno lee su YAML de `configs/`.
 | 3 | EXP-03 Desbalance | Sin balanceo, pesos de clase, sobremuestreo o focal loss (comparación pareada con la línea base) | `bash scripts/gpu.sh experiments/exp03_desbalance.py` |
 | 4 | EXP-05 Conversión a `.tflite` | Formato de cuantización, tamaño, latencia en CPU (2 núcleos) y pérdida de AUC; corre en CPU | `python experiments/exp05_tflite.py` |
 | 5 | EXP-06 Una foto vs. dos fotos | Fusión aprendida frente a una foto y al promedio fijo, sobre las mismas lesiones con 2+ fotos, y robustez a una foto mala (aporte del trabajo) | `bash scripts/gpu.sh experiments/exp06_dos_fotos.py` |
-| 6 | EXP-04 Calibración y umbral | Probabilidad calibrada, umbral con recall ≥ 90%, banda de confianza baja | pendiente |
+| 6 | EXP-04 Modelo final, calibración y umbral | Modelo con todo train+val (GPU), calibración y umbral con margen registrados antes del test, y la única evaluación del test | `bash scripts/gpu.sh experiments/exp04_modelo_final.py`, luego `python experiments/exp04_evaluacion.py` (ver su docstring) |
 
 EXP-06 va antes de EXP-04 para que la calibración y la única evaluación en el test usen el
 modelo definitivo.

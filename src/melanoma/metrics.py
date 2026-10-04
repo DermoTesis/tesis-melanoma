@@ -115,6 +115,37 @@ def evaluate(y: np.ndarray, p: np.ndarray, groups: Sequence, target_recall: floa
     return out
 
 
+def operating_point(y: np.ndarray, p: np.ndarray, threshold: float) -> dict[str, float]:
+    """Métricas en un umbral fijo (el operativo de EXP-04), con VPN, AUC-ROC y PR-AUC."""
+    y = np.asarray(y).astype(int)
+    p = np.asarray(p, dtype=float)
+    out = at_threshold(y, p, threshold)
+    out["npv"] = _ratio(out["tn"], out["tn"] + out["fn"])
+    both = 0 < y.sum() < len(y)
+    out["auc_roc"] = float(roc_auc_score(y, p)) if both else math.nan
+    out["pr_auc"] = float(average_precision_score(y, p)) if both else math.nan
+    return out
+
+
+def evaluate_at(y: np.ndarray, p: np.ndarray, groups: Sequence, threshold: float,
+                n_resamples: int = 2000, confidence: float = 0.95, seed: int = 42) -> dict[str, Any]:
+    """`operating_point` con IC por bootstrap de lesiones; el umbral queda fijo."""
+    y = np.asarray(y).astype(int)
+    p = np.asarray(p, dtype=float)
+    point = operating_point(y, p, threshold)
+    keys = [k for k in point if k not in COUNTS]
+    samples = np.array([[operating_point(y[i], p[i], threshold)[k] for k in keys]
+                        for i in bootstrap_indices(groups, n_resamples, seed)])
+    alpha = (1 - confidence) / 2
+    out: dict[str, Any] = {"threshold": float(threshold), **point}
+    for j, key in enumerate(keys):
+        out[f"{key}_ci_low"] = float(np.nanquantile(samples[:, j], alpha))
+        out[f"{key}_ci_high"] = float(np.nanquantile(samples[:, j], 1 - alpha))
+    out.update(n_images=int(len(y)), n_lesions=int(pd.Series(groups).nunique()),
+               n_positive_images=int(y.sum()))
+    return out
+
+
 def compare_paired(y: np.ndarray, p_reference: np.ndarray, p_candidate: np.ndarray,
                    groups: Sequence, target_recall: float = 0.90, n_resamples: int = 2000,
                    confidence: float = 0.95, seed: int = 42,

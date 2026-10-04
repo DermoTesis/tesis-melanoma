@@ -1,13 +1,32 @@
-# EXP-04: calibración y umbral de decisión orientado a sensibilidad, sobre el modelo final.
-# Todo se ajusta con las predicciones de validación de los folds; el test se evalúa una sola vez,
-# en la corrida final, y el código se niega a volver a evaluarlo.
+# EXP-04: modelo final, calibración, umbral con margen y la única evaluación sobre el test (HU17).
+# Va en tres pasos (ver los docstrings):
+#   1. experiments/exp04_modelo_final.py (GPU): modelo de una foto y de dos fotos con todo train+val.
+#   2. experiments/exp04_evaluacion.py (CPU): calibración y umbral con las predicciones fuera de
+#      fold, con el mismo camino que el servidor (Pillow + .tflite). Se commitea: es el registro
+#      previo de lo que se va a evaluar.
+#   3. el mismo script con evaluate_test=true: la única evaluación del test, con lo registrado.
 extends: base.yaml
 experiment: exp04
 
+# Corridas de donde sale todo (dentro de resultados/ y outputs/).
+single_view_run: exp03/20261003T194439Z_none        # una foto por fold; EXP-03 eligió sin balanceo
+two_view_run: exp06/20261004T053842Z_dos-fotos      # fusión por fold (EXP-06 eligió dos fotos)
+tflite_run: exp05/20261004T064739Z_tflite-dos-fotos  # la fusión por fold ya convertida (EXP-05)
+final_run: null      # corrida del paso 1 (exp04/<id>); hace falta para los pasos 2 y 3
+
+# float16 y no rango dinámico, aunque la regla de EXP-05 elegía el más liviano: con float16 las
+# predicciones son prácticamente las del modelo original (7 de 1,662 lesiones cambian de clase,
+# frente a 97), y la robustez de la fusión a una foto mala se midió con el modelo sin cuantizar.
+# La diferencia de tamaño (6.3 frente a 3.5 MB) no cambia nada en la práctica.
+format: float16
+
 calibration:
-  methods: [temperature, isotonic]
+  methods: [platt, isotonic]   # se elige por ECE fuera de fold; solo cambia lo que ve el médico
   ece_bins: 15
 
-# Umbral: el más alto que en validación mantiene recall >= metrics.target_recall.
-# La banda de "confianza baja" (RF-06.1) se define al implementar este experimento.
+# El umbral asegura sensibilidad >= metrics.target_recall con esta confianza en la validación.
+threshold_confidence: 0.95
+
+# Paso 3. Se activa con --set evaluate_test=true --set preregistered_run=exp04/<id del paso 2>.
 evaluate_test: false
+preregistered_run: null

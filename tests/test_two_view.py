@@ -126,3 +126,28 @@ def test_two_view_fold_end_to_end(tmp_path, single):
     assert info["n_train_lesions"] == 3 and (tmp_path / "fold_0" / "modelo.keras").exists()
     images = load_images(["ISIC_10", "ISIC_11"], images_dir, SIZE)
     assert images.shape == (2, SIZE, SIZE, 3) and images.dtype == np.uint8
+
+
+def test_final_models_train_on_all_trainval_without_validation(tmp_path, single):
+    from melanoma.final_model import train_final
+    rng = np.random.default_rng(1)
+    df = lesions_df()
+    images_dir = tmp_path / "images"
+    images_dir.mkdir()
+    for image_id in df.image_id:
+        tf.io.write_file(str(images_dir / f"{image_id}.jpg"),
+                         tf.io.encode_jpeg(rng.integers(0, 255, (45, 60, 3), dtype=np.uint8)))
+    test_row = df.iloc[[0]].assign(split="test", fold=-1)
+    splits = pd.concat([df.iloc[1:].assign(split="trainval", fold=0), test_row])
+    phases = {"head": {"epochs": 1, "learning_rate": 1e-3}, "finetune": {"epochs": 1, "learning_rate": 1e-4}}
+    cfg = {"seed": 0, "model": MODEL_CFG, "fusion": {"hidden": 8},
+           "data": {"image_size": SIZE, "cache": True, "augmentation": {}, "max_images": None},
+           "view_degradation": None,
+           "training": {"batch_size": 2, "early_stopping_patience": 2, "imbalance": "none"},
+           "final": {"single_view": {"phases": phases}, "two_view": {"phases": phases}}}
+    info = train_final(cfg, splits, images_dir, tmp_path / "final", verbose=0)
+    assert (tmp_path / "final" / "una_foto.keras").exists()
+    assert (tmp_path / "final" / "dos_fotos.keras").exists()
+    assert info["single_view"]["n_train_images"] == len(df) - 1   # el test no entra
+    assert info["two_view"]["n_train_lesions"] == 3
+    assert info["two_view"]["best_epoch"] == 2 and "best_val_auc_keras" not in info["two_view"]
