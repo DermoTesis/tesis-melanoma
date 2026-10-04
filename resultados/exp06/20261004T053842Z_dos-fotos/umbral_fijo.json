@@ -1,0 +1,119 @@
+{
+  "target_recall": 0.9,
+  "thresholds": {
+    "single_a": 0.049703,
+    "average": 0.071539,
+    "fusion": 0.023691
+  },
+  "conditions": {
+    "limpia": {
+      "single_a": {
+        "recall": 0.9021406727828746,
+        "specificity": 0.4389513108614232
+      },
+      "average": {
+        "recall": 0.9021406727828746,
+        "specificity": 0.4779026217228464
+      },
+      "fusion": {
+        "recall": 0.9021406727828746,
+        "specificity": 0.44569288389513106
+      }
+    },
+    "blur_2": {
+      "single_a": {
+        "recall": 0.7889908256880734,
+        "specificity": 0.6052434456928839
+      },
+      "average": {
+        "recall": 0.8593272171253823,
+        "specificity": 0.5573033707865168
+      },
+      "fusion": {
+        "recall": 0.908256880733945,
+        "specificity": 0.46367041198501874
+      },
+      "delta_recall_fusion_minus_average": {
+        "point": 0.04892966360856266,
+        "ci_low": 0.02366220735785954,
+        "ci_high": 0.07643969712342404
+      }
+    },
+    "blur_4": {
+      "single_a": {
+        "recall": 0.4434250764525994,
+        "specificity": 0.8456928838951311
+      },
+      "average": {
+        "recall": 0.8165137614678899,
+        "specificity": 0.6307116104868914
+      },
+      "fusion": {
+        "recall": 0.908256880733945,
+        "specificity": 0.4681647940074906
+      },
+      "delta_recall_fusion_minus_average": {
+        "point": 0.09174311926605505,
+        "ci_low": 0.06086539797194053,
+        "ci_high": 0.12536443148688048
+      }
+    },
+    "blur_8": {
+      "single_a": {
+        "recall": 0.08256880733944955,
+        "specificity": 0.9805243445692884
+      },
+      "average": {
+        "recall": 0.7828746177370031,
+        "specificity": 0.6681647940074906
+      },
+      "fusion": {
+        "recall": 0.9051987767584098,
+        "specificity": 0.46142322097378274
+      },
+      "delta_recall_fusion_minus_average": {
+        "point": 0.1223241590214067,
+        "ci_low": 0.08814350710175678,
+        "ci_high": 0.15759651279455497
+      }
+    },
+    "dark_0.5": {
+      "single_a": {
+        "recall": 0.5443425076452599,
+        "specificity": 0.8187265917602996
+      },
+      "average": {
+        "recall": 0.8256880733944955,
+        "specificity": 0.6254681647940075
+      },
+      "fusion": {
+        "recall": 0.8776758409785933,
+        "specificity": 0.5056179775280899
+      },
+      "delta_recall_fusion_minus_average": {
+        "point": 0.051987767584097844,
+        "ci_low": 0.023255813953488413,
+        "ci_high": 0.08055659203980103
+      }
+    },
+    "dark_0.25": {
+      "single_a": {
+        "recall": 0.16819571865443425,
+        "specificity": 0.949063670411985
+      },
+      "average": {
+        "recall": 0.7859327217125383,
+        "specificity": 0.6531835205992509
+      },
+      "fusion": {
+        "recall": 0.8990825688073395,
+        "specificity": 0.4696629213483146
+      },
+      "delta_recall_fusion_minus_average": {
+        "point": 0.11314984709480125,
+        "ci_low": 0.07987220447284349,
+        "ci_high": 0.14627216129298254
+      }
+    }
+  }
+}
