@@ -1,9 +1,12 @@
 import csv
 import json
+import shutil
+import subprocess
 
+import pytest
 import yaml
 
-from melanoma.runs import _read_head, consolidate_results, start_run
+from melanoma.runs import _git_info, _read_head, consolidate_results, start_run
 
 CFG = {"paths": {"results": "resultados", "outputs": "outputs"}, "seed": 42}
 
@@ -42,3 +45,21 @@ def test_commit_is_read_from_git_dir_without_git(tmp_path):
     (git / "refs" / "heads" / "main").write_text("def456\n")
     assert _read_head(git) == "def456"
     assert _read_head(tmp_path / "no-existe") is None
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="sin git")
+def test_changed_results_do_not_make_the_tree_dirty(tmp_path):
+    def git(*args):
+        subprocess.run(["git", *args], cwd=tmp_path, check=True, capture_output=True)
+
+    git("init", "-q")
+    (tmp_path / "resultados").mkdir()
+    (tmp_path / "resultados" / "resultados.csv").write_text("a\n")
+    (tmp_path / "codigo.py").write_text("x = 1\n")
+    git("add", ".")
+    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "inicial")
+    (tmp_path / "resultados" / "resultados.csv").write_text("a\nb\n")
+    assert _git_info(tmp_path, ("resultados",))["dirty"] is False
+    assert _git_info(tmp_path)["dirty"] is True
+    (tmp_path / "codigo.py").write_text("x = 2\n")
+    assert _git_info(tmp_path, ("resultados",))["dirty"] is True

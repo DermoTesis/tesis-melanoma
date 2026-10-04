@@ -56,7 +56,7 @@ def start_run(cfg: dict, experiment: str, name: str, root: Path = PROJECT_ROOT) 
     run_id = f"{stamp}_{_slug(name)}"
     results_dir = root / cfg["paths"]["results"] / experiment / run_id
     artifacts_dir = root / cfg["paths"]["outputs"] / experiment / run_id
-    env = environment_info(root)
+    env = environment_info(root, ignore=(cfg["paths"]["results"],))
     results_dir.mkdir(parents=True, exist_ok=False)
     artifacts_dir.mkdir(parents=True, exist_ok=True)
 
@@ -69,8 +69,11 @@ def start_run(cfg: dict, experiment: str, name: str, root: Path = PROJECT_ROOT) 
     return Run(experiment, run_id, results_dir, artifacts_dir)
 
 
-def environment_info(root: Path = PROJECT_ROOT) -> dict[str, Any]:
-    """Versiones, hardware y commit: lo necesario para reproducir o explicar una corrida."""
+def environment_info(root: Path = PROJECT_ROOT, ignore: tuple[str, ...] = ()) -> dict[str, Any]:
+    """Versiones, hardware y commit: lo necesario para reproducir o explicar una corrida.
+
+    `ignore`: rutas versionadas que no cuentan como cambios sin commit (los resultados).
+    """
     versions = {}
     for package in TRACKED_PACKAGES:
         try:
@@ -89,7 +92,7 @@ def environment_info(root: Path = PROJECT_ROOT) -> dict[str, Any]:
         "cpu_count": os.cpu_count(),
         "gpu": _nvidia_smi(),
         "packages": versions,
-        "git": _git_info(root),
+        "git": _git_info(root, ignore),
     }
 
 
@@ -150,16 +153,19 @@ def _nvidia_smi() -> list[str]:
     return out.splitlines() if out else []
 
 
-def _git_info(root: Path) -> dict[str, Any]:
+def _git_info(root: Path, ignore: tuple[str, ...] = ()) -> dict[str, Any]:
     commit = _run(["git", "rev-parse", "HEAD"], cwd=root)
     if commit is None:
         # Sin git (p. ej., en la imagen de NVIDIA): el commit se lee de .git, sin saber si hay
         # cambios sin commit.
         commit = _read_head(root / ".git")
         return {"commit": commit, "dirty": None} if commit else {}
-    # Solo cuentan los archivos versionados modificados; los resultados nuevos no ensucian.
-    status = _run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=root)
-    return {"commit": commit, "dirty": bool(status)}
+    # Solo cuentan los archivos versionados modificados, sin los resultados: si no, la corrida
+    # que regenera resultados.csv dejaba "sucias" a las siguientes del mismo experimento.
+    excluded = [f":(exclude){p}" for p in ignore if not Path(p).is_absolute()]
+    status = _run(["git", "status", "--porcelain", "--untracked-files=no", "--", ".", *excluded],
+                  cwd=root)
+    return {"commit": commit, "dirty": None if status is None else bool(status)}
 
 
 def _read_head(git_dir: Path) -> str | None:
