@@ -1,0 +1,41 @@
+# EXP-06: una foto frente a dos fotos de la misma lesión (aporte científico, HU36 y HU37).
+# Solo las lesiones con 2 o más fotos (1,662 de entrenamiento y validación), con la misma
+# partición por lesión: así el número de fotos no delata el diagnóstico. Ver el criterio de
+# decisión en experiments/exp06_dos_fotos.py.
+extends: base.yaml
+experiment: exp06
+
+folds: [0, 1, 2, 3, 4]
+
+# Modelos de una foto por fold (outputs/) y su configuración (resultados/): la línea base, y el
+# punto de partida de la fusión. EXP-03 eligió entrenar sin balanceo.
+single_view_run: exp03/20261003T194439Z_none
+
+pairs:
+  max_lesions: null   # solo para pruebas rápidas: limita las lesiones de cada partición
+
+fusion:
+  hidden: 128         # neuronas de la red que puntúa cada foto
+  dropout: 0.2
+
+# Entrenamiento: con esta probabilidad, una de las dos fotos llega degradada, para que la fusión
+# aprenda a quitarle peso a una foto mala.
+view_degradation:
+  probability: 0.3
+  blur_sigmas: [1.5, 3.0, 5.0]   # desenfoque gaussiano, en píxeles de la imagen de 224
+  dark_factor: [0.3, 0.7]        # brillo multiplicado por un factor de este rango
+
+# H3: en validación se degrada la foto A y la B queda intacta. Niveles distintos a los del
+# entrenamiento, incluido uno más fuerte, para no medir solo lo que ya vio.
+evaluation_degradations:
+  blur: [2.0, 4.0, 8.0]
+  dark: [0.5, 0.25]
+
+training:
+  phases:
+    head:        # fase 1: backbone congelado; se entrenan la fusión y la cabeza
+      epochs: 10
+      learning_rate: 1.0e-3
+    finetune:    # fase 2: también el backbone (menos las BatchNorm), con tasa baja
+      epochs: 15
+      learning_rate: 1.0e-5

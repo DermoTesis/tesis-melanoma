@@ -148,14 +148,19 @@ def train_fold_isolated(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, im
     primera corrida de EXP-02. `build`, si se pasa, debe poder serializarse con pickle (una
     función de módulo, no una lambda).
     """
+    return run_isolated(train_fold, cfg, splits, fold, images_dir, out_dir, **kwargs)
+
+
+def run_isolated(fn: Callable[..., Any], cfg: dict[str, Any], *args: Any, **kwargs: Any) -> Any:
+    """Llama `fn(cfg, *args, jit_compile=..., **kwargs)` en un proceso nuevo con la GPU configurada.
+
+    `fn` debe ser una función de módulo (se serializa con pickle) y aceptar `jit_compile`.
+    """
     context = multiprocessing.get_context("spawn")
     with ProcessPoolExecutor(max_workers=1, mp_context=context) as pool:
-        return pool.submit(_train_fold_child, cfg, splits, fold, images_dir, out_dir,
-                           kwargs).result()
+        return pool.submit(_isolated_child, fn, cfg, args, kwargs).result()
 
 
-def _train_fold_child(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_dir: Path,
-                      out_dir: Path, kwargs: dict[str, Any]) -> tuple[pd.DataFrame, dict[str, Any]]:
+def _isolated_child(fn: Callable[..., Any], cfg: dict[str, Any], args: tuple, kwargs: dict) -> Any:
     devices = setup_devices(cfg["training"])   # la precisión mixta es global de cada proceso
-    return train_fold(cfg, splits, fold, images_dir, out_dir, jit_compile=devices["jit_compile"],
-                      **kwargs)
+    return fn(cfg, *args, jit_compile=devices["jit_compile"], **kwargs)
