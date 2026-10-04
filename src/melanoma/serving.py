@@ -29,7 +29,11 @@ def preprocess(data: bytes, image_size: int = 224) -> np.ndarray:
 
 
 class TFLiteClassifier:
-    """Probabilidad de melanoma de una foto ya preprocesada, con el intérprete de LiteRT.
+    """Probabilidad de melanoma con el intérprete de LiteRT, de una o de dos fotos preprocesadas.
+
+    El modelo de una foto tiene una entrada; el de dos fotos (EXP-06) tiene dos, `view_a` y
+    `view_b`, en ese orden. `predict_case` clasifica un caso (panorámica y acercamiento) con
+    cualquiera de los dos: el de una foto devuelve una probabilidad por foto.
 
     Usa XNNPACK, el acelerador de CPU que LiteRT activa por defecto. Si no puede preparar el
     modelo (pasa con el int8 de MobileNetV3), usa los kernels normales; `xnnpack` dice cuál quedó.
@@ -40,22 +44,44 @@ class TFLiteClassifier:
 
         source = {"model_content": model} if isinstance(model, bytes) else {"model_path": str(model)}
         try:
-            self.interpreter = Interpreter(**source, num_threads=num_threads)
-            self.interpreter.allocate_tensors()
+            self._load(Interpreter(**source, num_threads=num_threads))
+            # XNNPACK a veces falla recién en la primera inferencia: se prueba aquí.
+            self.predict_one(*[np.zeros(self._shape, np.float32)] * self.n_inputs)
             self.xnnpack = True
         except RuntimeError:
-            self.interpreter = Interpreter(
+            self._load(Interpreter(
                 **source, num_threads=num_threads,
-                experimental_op_resolver_type=OpResolverType.BUILTIN_WITHOUT_DEFAULT_DELEGATES)
-            self.interpreter.allocate_tensors()
+                experimental_op_resolver_type=OpResolverType.BUILTIN_WITHOUT_DEFAULT_DELEGATES))
             self.xnnpack = False
-        self._input = self.interpreter.get_input_details()[0]["index"]
-        self._output = self.interpreter.get_output_details()[0]["index"]
 
-    def predict_one(self, image: np.ndarray) -> float:
-        self.interpreter.set_tensor(self._input, image[None].astype(np.float32))
+    def _load(self, interpreter) -> None:
+        self.interpreter = interpreter
+        interpreter.allocate_tensors()
+        inputs = sorted(interpreter.get_input_details(), key=lambda d: d["name"])
+        self._inputs = [d["index"] for d in inputs]
+        self._shape = tuple(inputs[0]["shape"][1:])
+        self._output = interpreter.get_output_details()[0]["index"]
+
+    @property
+    def n_inputs(self) -> int:
+        return len(self._inputs)
+
+    def predict_one(self, *images: np.ndarray) -> float:
+        """Una inferencia: una foto, o las dos del caso si el modelo es de dos fotos."""
+        if len(images) != self.n_inputs:
+            raise ValueError(f"El modelo espera {self.n_inputs} foto(s) y recibió {len(images)}")
+        for index, image in zip(self._inputs, images):
+            self.interpreter.set_tensor(index, image[None].astype(np.float32))
         self.interpreter.invoke()
         return float(self.interpreter.get_tensor(self._output).ravel()[0])
 
-    def predict(self, images: Iterable[np.ndarray]) -> np.ndarray:
-        return np.array([self.predict_one(image) for image in images])
+    def predict(self, items: Iterable[np.ndarray | tuple[np.ndarray, ...]]) -> np.ndarray:
+        """Una probabilidad por elemento: una foto, o una tupla (A, B) con el modelo de dos fotos."""
+        return np.array([self.predict_one(*item) if isinstance(item, tuple) else self.predict_one(item)
+                         for item in items])
+
+    def predict_case(self, a: np.ndarray, b: np.ndarray) -> list[float]:
+        """Las dos fotos de un caso: una probabilidad con el modelo de dos fotos, dos con el de una."""
+        if self.n_inputs == 2:
+            return [self.predict_one(a, b)]
+        return [self.predict_one(a), self.predict_one(b)]

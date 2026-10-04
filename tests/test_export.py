@@ -12,7 +12,7 @@ pytest.importorskip("PIL")
 
 from melanoma.data.pipeline import load_image  # noqa: E402
 from melanoma.export_tflite import benchmark, cold_start, convert  # noqa: E402
-from melanoma.models import build_single_view  # noqa: E402
+from melanoma.models import build_single_view, build_two_view  # noqa: E402
 from melanoma.serving import TFLiteClassifier, preprocess  # noqa: E402
 
 SIZE = 64
@@ -68,3 +68,27 @@ def test_benchmark_and_cold_start_report_latencies(model, jpegs, tmp_path):
     assert out["xnnpack"] is True
     cold = cold_start(path, threads=1, image_size=SIZE, runs=1)
     assert cold["total_s"]["p95"] > cold["load_and_first_inference_s"] > 0
+
+
+def test_two_view_model_converts_and_classifies_a_case_in_one_call(model, jpegs, tmp_path):
+    two = build_two_view(model, {"hidden": 8})
+    a, b = (np.stack([preprocess(j, SIZE) for j in jpegs[k::2]]) for k in (0, 1))
+    expected = two.predict({"view_a": a.astype("float32"), "view_b": b.astype("float32")},
+                           verbose=0).ravel()
+    clf = TFLiteClassifier(convert(two, "float32"), num_threads=1)
+    assert clf.n_inputs == 2
+    np.testing.assert_allclose(clf.predict(list(zip(a, b))), expected, atol=1e-5)
+    assert clf.predict_case(a[0], b[0]) == pytest.approx([expected[0]], abs=1e-5)
+    int8 = convert(two, "int8", representative=list(zip(a, b)))
+    assert TFLiteClassifier(int8, num_threads=1).predict_case(a[0], b[0])[0] >= 0
+    single = TFLiteClassifier(convert(model, "float32"), num_threads=1)
+    assert len(single.predict_case(a[0], b[0])) == 2
+    path = tmp_path / "two.tflite"
+    path.write_bytes(convert(two, "float32"))
+    cpus = os.sched_getaffinity(0)
+    try:
+        out = benchmark(path, jpegs, SIZE, threads=1, warmup=1, runs=4, concurrent=2)
+    finally:
+        os.sched_setaffinity(0, cpus)
+    assert out["case_ms"]["p50"] > 0
+    assert cold_start(path, threads=1, image_size=SIZE, runs=1)["total_s"]["p95"] > 0

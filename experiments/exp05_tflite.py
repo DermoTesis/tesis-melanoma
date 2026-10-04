@@ -1,7 +1,11 @@
-"""EXP-05: conversión y cuantización a .tflite de los modelos de EXP-02 (HU16).
+"""EXP-05: conversión y cuantización a .tflite de los modelos de una o de dos fotos (HU16).
 
-    python experiments/exp05_tflite.py
+    python experiments/exp05_tflite.py                                        # EXP-02, una foto
+    python experiments/exp05_tflite.py --config configs/exp05_tflite_dos_fotos.yaml   # EXP-06
     python experiments/exp05_tflite.py --set "folds=[0]" --set data.max_images=200   # prueba
+
+Con el modelo de dos fotos se usan los mismos pares (A, B) de validación que en EXP-06, una fila
+por lesión, y `data.max_images` limita las lesiones.
 
 Corre en CPU (contenedor de desarrollo). Para cada fold convierte su modelo a float32, float16,
 rango dinámico e int8, y predice su fold de validación con Keras y con cada `.tflite`. Con las
@@ -42,6 +46,8 @@ def main(argv: list[str] | None = None) -> int:
 
     from melanoma.data.pipeline import limit_images, load_image
     from melanoma.data.splits import load_splits, train_val
+    from melanoma.data.views import fixed_pairs, multi_image_lesions
+    from melanoma.multiview import limit_lesions
     from melanoma.export_tflite import FORMATS, benchmark, cold_start, convert, load_trained
     from melanoma.metrics import at_threshold, compare_paired, threshold_for_recall
     from melanoma.serving import TFLiteClassifier, preprocess
@@ -53,50 +59,73 @@ def main(argv: list[str] | None = None) -> int:
     source_models = PROJECT_ROOT / cfg["paths"]["outputs"] / cfg["source_run"]
     source_cfg = yaml.safe_load((source_results / "config.yaml").read_text())
     size = source_cfg["data"]["image_size"]
+    fusion_cfg = source_cfg.get("fusion")   # solo en EXP-06: modelo de dos fotos
     splits = load_splits(PROJECT_ROOT / cfg["paths"]["splits"] / source_cfg["split"]["name"])
     images_dir = PROJECT_ROOT / cfg["data"]["sources"]["ham10000"]["images"]
     load = os.getloadavg()[0]
     if load > 1.5:
         print(f"Aviso: la CPU está ocupada (carga {load:.1f}); las latencias saldrán peores.")
 
-    run = start_run(cfg, "exp05", "tflite")
+    run = start_run(cfg, "exp05", "tflite-dos-fotos" if fusion_cfg else "tflite")
     print(f"Corrida {run.run_id}, modelos de {cfg['source_run']}")
     decode = tf.function(lambda path: load_image(path, size))
 
-    def tf_images(df: pd.DataFrame) -> np.ndarray:
+    def tf_images(image_ids) -> np.ndarray:
         return np.stack([decode(tf.constant(str(images_dir / f"{i}.jpg"))).numpy()
-                         for i in df.image_id])
+                         for i in image_ids])
+
+    def items(arrays: list):
+        """Lo que recibe el `.tflite`: fotos sueltas o pares (A, B)."""
+        return list(zip(*arrays)) if len(arrays) == 2 else arrays[0]
+
+    def keras_predict(model, arrays: list[np.ndarray]) -> np.ndarray:
+        def chunk(x: np.ndarray, i: int) -> np.ndarray:
+            return x[i:i + 64].astype("float32")
+        if len(arrays) == 2:
+            return np.concatenate([model.predict({"view_a": chunk(arrays[0], i),
+                                                 "view_b": chunk(arrays[1], i)}, verbose=0).ravel()
+                                   for i in range(0, len(arrays[0]), 64)])
+        return np.concatenate([model.predict(chunk(arrays[0], i), verbose=0).ravel()
+                               for i in range(0, len(arrays[0]), 64)])
 
     all_preds, tflite_paths, bench_jpegs = [], {}, None
     for fold in cfg["folds"]:
         print(f"\n=== Fold {fold} ===")
         train_df, val_df = train_val(splits, fold)
-        val_df = limit_images(val_df, cfg["data"].get("max_images"), cfg["seed"] + fold)
         out_dir = run.artifacts_dir / f"fold_{fold}"
         out_dir.mkdir(parents=True, exist_ok=True)
         keras.backend.clear_session()
         model = load_trained(source_models / f"fold_{fold}" / "modelo.keras", source_cfg["model"],
-                             size)
-        images = tf_images(val_df)
-        jpegs = [(images_dir / f"{i}.jpg").read_bytes() for i in val_df.image_id]
-        if bench_jpegs is None:
-            bench_jpegs = jpegs[:cfg["benchmark"]["images"]]
-        pred = val_df[["image_id", "lesion_id", "dx", "label"]].assign(fold=fold).reset_index(drop=True)
-        pred["prob_keras"] = np.concatenate([
-            model.predict(images[i:i + 64].astype("float32"), verbose=0).ravel()
-            for i in range(0, len(images), 64)])
-        rep_df = train_df.sample(n=min(cfg["representative_samples"], len(train_df)),
-                                 random_state=cfg["seed"] + fold)
-        representative = tf_images(rep_df)
+                             size, fusion_cfg)
+        limit, seed = cfg["data"].get("max_images"), cfg["seed"] + fold
+        if fusion_cfg:
+            # Los mismos pares que en EXP-06 (misma semilla por fold).
+            pair_seed = source_cfg["seed"] + fold
+            pred = fixed_pairs(limit_lesions(multi_image_lesions(val_df), limit, pair_seed), pair_seed)
+            columns = ["image_a", "image_b"]
+            rep = fixed_pairs(multi_image_lesions(train_df), pair_seed)
+        else:
+            pred = limit_images(val_df, limit, seed)[["image_id", "lesion_id", "dx", "label"]]
+            columns = ["image_id"]
+            rep = train_df
+        pred = pred.assign(fold=fold).reset_index(drop=True)
+        arrays = [tf_images(pred[c]) for c in columns]
+        jpegs = [[(images_dir / f"{i}.jpg").read_bytes() for i in pred[c]] for c in columns]
+        if bench_jpegs is None:   # en pares (A, B) consecutivos con el modelo de dos fotos
+            bench_jpegs = [j for group in zip(*jpegs) for j in group][:cfg["benchmark"]["images"]]
+        pred["prob_keras"] = keras_predict(model, arrays)
+        rep = rep.sample(n=min(cfg["representative_samples"], len(rep)), random_state=seed)
+        representative = items([tf_images(rep[c]) for c in columns])
         for fmt in formats:
             blob = convert(model, fmt, representative if fmt == "int8" else None)
             path = out_dir / f"{fmt}.tflite"
             path.write_bytes(blob)
             tflite_paths.setdefault(fmt, path)
             clf = TFLiteClassifier(blob, num_threads=os.cpu_count())
-            pred[f"prob_{fmt}"] = clf.predict(images)
+            pred[f"prob_{fmt}"] = clf.predict(items(arrays))
             if fmt == "float32":
-                pred["prob_float32_pillow"] = clf.predict(preprocess(j, size) for j in jpegs)
+                pillow = [[preprocess(j, size) for j in group] for group in jpegs]
+                pred["prob_float32_pillow"] = clf.predict(items(pillow))
             print(f"{fmt}: {len(blob) / 1e6:.1f} MB, diferencia máxima con Keras "
                   f"{np.abs(pred[f'prob_{fmt}'] - pred.prob_keras).max():.4f}")
         all_preds.append(pred)
@@ -107,6 +136,10 @@ def main(argv: list[str] | None = None) -> int:
     target = m["target_recall"]
     y = preds.label.to_numpy()
     threshold = threshold_for_recall(y, preds.prob_keras.to_numpy(), target)
+    # A mitad de camino hasta la probabilidad siguiente: en el umbral exacto cae un melanoma, y una
+    # diferencia de redondeo de 1e-7 del `.tflite` lo cambiaba de clase sin que el modelo cambiara.
+    lower = preds.prob_keras[preds.prob_keras < threshold]
+    threshold = float((threshold + lower.max()) / 2) if len(lower) else threshold
     keras_pos = preds.prob_keras.to_numpy() >= threshold
     keras_recall = at_threshold(y, preds.prob_keras.to_numpy(), threshold)["recall"]
     accuracy: dict[str, dict[str, Any]] = {}

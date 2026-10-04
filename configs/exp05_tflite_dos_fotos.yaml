@@ -1,0 +1,5 @@
+# EXP-05 repetido con el modelo definitivo de EXP-06 (dos fotos, fusión aprendida). Mismos
+# formatos, mediciones y umbrales que con el modelo de una foto; cambia solo el modelo.
+extends: exp05_tflite.yaml
+
+source_run: exp06/20261004T053842Z_dos-fotos

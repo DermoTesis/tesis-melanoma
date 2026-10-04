@@ -24,25 +24,31 @@ from melanoma.serving import TFLiteClassifier, preprocess
 FORMATS = ("float32", "float16", "dynamic_range", "int8")
 
 
-def load_trained(model_path: str | Path, model_cfg: dict[str, Any], image_size: int):
-    """Reconstruye el modelo en float32 y le carga los pesos entrenados.
+def load_trained(model_path: str | Path, model_cfg: dict[str, Any], image_size: int,
+                 fusion_cfg: dict[str, Any] | None = None):
+    """Reconstruye el modelo en float32 y le carga los pesos entrenados (de una o de dos fotos).
 
     El `.keras` de la GPU se guardó con precisión mixta; en CPU y en el `.tflite` eso solo
-    agregaría conversiones a float16. Los pesos se guardan en float32 de todas formas.
+    agregaría conversiones a float16. Los pesos se guardan en float32 de todas formas. Con
+    `fusion_cfg` arma el modelo de dos fotos de EXP-06.
     """
     import keras
 
-    from melanoma.models import build_single_view
+    from melanoma.models import build_single_view, build_two_view
 
     keras.mixed_precision.set_global_policy("float32")
     model = build_single_view(model_cfg, image_size, weights=None)
+    if fusion_cfg is not None:
+        model = build_two_view(model, fusion_cfg)
     model.load_weights(model_path)
     return model
 
 
-def convert(model, fmt: str, representative: Iterable[np.ndarray] | None = None) -> bytes:
+def convert(model, fmt: str,
+            representative: Iterable[np.ndarray | tuple[np.ndarray, ...]] | None = None) -> bytes:
     """`.tflite` en el formato pedido. int8 cuantiza pesos y activaciones con las imágenes de
-    `representative` (de entrenamiento), con entrada y salida en float."""
+    `representative` (de entrenamiento; pares (A, B) con el modelo de dos fotos), con entrada y
+    salida en float."""
     import tensorflow as tf
 
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
@@ -54,9 +60,10 @@ def convert(model, fmt: str, representative: Iterable[np.ndarray] | None = None)
     elif fmt == "int8":
         if representative is None:
             raise ValueError("int8 necesita imágenes representativas")
-        images = [np.asarray(x, dtype=np.float32) for x in representative]
+        samples = [tuple(np.asarray(v, dtype=np.float32)[None]
+                         for v in (x if isinstance(x, tuple) else (x,))) for x in representative]
         converter.optimizations = [tf.lite.Optimize.DEFAULT]
-        converter.representative_dataset = lambda: ([x[None]] for x in images)
+        converter.representative_dataset = lambda: (list(x) for x in samples)
     elif fmt != "float32":
         raise ValueError(f"Formato desconocido {fmt!r}; opciones: {FORMATS}")
     return converter.convert()
@@ -78,7 +85,7 @@ def benchmark(model_path: str | Path, jpegs: list[bytes], image_size: int, threa
               warmup: int, runs: int, concurrent: int) -> dict[str, Any]:
     """Latencias en ms (p50 y p95), limitado a `threads` núcleos. Pensado para un proceso aparte.
 
-    - foto: una inferencia;
+    - foto: una inferencia (con el modelo de dos fotos, una inferencia ya procesa las dos);
     - caso: las 2 fotos de un caso, un caso a la vez;
     - caso_concurrente: `concurrent` casos a la vez, cada uno con su intérprete (como las
       peticiones simultáneas de una instancia de Cloud Run);
@@ -87,24 +94,26 @@ def benchmark(model_path: str | Path, jpegs: list[bytes], image_size: int, threa
     cpus = limit_cpus(threads)
     images = [preprocess(j, image_size) for j in jpegs]
     clf = TFLiteClassifier(model_path, threads)
+    one = [images[0]] * clf.n_inputs
     for i in range(warmup):
-        clf.predict_one(images[i % len(images)])
+        clf.predict_one(*[images[i % len(images)]] * clf.n_inputs)
 
     def timed(fn) -> float:
         start = time.perf_counter()
         fn()
         return (time.perf_counter() - start) * 1000
 
-    photo = [timed(lambda i=i: clf.predict_one(images[i % len(images)])) for i in range(runs)]
-    case = [timed(lambda i=i: clf.predict([images[(2 * i) % len(images)],
-                                           images[(2 * i + 1) % len(images)]]))
+    photo = [timed(lambda i=i: clf.predict_one(*[images[i % len(images)]] * clf.n_inputs))
+             for i in range(runs)]
+    case = [timed(lambda i=i: clf.predict_case(images[(2 * i) % len(images)],
+                                               images[(2 * i + 1) % len(images)]))
             for i in range(runs // 2)]
 
     def concurrent_cases(with_decoding: bool) -> list[float]:
         per_thread = max(1, runs // (2 * concurrent))
         workers = [TFLiteClassifier(model_path, threads) for _ in range(concurrent)]
         for w in workers:
-            w.predict_one(images[0])
+            w.predict_one(*one)
         barrier = threading.Barrier(concurrent)
         out: list[float] = []
         lock = threading.Lock()
@@ -114,10 +123,10 @@ def benchmark(model_path: str | Path, jpegs: list[bytes], image_size: int, threa
             for i in range(per_thread):
                 a, b = (2 * (i + k)) % len(jpegs), (2 * (i + k) + 1) % len(jpegs)
                 if with_decoding:
-                    ms = timed(lambda: workers[k].predict([preprocess(jpegs[a], image_size),
-                                                          preprocess(jpegs[b], image_size)]))
+                    ms = timed(lambda: workers[k].predict_case(preprocess(jpegs[a], image_size),
+                                                               preprocess(jpegs[b], image_size)))
                 else:
-                    ms = timed(lambda: workers[k].predict([images[a], images[b]]))
+                    ms = timed(lambda: workers[k].predict_case(images[a], images[b]))
                 with lock:
                     out.append(ms)
 
@@ -141,10 +150,9 @@ os.sched_setaffinity(0, sorted(os.sched_getaffinity(0))[:int(sys.argv[2])])
 import numpy as np
 from melanoma.serving import TFLiteClassifier
 t1 = time.perf_counter()
-it = TFLiteClassifier(sys.argv[1], int(sys.argv[2])).interpreter
+clf = TFLiteClassifier(sys.argv[1], int(sys.argv[2]))
 size = int(sys.argv[3])
-it.set_tensor(it.get_input_details()[0]["index"], np.zeros((1, size, size, 3), np.float32))
-it.invoke()
+clf.predict_one(*[np.zeros((size, size, 3), np.float32)] * clf.n_inputs)
 t2 = time.perf_counter()
 print(json.dumps({"import_s": t1 - t0, "load_and_first_inference_s": t2 - t1}))
 """
