@@ -6,6 +6,7 @@ El modelo recibe la imagen en rango 0-255: MobileNetV3 trae su preprocesamiento,
 """
 
 from melanoma.models.single_view import backbone, build_single_view, unfreeze_backbone
-from melanoma.models.two_view import build_two_view, view_weights
+from melanoma.models.two_view import build_two_view, view_weights, with_metadata
 
-__all__ = ["backbone", "build_single_view", "build_two_view", "unfreeze_backbone", "view_weights"]
+__all__ = ["backbone", "build_single_view", "build_two_view", "unfreeze_backbone", "view_weights",
+           "with_metadata"]

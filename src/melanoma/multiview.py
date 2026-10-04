@@ -11,6 +11,9 @@
 
 Para la H3 repite todo con la foto A degradada (desenfoque o poca luz) y la B intacta. También
 guarda el peso que la fusión le da a la foto A, para ver si aprendió a desconfiar de la mala.
+
+Con `metadata.use` (EXP-07) la fusión recibe además la edad, el sexo y la zona del cuerpo de la
+lesión (los de su primera foto), que suman al logit de las fotos.
 """
 
 from __future__ import annotations
@@ -24,10 +27,12 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
+from melanoma.data import metadata as patient
 from melanoma.data.pipeline import AUTOTUNE
 from melanoma.data.splits import train_val
 from melanoma.data.views import degrade, fixed_pairs, load_images, multi_image_lesions, training_pairs
-from melanoma.models import build_single_view, build_two_view, view_weights
+from melanoma.models import build_single_view, build_two_view, view_weights, with_metadata
+from melanoma.runs import PROJECT_ROOT
 from melanoma.training import train_two_phases
 
 
@@ -61,9 +66,23 @@ def predict_single(model: keras.Model, images: np.ndarray, batch_size: int) -> n
     return model.predict(ds, verbose=0).astype("float64").ravel()
 
 
-def predict_pair(model: keras.Model, a: np.ndarray, b: np.ndarray, batch_size: int) -> np.ndarray:
-    ds = _batches(a, b, batch_size=batch_size).map(lambda x, y: {"view_a": x, "view_b": y})
-    return model.predict(ds, verbose=0).astype("float64").ravel()
+def _pair_inputs(a: np.ndarray, b: np.ndarray, meta: np.ndarray | None,
+                 batch_size: int) -> tf.data.Dataset:
+    if meta is None:
+        return _batches(a, b, batch_size=batch_size).map(lambda x, y: {"view_a": x, "view_b": y})
+    return _batches(a, b, meta, batch_size=batch_size).map(
+        lambda x, y, m: {"view_a": x, "view_b": y, "metadata": m})
+
+
+def predict_pair(model: keras.Model, a: np.ndarray, b: np.ndarray, batch_size: int,
+                 meta: np.ndarray | None = None) -> np.ndarray:
+    return model.predict(_pair_inputs(a, b, meta, batch_size), verbose=0).astype("float64").ravel()
+
+
+def lesion_metadata(df: pd.DataFrame, lesion_ids, table: pd.DataFrame) -> np.ndarray:
+    """Datos del paciente de cada lesión: los de su primera foto (por `image_id`)."""
+    first = df.sort_values("image_id").drop_duplicates("lesion_id").set_index("lesion_id").image_id
+    return patient.for_images(first.loc[list(lesion_ids)], table)
 
 
 def degraded_copy(images: np.ndarray, kind: str, level: float, chunk: int = 64) -> np.ndarray:
@@ -100,6 +119,12 @@ def two_view_fold(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_d
     labels = lesions.label.first().to_numpy()
     view_a = load_images(val_pairs.image_a, images_dir, size)
     view_b = load_images(val_pairs.image_b, images_dir, size)
+    meta_cfg = cfg.get("metadata") or {}
+    train_meta = val_meta = None
+    if meta_cfg.get("use"):
+        table = patient.load(PROJECT_ROOT / cfg["data"]["sources"]["ham10000"]["metadata"])
+        train_meta = lesion_metadata(train_df, [lesion for lesion, _ in lesions], table)
+        val_meta = lesion_metadata(val_df, val_pairs.lesion_id, table)
     bad = {name: degraded_copy(view_a, kind, level) for name, kind, level in degradations(cfg)}
 
     # Primero el modelo de una foto: la fusión comparte su backbone y lo cambia al entrenar.
@@ -112,10 +137,13 @@ def two_view_fold(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_d
         pred[f"average_{name}"] = (pred[f"single_a_{name}"] + pred.single_b) / 2
 
     model = build_two_view(single, cfg["fusion"])
+    if meta_cfg.get("use"):
+        model = with_metadata(model, patient.N_FEATURES, meta_cfg.get("hidden", 32))
     train_ds = training_pairs(train_images, groups, labels, cfg["data"],
-                              cfg.get("view_degradation"), batch, seed)
-    val_ds = _batches(view_a, view_b, val_pairs.label.to_numpy(dtype="float32"),
-                      batch_size=batch).map(lambda a, b, y: ({"view_a": a, "view_b": b}, y))
+                              cfg.get("view_degradation"), batch, seed, metadata=train_meta)
+    val_labels = tf.data.Dataset.from_tensor_slices(val_pairs.label.to_numpy(dtype="float32"))
+    val_ds = tf.data.Dataset.zip((_pair_inputs(view_a, view_b, val_meta, batch).unbatch(),
+                                  val_labels)).batch(batch)
     start = time.perf_counter()
     info = train_two_phases(model, train_ds, val_ds, cfg["training"], out_dir,
                             steps_per_epoch=max(1, len(groups) // batch), jit_compile=jit_compile,
@@ -125,16 +153,16 @@ def two_view_fold(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_d
     model.save(out_dir / "modelo.keras")
 
     weights = view_weights(model)
-    pred["fusion"] = predict_pair(model, view_a, view_b, batch)
-    pred["fusion_single"] = predict_pair(model, view_a, view_a, batch)
-    pred["weight_a"] = predict_weights(weights, view_a, view_b, batch)
+    pred["fusion"] = predict_pair(model, view_a, view_b, batch, val_meta)
+    pred["fusion_single"] = predict_pair(model, view_a, view_a, batch, val_meta)
+    pred["weight_a"] = predict_weights(weights, view_a, view_b, batch, val_meta)
     for name, images in bad.items():
-        pred[f"fusion_{name}"] = predict_pair(model, images, view_b, batch)
-        pred[f"weight_a_{name}"] = predict_weights(weights, images, view_b, batch)
+        pred[f"fusion_{name}"] = predict_pair(model, images, view_b, batch, val_meta)
+        pred[f"weight_a_{name}"] = predict_weights(weights, images, view_b, batch, val_meta)
     return pred, info
 
 
-def predict_weights(weights: keras.Model, a: np.ndarray, b: np.ndarray, batch_size: int) -> np.ndarray:
+def predict_weights(weights: keras.Model, a: np.ndarray, b: np.ndarray, batch_size: int,
+                    meta: np.ndarray | None = None) -> np.ndarray:
     """Peso que la fusión le da a la foto A (el de B es 1 menos ese)."""
-    ds = _batches(a, b, batch_size=batch_size).map(lambda x, y: {"view_a": x, "view_b": y})
-    return weights.predict(ds, verbose=0)[:, 0].astype("float64")
+    return weights.predict(_pair_inputs(a, b, meta, batch_size), verbose=0)[:, 0].astype("float64")

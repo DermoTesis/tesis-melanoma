@@ -48,6 +48,26 @@ def build_two_view(single: keras.Model, fusion_cfg: dict[str, Any]) -> keras.Mod
     return model
 
 
+def with_metadata(two_view: keras.Model, n_features: int, hidden: int = 32) -> keras.Model:
+    """Agrega los datos del paciente (EXP-07): logit = logit de las fotos + logit de los datos.
+
+    La rama de los datos es una red chica que termina en ceros, así que al empezar el modelo da
+    exactamente lo mismo que `two_view`. Entradas: `view_a`, `view_b` y `metadata`.
+    """
+    L = keras.layers
+    head = two_view.get_layer("melanoma")
+    image_logit = L.Dense(1, dtype="float32", name="image_logit")(two_view.get_layer("dropout").output)
+    metadata = keras.Input((n_features,), name="metadata")
+    hidden_layer = L.Dense(hidden, activation="relu", name="metadata_hidden")(metadata)
+    metadata_logit = L.Dense(1, kernel_initializer="zeros", bias_initializer="zeros",
+                             dtype="float32", name="metadata_logit")(hidden_layer)
+    logit = L.Add(dtype="float32", name="logit")([image_logit, metadata_logit])
+    output = L.Activation("sigmoid", dtype="float32", name="melanoma")(logit)
+    model = keras.Model({**two_view.input, "metadata": metadata}, output, name="two_view_metadata")
+    model.get_layer("image_logit").set_weights(head.get_weights())
+    return model
+
+
 def view_weights(model: keras.Model) -> keras.Model:
     """Modelo auxiliar que devuelve el peso que la fusión le da a cada foto, (lote, 2)."""
     weights = keras.layers.Reshape((2,))(model.get_layer("view_weights").output)

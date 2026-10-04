@@ -108,33 +108,39 @@ def random_view_degradation(cfg: dict[str, Any]):
 
 def training_pairs(images: np.ndarray, groups: list[np.ndarray], labels: np.ndarray,
                    data_cfg: dict[str, Any], degradation_cfg: dict[str, Any] | None,
-                   batch_size: int, seed: int) -> tf.data.Dataset:
-    """Flujo infinito de lotes ({"view_a", "view_b"}, etiqueta) para entrenar la fusión.
+                   batch_size: int, seed: int, metadata: np.ndarray | None = None) -> tf.data.Dataset:
+    """Flujo infinito de lotes ({"view_a", "view_b"[, "metadata"]}, etiqueta) para la fusión.
 
-    `groups[i]` son las filas de `images` de la lesión i (2 o más) y `labels[i]` su etiqueta. Cada
-    vista recibe su propio aumento de datos, como dos tomas distintas.
+    `groups[i]` son las filas de `images` de la lesión i (2 o más), `labels[i]` su etiqueta y
+    `metadata[i]`, si se pasa, sus datos del paciente (EXP-07). Cada vista recibe su propio
+    aumento de datos, como dos tomas distintas.
     """
     rng = np.random.default_rng(seed)
     size = images.shape[1]
+    extra = np.zeros((len(groups), 0), np.float32) if metadata is None else metadata
 
     def generate():
         while True:
             for i in rng.permutation(len(groups)):
                 a, b = rng.choice(groups[i], size=2, replace=False)
-                yield images[a], images[b], np.float32(labels[i])
+                yield images[a], images[b], extra[i], np.float32(labels[i])
 
     spec = tf.TensorSpec((size, size, 3), tf.uint8)
     ds = tf.data.Dataset.from_generator(
-        generate, output_signature=(spec, spec, tf.TensorSpec((), tf.float32)))
+        generate, output_signature=(spec, spec, tf.TensorSpec((extra.shape[1],), tf.float32),
+                                    tf.TensorSpec((), tf.float32)))
     ds = ds.batch(batch_size, drop_remainder=True)
-    ds = ds.map(lambda a, b, y: (tf.cast(a, tf.float32), tf.cast(b, tf.float32), y),
+    ds = ds.map(lambda a, b, m, y: (tf.cast(a, tf.float32), tf.cast(b, tf.float32), m, y),
                 num_parallel_calls=AUTOTUNE)
     aug = augmenter(data_cfg.get("augmentation") or {}, seed)
     if aug is not None:
-        ds = ds.map(lambda a, b, y: (aug(a, training=True), aug(b, training=True), y),
+        ds = ds.map(lambda a, b, m, y: (aug(a, training=True), aug(b, training=True), m, y),
                     num_parallel_calls=AUTOTUNE)
     if degradation_cfg and degradation_cfg.get("probability"):
         bad = random_view_degradation(degradation_cfg)
-        ds = ds.map(lambda a, b, y: (*bad(a, b), y), num_parallel_calls=AUTOTUNE)
-    ds = ds.map(lambda a, b, y: ({"view_a": a, "view_b": b}, y))
+        ds = ds.map(lambda a, b, m, y: (*bad(a, b), m, y), num_parallel_calls=AUTOTUNE)
+    if metadata is None:
+        ds = ds.map(lambda a, b, m, y: ({"view_a": a, "view_b": b}, y))
+    else:
+        ds = ds.map(lambda a, b, m, y: ({"view_a": a, "view_b": b, "metadata": m}, y))
     return ds.prefetch(AUTOTUNE)

@@ -151,3 +151,51 @@ def test_final_models_train_on_all_trainval_without_validation(tmp_path, single)
     assert info["single_view"]["n_train_images"] == len(df) - 1   # el test no entra
     assert info["two_view"]["n_train_lesions"] == 3
     assert info["two_view"]["best_epoch"] == 2 and "best_val_auc_keras" not in info["two_view"]
+
+
+def test_patient_data_encoding_and_metadata_model_start_like_the_fusion(single):
+    from melanoma.data import metadata as patient
+    from melanoma.models import with_metadata
+    df = pd.DataFrame({"age": [45.0, None], "sex": ["female", "weird"],
+                       "localization": ["back", "planet"]})
+    x = patient.encode(df)
+    assert x.shape == (2, patient.N_FEATURES) and x.dtype == np.float32
+    assert x[0, 0] == pytest.approx(0.45) and x[1, 1] == 1        # edad faltante
+    assert x[1, 2 + patient.SEXES.index("unknown")] == 1
+    assert x[1, 5 + patient.LOCALIZATIONS.index("unknown")] == 1
+    fusion = build_two_view(single, {"hidden": 8})
+    model = with_metadata(fusion, patient.N_FEATURES)
+    rng = np.random.default_rng(0)
+    a, b = (rng.uniform(0, 255, (2, SIZE, SIZE, 3)).astype("float32") for _ in range(2))
+    np.testing.assert_allclose(model.predict({"view_a": a, "view_b": b, "metadata": x}, verbose=0),
+                               fusion.predict({"view_a": a, "view_b": b}, verbose=0), atol=1e-6)
+
+
+def test_two_view_fold_with_patient_data(tmp_path, single):
+    rng = np.random.default_rng(2)
+    df = lesions_df()
+    images_dir = tmp_path / "images"
+    images_dir.mkdir()
+    rows = []
+    for copy in ("", "b"):
+        for image_id in df.image_id + copy:
+            tf.io.write_file(str(images_dir / f"{image_id}.jpg"),
+                             tf.io.encode_jpeg(rng.integers(0, 255, (45, 60, 3), dtype=np.uint8)))
+            rows.append({"image_id": image_id, "age": 50.0, "sex": "male", "localization": "back"})
+    meta_csv = tmp_path / "metadata.csv"
+    pd.DataFrame(rows).to_csv(meta_csv, index=False)
+    other = df.assign(image_id=df.image_id + "b", lesion_id=df.lesion_id + "b")
+    splits = pd.concat([df.assign(fold=0), other.assign(fold=1)]).assign(split="trainval")
+    single.save(tmp_path / "single.keras")
+    cfg = {"seed": 0, "model": MODEL_CFG, "pairs": {"max_lesions": None},
+           "data": {"image_size": SIZE, "augmentation": {},
+                    "sources": {"ham10000": {"metadata": str(meta_csv)}}},
+           "fusion": {"hidden": 8}, "metadata": {"use": True, "hidden": 4},
+           "view_degradation": None, "evaluation_degradations": {"dark": [0.5]},
+           "training": {"batch_size": 2, "early_stopping_patience": 2,
+                        "phases": {"head": {"epochs": 1, "learning_rate": 1e-3},
+                                   "finetune": {"epochs": 1, "learning_rate": 1e-4}}}}
+    pred, _ = two_view_fold(cfg, splits, 0, images_dir, tmp_path / "single.keras",
+                            tmp_path / "fold_0", verbose=0)
+    assert pred.fusion.between(0, 1).all() and pred["fusion_dark_0.5"].between(0, 1).all()
+    assert (tmp_path / "fold_0" / "modelo.keras").exists()

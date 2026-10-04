@@ -1,0 +1,13 @@
+# EXP-07: la fusión de dos fotos de EXP-06 más los datos del paciente (edad, sexo y zona del
+# cuerpo), para bajar las falsas alarmas sin perder sensibilidad. Mismo entrenamiento, mismos
+# pares y mismas lesiones que EXP-06; solo cambia la rama de los datos. Ver el criterio en
+# experiments/exp06_dos_fotos.py.
+extends: exp06_dos_fotos.yaml
+experiment: exp07
+
+metadata:
+  use: true
+  hidden: 32   # neuronas de la rama de los datos del paciente
+
+# Corrida de EXP-06 con la que se compara, lesión por lesión.
+compare_run: exp06/20261004T053842Z_dos-fotos

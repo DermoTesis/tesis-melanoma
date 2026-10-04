@@ -20,6 +20,11 @@ especificidad):
 - H3 (robustez a una foto mala): para cada degradación, fusión − una foto degradada y fusión −
   promedio (H3b), ambas con IC; se reportan además las caídas de AUC frente a las fotos limpias.
 - Modelo definitivo para EXP-04: el de dos fotos si se cumple H2; si no, el de una foto.
+
+Con `--config configs/exp07_datos_paciente.yaml` corre EXP-07: la misma fusión con la edad, el
+sexo y la zona del cuerpo, comparada (pareada) con la fusión de la corrida `compare_run`. Criterio,
+fijado antes de correr: se adoptan los datos del paciente si el IC del ΔAUC queda sobre 0 y la
+Δespecificidad con sensibilidad 90% no queda entera bajo 0.
 """
 
 from __future__ import annotations
@@ -70,7 +75,8 @@ def main(argv: list[str] | None = None) -> int:
     m = cfg["metrics"]
     target = m["target_recall"]
     op = f"s{round(target * 100)}"
-    run = start_run(cfg, "exp06", "dos-fotos")
+    use_metadata = bool((cfg.get("metadata") or {}).get("use"))
+    run = start_run(cfg, cfg["experiment"], "datos-paciente" if use_metadata else "dos-fotos")
     print(f"Corrida {run.run_id}, modelos de una foto de {cfg['single_view_run']}")
     rows, predictions, training_info = [], [], {}
     for fold in cfg["folds"]:
@@ -124,10 +130,35 @@ def main(argv: list[str] | None = None) -> int:
 
     h2 = next(t for t in tests if t["test"] == "H2")
     chosen = "dos fotos" if h2["verdict"] == "se cumple" else "una foto"
+    if cfg.get("compare_run"):
+        previous = pd.read_csv(PROJECT_ROOT / cfg["paths"]["results"] / cfg["compare_run"]
+                               / "predicciones_val.csv")[["lesion_id", "fusion"]]
+        merged = oof.merge(previous, on="lesion_id", suffixes=("", "_previous"), validate="one_to_one")
+        if len(merged) != len(oof):
+            raise SystemExit(f"{cfg['compare_run']} no tiene las mismas lesiones")
+        comparison = compare_paired(merged.label, merged.fusion_previous, merged.fusion,
+                                    merged.lesion_id, *boot)
+        low, spec_high = comparison["delta_auc_roc_ci_low"], comparison[f"delta_specificity_{op}_ci_high"]
+        comparison["verdict"] = "se adoptan" if low > 0 and spec_high >= 0 else "no se adoptan"
+        by_source = {source: {"n": int(len(g)), "melanoma": int(g.label.sum()),
+                              "auc_previous": point_metrics(g.label, g.fusion_previous, target)["auc_roc"],
+                              "auc": point_metrics(g.label, g.fusion, target)["auc_roc"]}
+                     for source, g in merged.groupby("dataset") if 0 < g.label.sum() < len(g)}
+        rows.append({"variant": f"fusion - fusion de {cfg['compare_run']}", "fold": "oof",
+                     "test": "datos del paciente", **comparison})
+        chosen = "dos fotos + datos del paciente" if comparison["verdict"] == "se adoptan" else chosen
     run.save_metrics(rows, details={"cv": cv, "devices": devices, "training": training_info,
                                     "chosen_model": chosen,
                                     "n_lesions": int(len(oof)), "n_melanoma": int(y.sum())})
     _print_summary(pooled, tests, robustness, op, len(oof), int(y.sum()), chosen)
+    if cfg.get("compare_run"):
+        print(f"\nDatos del paciente: fusión con datos − fusión de {cfg['compare_run']}: ΔAUC "
+              f"{comparison['delta_auc_roc']:+.4f} [{low:+.4f}, {comparison['delta_auc_roc_ci_high']:+.4f}]"
+              f", Δespecificidad con sensibilidad {target:.0%} {comparison[f'delta_specificity_{op}']:+.3f} "
+              f"[{comparison[f'delta_specificity_{op}_ci_low']:+.3f}, {spec_high:+.3f}] → {comparison['verdict']}")
+        for source, v in by_source.items():
+            print(f"  {source:14s} {v['n']:5d} lesiones, {v['melanoma']:3d} melanomas: AUC "
+                  f"{v['auc_previous']:.4f} → {v['auc']:.4f}")
     print(f"Corrida registrada en {run.results_dir}")
     return 0
 
