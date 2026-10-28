@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/errors/app_exception.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/widgets/common.dart';
 import '../../domain/models/clinical_case.dart';
 import '../../domain/models/patient.dart';
@@ -28,6 +29,15 @@ class _PatientSearchScreenState extends ConsumerState<PatientSearchScreen> {
   void dispose() {
     _hc.dispose();
     super.dispose();
+  }
+
+  void _select(Patient p) {
+    FocusScope.of(context).unfocus();
+    _hc.text = p.numeroHistoriaClinica;
+    setState(() {
+      _result = p;
+      _searched = true;
+    });
   }
 
   Future<void> _search() async {
@@ -58,6 +68,16 @@ class _PatientSearchScreenState extends ConsumerState<PatientSearchScreen> {
     final previous = patient == null
         ? 0
         : (ref.watch(patientCasesProvider(patient.id)).value ?? const <ClinicalCase>[]).length;
+    // Sugerencias en vivo: historias clínicas (o nombres) que contienen lo escrito.
+    final query = _hc.text.trim().toLowerCase();
+    final suggestions = query.isEmpty
+        ? const <Patient>[]
+        : (ref.watch(patientsProvider).value ?? const <Patient>[])
+            .where((p) =>
+                p.numeroHistoriaClinica.toLowerCase().contains(query) ||
+                p.nombres.toLowerCase().contains(query))
+            .take(6)
+            .toList();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Nuevo caso')),
@@ -72,14 +92,12 @@ class _PatientSearchScreenState extends ConsumerState<PatientSearchScreen> {
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
             const SizedBox(height: 16),
             AppTextField(
-              label: 'N.° de historia clínica',
+              label: 'N.° de historia clínica o Nombre del Paciente',
               controller: _hc,
               mono: true,
               hint: 'HC-000000',
               textCapitalization: TextCapitalization.characters,
-              onChanged: (_) {
-                if (_searched) setState(() => _searched = false);
-              },
+              onChanged: (_) => setState(() => _searched = false),
               suffix: IconButton(
                 onPressed: _searching ? null : _search,
                 icon: _searching
@@ -88,6 +106,37 @@ class _PatientSearchScreenState extends ConsumerState<PatientSearchScreen> {
                     : const Icon(Icons.search, color: AppColors.primary),
               ),
             ),
+            if (!_searched && query.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              if (suggestions.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                  child: Text('Sin coincidencias',
+                      style: TextStyle(fontSize: 13, color: AppColors.textSubtle)),
+                )
+              else
+                for (final p in suggestions) ...[
+                  AppCard(
+                    padding: const EdgeInsets.all(14),
+                    onTap: () => _select(p),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        PatientHeader(patient: p, now: now),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Text(p.numeroHistoriaClinica, style: AppFonts.mono(fontSize: 12)),
+                            const Spacer(),
+                            ConsentChip(patient: p),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+            ],
             const SizedBox(height: 12),
             PrimaryButton(label: 'Buscar', loading: _searching, onPressed: _search),
             const SizedBox(height: 18),

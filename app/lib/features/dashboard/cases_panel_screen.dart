@@ -58,6 +58,7 @@ class _CasesPanelScreenState extends ConsumerState<CasesPanelScreen> {
       floatingActionButton: _reordering
           ? null
           : FloatingActionButton.extended(
+              heroTag: 'fab-casos',
               onPressed: () => context.push('/nuevo-caso'),
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
@@ -158,7 +159,7 @@ class _CasesPanelScreenState extends ConsumerState<CasesPanelScreen> {
                     else if (_reordering)
                       SliverReorderableList(
                         itemCount: visible.length,
-                        onReorder: (from, to) => setState(() {
+                        onReorderItem: (from, to) => setState(() {
                           final item = _reorderBuffer!.removeAt(from);
                           _reorderBuffer!.insert(to > from ? to - 1 : to, item);
                         }),

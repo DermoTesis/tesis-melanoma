@@ -26,6 +26,7 @@ class _PatientsScreenState extends ConsumerState<PatientsScreen> {
     final now = ref.watch(clockProvider)();
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab-pacientes',
         onPressed: () => context.push('/nuevo-caso'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
