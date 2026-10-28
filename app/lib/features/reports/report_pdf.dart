@@ -5,6 +5,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../core/utils/formatters.dart';
+import '../../domain/models/clinical_case.dart';
 import '../../domain/models/report.dart';
 
 /// Genera el informe PDF del caso validado (HU27, RF-05.2, RF-05.3, RF-05.5).
@@ -17,11 +18,14 @@ Future<Uint8List> buildReportPdf(ReportDocument doc, {PdfPageFormat? format}) as
     creator: 'Dermavía',
   );
 
-  pw.ImageProvider? image;
-  if (doc.imagePath != null) {
-    final file = File(doc.imagePath!);
-    if (await file.exists()) image = pw.MemoryImage(await file.readAsBytes());
+  Future<pw.ImageProvider?> loadImage(String? path) async {
+    if (path == null) return null;
+    final file = File(path);
+    return await file.exists() ? pw.MemoryImage(await file.readAsBytes()) : null;
   }
+
+  final panoramica = await loadImage(doc.panoramicaPath);
+  final acercamiento = await loadImage(doc.acercamientoPath);
 
   const green = PdfColor.fromInt(0xFF1D6B4F);
   const greenDark = PdfColor.fromInt(0xFF14503A);
@@ -36,6 +40,34 @@ Future<Uint8List> buildReportPdf(ReportDocument doc, {PdfPageFormat? format}) as
         child: pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
           pw.SizedBox(width: 90, child: pw.Text(k, style: const pw.TextStyle(color: muted, fontSize: 10))),
           pw.Expanded(child: pw.Text(v, style: const pw.TextStyle(color: text, fontSize: 10))),
+        ]),
+      );
+
+  pw.Widget lesionImage(ImageView view, pw.ImageProvider? image) => pw.Expanded(
+        child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+          pw.Container(
+            height: 200,
+            width: double.infinity,
+            decoration: pw.BoxDecoration(
+              color: const PdfColor.fromInt(0xFFE7D7CC),
+              borderRadius: pw.BorderRadius.circular(6),
+            ),
+            child: image == null
+                ? pw.Center(
+                    child: pw.Padding(
+                      padding: const pw.EdgeInsets.all(8),
+                      child: pw.Text('Imagen no disponible en este dispositivo',
+                          textAlign: pw.TextAlign.center,
+                          style: const pw.TextStyle(color: muted, fontSize: 9)),
+                    ))
+                : pw.ClipRRect(
+                    horizontalRadius: 6,
+                    verticalRadius: 6,
+                    child: pw.Image(image, fit: pw.BoxFit.cover),
+                  ),
+          ),
+          pw.SizedBox(height: 4),
+          pw.Text(view.label, style: const pw.TextStyle(color: muted, fontSize: 9)),
         ]),
       );
 
@@ -64,23 +96,11 @@ Future<Uint8List> buildReportPdf(ReportDocument doc, {PdfPageFormat? format}) as
           kv('Lesión', doc.ubicacionLesion),
           kv('Fecha de cierre', Fmt.dateTime(doc.fechaCierre)),
           pw.SizedBox(height: 12),
-          pw.Container(
-            height: 200,
-            width: double.infinity,
-            decoration: pw.BoxDecoration(
-              color: const PdfColor.fromInt(0xFFE7D7CC),
-              borderRadius: pw.BorderRadius.circular(6),
-            ),
-            child: image == null
-                ? pw.Center(
-                    child: pw.Text('Imagen de la lesión no disponible en este dispositivo',
-                        style: const pw.TextStyle(color: muted, fontSize: 9)))
-                : pw.ClipRRect(
-                    horizontalRadius: 6,
-                    verticalRadius: 6,
-                    child: pw.Image(image, fit: pw.BoxFit.cover),
-                  ),
-          ),
+          pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+            lesionImage(ImageView.panoramica, panoramica),
+            pw.SizedBox(width: 10),
+            lesionImage(ImageView.acercamiento, acercamiento),
+          ]),
           pw.SizedBox(height: 14),
           pw.Container(
             width: double.infinity,

@@ -572,7 +572,8 @@ class MockReportRepository implements ReportRepository {
       cmp: v.cmp,
       establecimiento: _b.users[v.uidEspecialista]?.establecimiento ?? '',
       alcance: kScopeNotice,
-      imagePath: c.acercamiento.localPath ?? c.panoramica.localPath,
+      panoramicaPath: c.panoramica.localPath,
+      acercamientoPath: c.acercamiento.localPath,
     );
   }
 }
