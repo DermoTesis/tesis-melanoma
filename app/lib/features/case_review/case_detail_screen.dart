@@ -322,7 +322,7 @@ class _ReviewView extends ConsumerWidget {
                       Row(
                         children: [
                           Expanded(
-                            child: Text('Sugerencia · ${p.confidenceLabel}',
+                            child: Text('Sugerencia · ${p.riskLabel.toLowerCase()}',
                                 style: const TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 13,
@@ -411,31 +411,40 @@ class PredictionCard extends StatelessWidget {
       PredictionConfidence.ambigua || PredictionConfidence.baja => AppColors.warningAccent,
       PredictionConfidence.benigna => AppColors.primary,
     };
+    final riskColor = switch (p.confidence) {
+      PredictionConfidence.alta => AppColors.errorText,
+      PredictionConfidence.ambigua || PredictionConfidence.baja => AppColors.warningText,
+      PredictionConfidence.benigna => AppColors.primaryDark,
+    };
     return DashedBorderBox(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              const Expanded(
-                child: SectionLabel('PREDICCIÓN PRELIMINAR · NO VALIDADA',
-                    color: AppColors.warningText),
-              ),
-              Text(p.versionModelo, style: AppFonts.mono(fontSize: 10)),
-            ],
-          ),
+          const SectionLabel('PREDICCIÓN PRELIMINAR · NO VALIDADA',
+              color: AppColors.warningText),
           const SizedBox(height: 10),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Expanded(
-                child: Text(p.clasePredicha.label,
+                child: Text(p.headline,
                     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
               ),
-              Text('${p.percent}%', style: AppFonts.mono(fontSize: 15, color: AppColors.text)),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text('Riesgo estimado',
+                      style: TextStyle(fontSize: 11, color: AppColors.textSubtle)),
+                  Text('${p.percent}%',
+                      style: AppFonts.mono(fontSize: 20, color: AppColors.text)),
+                ],
+              ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 4),
+          Text(p.riskLabel,
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: riskColor)),
+          const SizedBox(height: 12),
           LayoutBuilder(builder: (context, box) {
             final w = box.maxWidth;
             return SizedBox(
@@ -472,14 +481,98 @@ class PredictionCard extends StatelessWidget {
           Row(
             children: [
               const Expanded(
-                child: Text('Probabilidad calibrada de malignidad',
+                child: Text('0%', style: TextStyle(fontSize: 11, color: AppColors.textSubtle)),
+              ),
+              Text('▲ Alerta desde ${p.alertPercent}%',
+                  style: const TextStyle(
+                      fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
+              const Expanded(
+                child: Text('100%',
+                    textAlign: TextAlign.end,
                     style: TextStyle(fontSize: 11, color: AppColors.textSubtle)),
               ),
-              Text('Umbral operativo ${Fmt.percent(p.umbralOperativo)}',
-                  style: const TextStyle(fontSize: 11, color: AppColors.textSubtle)),
             ],
           ),
+          const SizedBox(height: 12),
+          Text(p.frequencyText,
+              style: const TextStyle(fontSize: 13, height: 1.4, color: AppColors.textBody)),
+          const SizedBox(height: 4),
+          Text(
+            'El sistema avisa desde un ${p.alertPercent}% de riesgo para no pasar por alto '
+            'melanomas; por eso muchas alertas resultan benignas.',
+            style: const TextStyle(fontSize: 13, height: 1.4, color: AppColors.textMuted),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => _showHowToRead(context, p),
+              style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 4)),
+              icon: const Icon(Icons.help_outline, size: 16),
+              label: const Text('¿Cómo leer este resultado?'),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  static void _showHowToRead(BuildContext context, Prediction p) {
+    Widget section(String title, String body) => Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 4),
+              Text(body,
+                  style: const TextStyle(fontSize: 14, height: 1.45, color: AppColors.textBody)),
+            ],
+          ),
+        );
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Cómo leer este resultado',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 16),
+              section(
+                'Riesgo estimado: ${p.percent}%',
+                'Es la proporción de lesiones con fotos parecidas a estas que resultaron '
+                    'ser melanoma. ${p.frequencyText}',
+              ),
+              section(
+                'Línea de alerta: ${p.alertPercent}%',
+                'Desde ese riesgo, el sistema marca la lesión como posible melanoma. '
+                    'Es baja a propósito: es preferible revisar una lesión benigna de más '
+                    'que dejar pasar un melanoma.',
+              ),
+              section(
+                'Qué esperar de las alertas',
+                'Como la línea de alerta es baja, el sistema detecta la gran mayoría de los '
+                    'melanomas, pero también marca muchas lesiones que resultan benignas. '
+                    'Una alerta indica que la lesión merece su revisión, no que sea maligna.',
+              ),
+              section(
+                'La decisión es suya',
+                'El resultado no es un diagnóstico. Confírmelo o corríjalo con su criterio '
+                    'clínico y los exámenes que considere necesarios.',
+              ),
+              Text('Modelo ${p.versionModelo}',
+                  style: const TextStyle(fontSize: 12, color: AppColors.textSubtle)),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -99,7 +99,7 @@ class _ValidationFormScreenState extends ConsumerState<ValidationFormScreen> {
                       AppCard(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         child: KeyValueRow('Predicción original',
-                            '${p.clasePredicha.label} · ${p.percent}%', bold: true),
+                            p.shortSummary, bold: true),
                       ),
                       if (widget.complementaDe != null) ...[
                         const SizedBox(height: 12),

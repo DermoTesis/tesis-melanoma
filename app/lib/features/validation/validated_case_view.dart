@@ -8,7 +8,6 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/common.dart';
 import '../../domain/models/clinical_case.dart';
-import '../../domain/models/prediction.dart';
 import '../../domain/models/validation.dart';
 import '../../providers/repository_providers.dart';
 
@@ -247,7 +246,7 @@ class _ValidationRecord extends StatelessWidget {
           const SizedBox(height: 8),
           _Line('Especialista', '${v.especialistaNombre} · CMP ${v.cmp}'),
           _Line('Fecha', Fmt.dateTimeSeconds(v.fechaValidacion), mono: true),
-          _Line('Modelo', '${p.clasePredicha.label} ${p.percent}% (${p.versionModelo})'),
+          _Line('Modelo', '${p.shortSummary} (${p.versionModelo})'),
           _Line('Sustento', v.sustentoClinico),
           if (v.sugerenciaTomada != null)
             _Line('Sugerencia', v.sugerenciaTomada! ? 'Tomada' : 'No tomada'),

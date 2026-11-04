@@ -7,7 +7,6 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/common.dart';
 import '../../domain/models/patient.dart';
-import '../../domain/models/prediction.dart';
 import '../../providers/case_providers.dart';
 import '../../providers/repository_providers.dart';
 import '../dashboard/case_widgets.dart';
@@ -62,7 +61,7 @@ class AlertsScreen extends ConsumerWidget {
                         const SizedBox(height: 6),
                         Text(
                           'Registrado ${Fmt.dayMonth(c.createdAt)} · ${Fmt.time(c.createdAt)} · '
-                          'Prob. preliminar ${_level(c.prediction)}',
+                          '${c.prediction?.riskLabel ?? 'Riesgo —'}',
                           style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
                         ),
                         const SizedBox(height: 12),
@@ -105,15 +104,5 @@ class AlertsScreen extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  static String _level(Prediction? p) {
-    if (p == null) return '—';
-    return switch (p.confidence) {
-      PredictionConfidence.alta => 'alta',
-      PredictionConfidence.ambigua => 'media',
-      PredictionConfidence.baja => 'baja',
-      PredictionConfidence.benigna => 'bajo el umbral',
-    };
   }
 }

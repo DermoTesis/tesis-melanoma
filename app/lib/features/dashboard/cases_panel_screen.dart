@@ -265,7 +265,7 @@ class _OrderBar extends StatelessWidget {
                 ? 'Arrastra los casos para reordenarlos'
                 : manual
                     ? 'Orden manual del especialista'
-                    : 'Orden sugerido: prob. preliminar ↓',
+                    : 'Orden sugerido: mayor riesgo primero',
             style: style,
           ),
         ),

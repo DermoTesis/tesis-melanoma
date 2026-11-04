@@ -30,6 +30,26 @@ class Prediction {
 
   int get percent => (probabilidadMalignidad * 100).round();
 
+  int get alertPercent => (umbralOperativo * 100).round();
+
+  bool get isAlert => clasePredicha == LesionClass.maligno;
+
+  // Textos para el médico, sin términos de aprendizaje automático: la
+  // probabilidad calibrada se presenta como "riesgo estimado" y el umbral
+  // operativo como "línea de alerta".
+
+  /// Resultado preliminar en una frase corta.
+  String get headline => isAlert ? 'Posible melanoma' : 'Sin alerta de melanoma';
+
+  /// La probabilidad expresada como frecuencia natural.
+  String get frequencyText {
+    final n = percent < 1 ? 'Menos de 1' : 'Unas $percent';
+    return '$n de cada 100 lesiones con este resultado son melanoma.';
+  }
+
+  /// Resumen de una línea para listas, historial y validación.
+  String get shortSummary => '$headline · riesgo $percent%';
+
   PredictionConfidence get confidence {
     final p = probabilidadMalignidad;
     if (clasePredicha == LesionClass.benigno) return PredictionConfidence.benigna;
@@ -46,7 +66,7 @@ class Prediction {
         return 'Considerar dermatoscopia digital de seguimiento o biopsia '
             'para descartar un falso positivo antes de concluir.';
       case PredictionConfidence.baja:
-        return 'Probabilidad apenas sobre el umbral operativo. Considerar '
+        return 'Riesgo bajo, pero por encima de la línea de alerta. Considerar '
             'control dermatoscópico en 3 meses o biopsia según hallazgos.';
       case PredictionConfidence.alta:
       case PredictionConfidence.benigna:
@@ -54,16 +74,18 @@ class Prediction {
     }
   }
 
-  String get confidenceLabel {
+  String get riskLevel {
     switch (confidence) {
       case PredictionConfidence.alta:
-        return 'probabilidad alta';
+        return 'alto';
       case PredictionConfidence.ambigua:
-        return 'confianza ambigua';
+        return 'intermedio';
       case PredictionConfidence.baja:
-        return 'confianza baja';
+        return 'bajo';
       case PredictionConfidence.benigna:
-        return 'preliminar';
+        return 'muy bajo';
     }
   }
+
+  String get riskLabel => 'Riesgo $riskLevel';
 }

@@ -82,7 +82,7 @@ class _ScopeAcceptanceScreenState extends ConsumerState<ScopeAcceptanceScreen> {
                       TextSpan(
                           text: 'predicción preliminar',
                           style: TextStyle(fontWeight: FontWeight.w700)),
-                      TextSpan(text: ' (benigno / maligno) con un nivel de confianza.'),
+                      TextSpan(text: ' (posible melanoma o sin alerta) con un riesgo estimado en porcentaje.'),
                     ]),
                   ),
                   point(

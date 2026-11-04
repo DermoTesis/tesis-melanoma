@@ -227,7 +227,7 @@ class _HistoryItem extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                       child: _Labeled(
                         'MODELO',
-                        p == null ? '—' : '${p.clasePredicha.label} · ${p.percent}%',
+                        p == null ? '—' : p.shortSummary,
                         AppColors.warningText,
                       ),
                     ),
