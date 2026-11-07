@@ -177,6 +177,48 @@ def compare_paired(y: np.ndarray, p_reference: np.ndarray, p_candidate: np.ndarr
     return out
 
 
+def compare_paired_seeds(y: np.ndarray, references: Sequence[np.ndarray],
+                         candidates: Sequence[np.ndarray], groups: Sequence,
+                         target_recall: float = 0.90, n_resamples: int = 2000,
+                         confidence: float = 0.95, seed: int = 42,
+                         keys: Sequence[str] = ("auc_roc", "pr_auc", "specificity_s90")) -> dict[str, Any]:
+    """`compare_paired` con varias semillas de entrenamiento (EXP-08).
+
+    `references[i]` y `candidates[i]` son las predicciones de la semilla i sobre las mismas
+    imágenes. La diferencia es la media, entre semillas, de las diferencias pareadas de cada
+    semilla. En cada remuestreo de lesiones se usa la misma muestra para todas las semillas, así el
+    IC refleja la variabilidad de las lesiones; la del entrenamiento se ve en `delta_<métrica>_by_seed`.
+    Con una sola semilla da lo mismo que `compare_paired`.
+    """
+    if len(references) != len(candidates) or not references:
+        raise ValueError("Hace falta el mismo número (> 0) de predicciones de referencia y candidatas")
+    y = np.asarray(y).astype(int)
+    pairs = [(np.asarray(a, dtype=float), np.asarray(b, dtype=float))
+             for a, b in zip(references, candidates)]
+    suffix = f"s{round(target_recall * 100)}"
+    keys = [k.replace("s90", suffix) for k in keys]
+
+    def deltas(idx: np.ndarray) -> np.ndarray:
+        out = []
+        for a, b in pairs:
+            ma = point_metrics(y[idx], a[idx], target_recall)
+            mb = point_metrics(y[idx], b[idx], target_recall)
+            out.append([mb[k] - ma[k] for k in keys])
+        return np.array(out)                                  # (semillas, métricas)
+
+    by_seed = deltas(np.arange(len(y)))
+    samples = np.array([deltas(idx).mean(axis=0)
+                        for idx in bootstrap_indices(groups, n_resamples, seed)])
+    alpha = (1 - confidence) / 2
+    out: dict[str, Any] = {"n_seeds": len(pairs)}
+    for i, key in enumerate(keys):
+        out[f"delta_{key}"] = float(by_seed[:, i].mean())
+        out[f"delta_{key}_ci_low"] = float(np.nanquantile(samples[:, i], alpha))
+        out[f"delta_{key}_ci_high"] = float(np.nanquantile(samples[:, i], 1 - alpha))
+        out[f"delta_{key}_by_seed"] = [float(v) for v in by_seed[:, i]]
+    return out
+
+
 def cv_summary(fold_rows: list[dict[str, Any]], keys: Sequence[str] | None = None) -> dict[str, dict]:
     """Media y desviación estándar (muestral) de cada métrica entre folds."""
     df = pd.DataFrame(fold_rows)

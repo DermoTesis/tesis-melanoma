@@ -98,3 +98,25 @@ def test_paired_comparison_is_zero_for_same_model_and_detects_a_better_one():
     better = compare_paired(y, weak, strong, groups, n_resamples=200, seed=0)
     assert better["delta_auc_roc"] > 0 and better["delta_auc_roc_ci_low"] > 0
     assert {"delta_pr_auc", "delta_specificity_s90_ci_low"} <= set(better)
+
+
+def test_paired_comparison_over_seeds_averages_the_seed_differences():
+    from melanoma.metrics import compare_paired, compare_paired_seeds
+
+    rng = np.random.default_rng(1)
+    y = rng.integers(0, 2, 300)
+    groups = np.arange(300) // 2
+    ref = [y * 0.4 + rng.uniform(0, 0.6, 300) for _ in range(2)]
+    cand = [ref[0], y * 0.6 + rng.uniform(0, 0.4, 300)]       # semilla 1 igual; semilla 2 mejor
+    one = compare_paired_seeds(y, ref[1:], cand[1:], groups, n_resamples=200, seed=3)
+    assert one["delta_auc_roc"] == pytest.approx(
+        compare_paired(y, ref[1], cand[1], groups, n_resamples=200, seed=3)["delta_auc_roc"])
+    assert one["delta_auc_roc_ci_low"] == pytest.approx(
+        compare_paired(y, ref[1], cand[1], groups, n_resamples=200, seed=3)["delta_auc_roc_ci_low"])
+    two = compare_paired_seeds(y, ref, cand, groups, n_resamples=200, seed=3)
+    assert two["n_seeds"] == 2
+    assert two["delta_auc_roc_by_seed"][0] == 0
+    assert two["delta_auc_roc"] == pytest.approx(two["delta_auc_roc_by_seed"][1] / 2)
+    assert two["delta_auc_roc_ci_low"] < two["delta_auc_roc"] < two["delta_auc_roc_ci_high"]
+    with pytest.raises(ValueError):
+        compare_paired_seeds(y, ref, cand[:1], groups)

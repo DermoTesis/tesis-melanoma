@@ -43,3 +43,12 @@ def test_experiment_configs_load(path):
     assert cfg["experiment"] == path.stem.split("_")[0]
     assert cfg["metrics"]["target_recall"] == 0.90
     assert cfg["split"]["group_column"] == "lesion_id"
+
+
+def test_differences_lists_changed_leaves():
+    from melanoma.config import differences
+
+    a = {"seed": 42, "training": {"lr": 1e-3, "phases": {"head": 5}}, "paths": {"results": "r"}}
+    b = {"seed": 42, "training": {"lr": 1e-4, "phases": {"head": 5}, "new": 1}, "paths": {"results": "x"}}
+    assert differences(a, b) == ["paths.results", "training.lr", "training.new"]
+    assert differences(a, b, ignore=("paths.", "training.new")) == ["training.lr"]

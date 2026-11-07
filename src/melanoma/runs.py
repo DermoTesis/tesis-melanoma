@@ -69,6 +69,38 @@ def start_run(cfg: dict, experiment: str, name: str, root: Path = PROJECT_ROOT) 
     return Run(experiment, run_id, results_dir, artifacts_dir)
 
 
+def reopen_run(cfg: dict, ref: str, ignore: tuple[str, ...] = ("resume", "paths."),
+               root: Path = PROJECT_ROOT) -> Run:
+    """Retoma la corrida `<experimento>/<id>` (p. ej. después de que se apague la PC).
+
+    Exige la misma configuración que la guardada (salvo las claves de `ignore`). Guarda el entorno
+    de cada reanudación y avisa si el commit cambió, porque entonces la corrida mezcla versiones
+    del código.
+    """
+    from melanoma.config import differences
+
+    experiment, _, run_id = ref.partition("/")
+    results_dir = root / cfg["paths"]["results"] / experiment / run_id
+    artifacts_dir = root / cfg["paths"]["outputs"] / experiment / run_id
+    if not (results_dir / "config.yaml").is_file():
+        raise SystemExit(f"No existe la corrida {ref} en {results_dir.parent}")
+    saved = yaml.safe_load((results_dir / "config.yaml").read_text(encoding="utf-8"))
+    different = differences(cfg, saved, ignore)
+    if different:
+        raise SystemExit(f"La configuración no coincide con la de {ref}; difiere en: "
+                         f"{', '.join(different)}")
+    env = environment_info(root, ignore=(cfg["paths"]["results"],))
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    _write_json(results_dir / f"entorno_reanudacion_{stamp}.json", env)
+    first = json.loads((results_dir / "entorno.json").read_text(encoding="utf-8"))
+    if first.get("git", {}).get("commit") != env["git"].get("commit"):
+        print(f"Aviso: el commit cambió desde que empezó la corrida ({first.get('git', {}).get('commit')}"
+              f" → {env['git'].get('commit')}); la corrida mezcla dos versiones del código.",
+              file=sys.stderr)
+    artifacts_dir.mkdir(parents=True, exist_ok=True)
+    return Run(experiment, run_id, results_dir, artifacts_dir)
+
+
 def environment_info(root: Path = PROJECT_ROOT, ignore: tuple[str, ...] = ()) -> dict[str, Any]:
     """Versiones, hardware y commit: lo necesario para reproducir o explicar una corrida.
 

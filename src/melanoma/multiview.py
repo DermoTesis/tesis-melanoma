@@ -31,6 +31,7 @@ from melanoma.data import metadata as patient
 from melanoma.data.pipeline import AUTOTUNE
 from melanoma.data.splits import train_val
 from melanoma.data.views import degrade, fixed_pairs, load_images, multi_image_lesions, training_pairs
+from melanoma.imbalance import loss_only
 from melanoma.models import build_single_view, build_two_view, view_weights, with_metadata
 from melanoma.runs import PROJECT_ROOT
 from melanoma.training import train_two_phases
@@ -103,10 +104,14 @@ def two_view_fold(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_d
     keras.utils.set_random_seed(seed)
     size, batch = cfg["data"]["image_size"], cfg["training"]["batch_size"]
     max_lesions = cfg["pairs"].get("max_lesions")
+    # Con `pairs.seed` los pares de validación quedan fijos aunque cambie la semilla del
+    # entrenamiento (EXP-08); sin ella salen de `seed`, como en EXP-06.
+    pair_seed = cfg["pairs"].get("seed", cfg["seed"]) + fold
 
     train_df, val_df = train_val(splits, fold)
     train_df = limit_lesions(multi_image_lesions(train_df), max_lesions, seed)
-    val_pairs = fixed_pairs(limit_lesions(multi_image_lesions(val_df), max_lesions, seed), seed)
+    val_pairs = fixed_pairs(limit_lesions(multi_image_lesions(val_df), max_lesions, pair_seed),
+                            pair_seed)
 
     single = build_single_view(cfg["model"], size, weights=None)
     single.load_weights(single_model_path)
@@ -146,6 +151,7 @@ def two_view_fold(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_d
                                   val_labels)).batch(batch)
     start = time.perf_counter()
     info = train_two_phases(model, train_ds, val_ds, cfg["training"], out_dir,
+                            loss=loss_only(cfg["training"]),
                             steps_per_epoch=max(1, len(groups) // batch), jit_compile=jit_compile,
                             verbose=verbose)
     info["train_seconds"] = round(time.perf_counter() - start, 1)

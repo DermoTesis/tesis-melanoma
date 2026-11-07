@@ -47,3 +47,34 @@ def test_oversampling_balances_training_batches_only(tmp_path):
     assert labels.mean() == pytest.approx(0.5, abs=0.06)   # sin sobremuestreo sería 0.1
     with pytest.raises(ValueError):
         make_dataset(df, tmp_path, cfg, 8, training=False, seed=0, positive_fraction=0.5)
+
+
+def test_focal_alpha_turns_on_class_balancing():
+    plain = setup({**TRAINING, "imbalance": "focal_loss"}, np.array([1, 0]))["loss"].get_config()
+    assert plain["apply_class_balancing"] is False
+    alpha = setup({**TRAINING, "imbalance": "focal_loss", "focal_alpha": 0.25},
+                  np.array([1, 0]))["loss"].get_config()
+    assert alpha["apply_class_balancing"] is True and alpha["alpha"] == 0.25 and alpha["gamma"] == 2.0
+
+
+def test_asymmetric_loss_strategy_uses_its_parameters():
+    from melanoma.losses import AsymmetricLoss
+
+    loss = setup({"imbalance": "asymmetric_loss", "asl_gamma_neg": 3.0, "asl_clip": 0.1},
+                 np.array([1, 0]))["loss"]
+    assert isinstance(loss, AsymmetricLoss)
+    assert (loss.gamma_pos, loss.gamma_neg, loss.clip) == (0.0, 3.0, 0.1)
+    default = setup({"imbalance": "asymmetric_loss"}, np.array([1, 0]))["loss"]
+    assert (default.gamma_pos, default.gamma_neg, default.clip) == (0.0, 4.0, 0.05)
+
+
+def test_two_view_and_final_models_only_accept_loss_strategies():
+    from melanoma.imbalance import loss_only
+
+    assert loss_only({"imbalance": "none"}) == "binary_crossentropy"
+    assert loss_only({}) == "binary_crossentropy"
+    assert isinstance(loss_only({**TRAINING, "imbalance": "focal_loss"}),
+                      keras.losses.BinaryFocalCrossentropy)
+    for strategy in ("class_weight", "oversampling"):
+        with pytest.raises(ValueError, match="no está implementada"):
+            loss_only({**TRAINING, "imbalance": strategy})

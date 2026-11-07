@@ -63,3 +63,17 @@ def test_changed_results_do_not_make_the_tree_dirty(tmp_path):
     assert _git_info(tmp_path)["dirty"] is True
     (tmp_path / "codigo.py").write_text("x = 2\n")
     assert _git_info(tmp_path, ("resultados",))["dirty"] is True
+
+
+def test_reopened_run_must_have_the_same_config(tmp_path):
+    from melanoma.runs import reopen_run
+
+    cfg = {**CFG, "resume": None}
+    run = start_run(cfg, "exp08", "pérdidas", root=tmp_path)
+    again = reopen_run({**cfg, "resume": f"exp08/{run.run_id}"}, f"exp08/{run.run_id}", root=tmp_path)
+    assert again == run
+    assert list(run.results_dir.glob("entorno_reanudacion_*.json"))
+    with pytest.raises(SystemExit, match="seed"):
+        reopen_run({**cfg, "seed": 7}, f"exp08/{run.run_id}", root=tmp_path)
+    with pytest.raises(SystemExit, match="No existe"):
+        reopen_run(cfg, "exp08/no-existe", root=tmp_path)

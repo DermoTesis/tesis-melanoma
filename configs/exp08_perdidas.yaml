@@ -1,0 +1,63 @@
+# EXP-08: funciones de pérdida para el desbalance (pedido del asesor): BCE, focal loss y asymmetric
+# loss, en el modelo de una foto y en la fusión de dos fotos, con 3 semillas. El diseño y el
+# criterio de decisión están en el docstring de experiments/exp08_perdidas.py.
+extends: base.yaml
+experiment: exp08
+
+folds: [0, 1, 2, 3, 4]
+# Semillas del entrenamiento; la de cada fold es semilla + fold. Separadas por 100 para que no se
+# repitan entre folds de distintas semillas.
+seeds: [42, 142, 242]
+resume: null   # exp08/<id> para retomar una corrida cortada (ver el docstring)
+
+# Cada variante solo cambia la pérdida (claves de `training`). Hiperparámetros de los artículos
+# originales, sin ajustarlos con nuestros datos: así no se elige con los mismos datos que miden.
+variants:
+  bce:                         # entropía cruzada binaria: la referencia
+    imbalance: none
+  focal:                       # Lin et al. (2017): γ = 2 y α = 0.25. EXP-03 la usó sin α.
+    imbalance: focal_loss
+    focal_gamma: 2.0
+    focal_alpha: 0.25
+  asl:                         # Ridnik et al. (2021), su entrenamiento oficial: γ+ = 0, γ− = 4, m = 0.05
+    imbalance: asymmetric_loss
+    asl_gamma_pos: 0.0
+    asl_gamma_neg: 4.0
+    asl_clip: 0.05
+
+# Modelo de una foto, como EXP-03 pero con más épocas de fine-tuning (la focal de EXP-03 llegó al
+# límite de 25 en el fold 4). La parada temprana sigue en 5 épocas.
+single_view:
+  training:
+    phases:
+      head:
+        epochs: 5
+        learning_rate: 1.0e-3
+      finetune:
+        epochs: 30
+        learning_rate: 1.0e-5
+
+# Fusión de dos fotos, como EXP-06 (mismas capas, degradaciones y pares de validación), con más
+# épocas (en EXP-06 el fold 2 llegó a la época 24 de 25).
+two_view:
+  pairs:
+    max_lesions: null
+    seed: 42                   # pares de validación fijos (los de EXP-06) en todas las semillas
+  fusion:
+    hidden: 128
+    dropout: 0.2
+  view_degradation:
+    probability: 0.3
+    blur_sigmas: [1.5, 3.0, 5.0]
+    dark_factor: [0.3, 0.7]
+  evaluation_degradations:
+    blur: [2.0, 4.0, 8.0]
+    dark: [0.5, 0.25]
+  training:
+    phases:
+      head:
+        epochs: 10
+        learning_rate: 1.0e-3
+      finetune:
+        epochs: 25
+        learning_rate: 1.0e-5

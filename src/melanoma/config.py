@@ -94,6 +94,24 @@ def set_by_path(cfg: dict, dotted: str, value: Any) -> None:
     node[leaf] = value
 
 
+def flatten(cfg: dict, prefix: str = "") -> dict[str, Any]:
+    """{"a.b": valor} con una clave por hoja."""
+    out: dict[str, Any] = {}
+    for key, value in cfg.items():
+        if isinstance(value, dict) and value:
+            out.update(flatten(value, f"{prefix}{key}."))
+        else:
+            out[f"{prefix}{key}"] = value
+    return out
+
+
+def differences(a: dict, b: dict, ignore: Sequence[str] = ()) -> list[str]:
+    """Claves (con puntos) en que difieren dos configuraciones, sin las que empiezan por `ignore`."""
+    fa, fb = flatten(a), flatten(b)
+    return [k for k in sorted(set(fa) | set(fb))
+            if not k.startswith(tuple(ignore)) and fa.get(k) != fb.get(k)]
+
+
 def parse_cli(description: str, default_config: str | Path,
               argv: Sequence[str] | None = None) -> tuple[dict, argparse.Namespace]:
     """Argumentos comunes de los scripts de `experiments/`: `--config` y `--set` (repetible)."""

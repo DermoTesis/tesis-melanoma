@@ -24,6 +24,7 @@ import pandas as pd
 from melanoma.data.pipeline import limit_images, make_dataset
 from melanoma.data.splits import TRAINVAL
 from melanoma.data.views import load_images, multi_image_lesions, training_pairs
+from melanoma.imbalance import loss_only
 from melanoma.models import build_single_view, build_two_view
 from melanoma.multiview import limit_lesions
 from melanoma.training import train_two_phases
@@ -46,9 +47,10 @@ def train_final(cfg: dict[str, Any], splits: pd.DataFrame, images_dir: Path, out
     single_df = limit_images(trainval, max_images, seed)
     train_ds = make_dataset(single_df, images_dir, cfg["data"], batch, training=True, seed=seed)
     start = time.perf_counter()
+    loss = loss_only(cfg["training"])   # BCE salvo que EXP-08 adopte otra pérdida
     info["single_view"] = train_two_phases(single, train_ds, None, single_cfg,
-                                           out_dir / "una_foto", jit_compile=jit_compile,
-                                           verbose=verbose)
+                                           out_dir / "una_foto", loss=loss,
+                                           jit_compile=jit_compile, verbose=verbose)
     info["single_view"].update(train_seconds=round(time.perf_counter() - start, 1),
                                n_train_images=int(len(single_df)))
     single.save(out_dir / "una_foto.keras")
@@ -68,7 +70,7 @@ def train_final(cfg: dict[str, Any], splits: pd.DataFrame, images_dir: Path, out
                               batch, seed)
     start = time.perf_counter()
     info["two_view"] = train_two_phases(model, pairs_ds, None, two_cfg, out_dir / "dos_fotos",
-                                        steps_per_epoch=max(1, len(groups) // batch),
+                                        loss=loss, steps_per_epoch=max(1, len(groups) // batch),
                                         jit_compile=jit_compile, verbose=verbose)
     info["two_view"].update(train_seconds=round(time.perf_counter() - start, 1),
                             n_train_lesions=len(groups), n_train_images=int(len(image_ids)))
