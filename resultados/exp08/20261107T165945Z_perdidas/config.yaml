@@ -1,0 +1,120 @@
+seed: 42
+paths:
+  data: data
+  splits: splits
+  outputs: outputs
+  results: resultados
+data:
+  positive_classes:
+  - mel
+  image_size: 224
+  sources:
+    ham10000:
+      metadata: data/ham10000/HAM10000_metadata.csv
+      metadata_md5: 8f85fb1aa29d80a2797247e434deb79d
+      images: data/ham10000/images
+  cache: true
+  augmentation:
+    flip: true
+    rotation: 0.5
+    zoom: 0.2
+    brightness: 0.1
+    contrast: 0.1
+  max_images: null
+split:
+  name: ham10000_v1
+  group_column: lesion_id
+  stratify_by:
+  - dx
+  - dataset
+  test_fraction: 0.15
+  n_folds: 5
+model:
+  backbone: mobilenet_v3_large
+  weights: imagenet
+  dropout: 0.2
+training:
+  batch_size: 32
+  mixed_precision: true
+  jit_compile: true
+  phases:
+    head:
+      epochs: 5
+      learning_rate: 0.001
+    finetune:
+      epochs: 20
+      learning_rate: 1.0e-05
+  early_stopping_patience: 5
+  imbalance: none
+  oversampling_positive_fraction: 0.5
+  focal_gamma: 2.0
+metrics:
+  target_recall: 0.9
+  target_auc: 0.9
+  bootstrap_resamples: 2000
+  confidence_level: 0.95
+experiment: exp08
+folds:
+- 0
+- 1
+- 2
+- 3
+- 4
+seeds:
+- 42
+- 142
+- 242
+resume: null
+variants:
+  bce:
+    imbalance: none
+  focal:
+    imbalance: focal_loss
+    focal_gamma: 2.0
+    focal_alpha: 0.25
+  asl:
+    imbalance: asymmetric_loss
+    asl_gamma_pos: 0.0
+    asl_gamma_neg: 4.0
+    asl_clip: 0.05
+single_view:
+  training:
+    phases:
+      head:
+        epochs: 5
+        learning_rate: 0.001
+      finetune:
+        epochs: 30
+        learning_rate: 1.0e-05
+two_view:
+  pairs:
+    max_lesions: null
+    seed: 42
+  fusion:
+    hidden: 128
+    dropout: 0.2
+  view_degradation:
+    probability: 0.3
+    blur_sigmas:
+    - 1.5
+    - 3.0
+    - 5.0
+    dark_factor:
+    - 0.3
+    - 0.7
+  evaluation_degradations:
+    blur:
+    - 2.0
+    - 4.0
+    - 8.0
+    dark:
+    - 0.5
+    - 0.25
+  training:
+    phases:
+      head:
+        epochs: 10
+        learning_rate: 0.001
+      finetune:
+        epochs: 25
+        learning_rate: 1.0e-05
