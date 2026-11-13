@@ -1,11 +1,13 @@
 import 'package:dermavia/data/mock/mock_inference_engine.dart';
+import 'package:dermavia/domain/models/prediction.dart';
 import 'package:dermavia/features/case_review/case_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets('la tarjeta usa lenguaje clínico y explica cómo leerla', (tester) async {
-    final p = MockInferenceEngine.predictionFor(0.09, DateTime(2026, 10, 29));
+    final p = MockInferenceEngine.predictionFor(0.09, DateTime(2026, 10, 29),
+        clase: LesionClass.maligno);
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
         body: Padding(padding: const EdgeInsets.all(18), child: PredictionCard(prediction: p)),

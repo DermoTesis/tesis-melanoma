@@ -143,12 +143,14 @@ abstract final class SeedData {
       String ubicacion,
       OnsetTime onset,
       Set<Symptom> symptoms, {
-      double? probability,
+      // Salida sin calibrar del modelo; el riesgo que se muestra sale de la
+      // calibración del artefacto (entre paréntesis en cada caso).
+      double? modelOutput,
     }) {
-      final prediction = probability == null
+      final prediction = modelOutput == null
           ? null
-          : MockInferenceEngine.predictionFor(
-              probability, createdAt.add(const Duration(seconds: 20)));
+          : MockInferenceEngine.fromModelOutput(
+              modelOutput, createdAt.add(const Duration(seconds: 20)));
       b.cases[id] = ClinicalCase(
         id: id,
         patientId: patientId,
@@ -171,17 +173,17 @@ abstract final class SeedData {
     addCase('CASO-0192', 'p-mquispe', CaseStatus.pendienteValidacion,
         ago(hours: 52), 'Espalda, región escapular izquierda',
         OnsetTime.entre3y12Meses, {Symptom.cambioTamano, Symptom.cambioColor},
-        probability: 0.87);
+        modelOutput: 0.985); // 91%, posible melanoma
     addCase('CASO-0188', 'p-crojas', CaseStatus.pendienteValidacion,
         ago(hours: 49), 'Mejilla derecha', OnsetTime.masDe1Anio, {Symptom.picor},
-        probability: 0.21);
+        modelOutput: 0.215); // 20%, posible melanoma
     addCase('CASO-0196', 'p-jmamani', CaseStatus.pendienteValidacion,
         ago(hours: 9), 'Antebrazo derecho, cara dorsal', OnsetTime.entre3y12Meses,
         {Symptom.cambioTamano, Symptom.picor},
-        probability: 0.62);
+        modelOutput: 0.70); // 58%, posible melanoma
     addCase('CASO-0195', 'p-rflores', CaseStatus.pendienteValidacion,
         ago(hours: 5), 'Mejilla izquierda', OnsetTime.masDe1Anio, {},
-        probability: 0.04);
+        modelOutput: 0.0025); // 3%, sin alerta
     addCase('CASO-0197', 'p-lhuaman', CaseStatus.errorAnalisis,
         ago(minutes: 40), 'Pierna izquierda, cara anterior', OnsetTime.menos3Meses,
         {Symptom.sangrado});
@@ -189,10 +191,10 @@ abstract final class SeedData {
     // Historial cerrado de María Quispe.
     addCase('CASO-0141', 'p-mquispe', CaseStatus.cerrado, ago(days: 138),
         'Espalda, región lumbar', OnsetTime.masDe1Anio, {},
-        probability: 0.18);
+        modelOutput: 0.15); // 18%, posible melanoma
     addCase('CASO-0098', 'p-mquispe', CaseStatus.cerrado, ago(days: 290),
         'Brazo izquierdo', OnsetTime.masDe1Anio, {},
-        probability: 0.03);
+        modelOutput: 0.002); // 3%, sin alerta
 
     void closed(String caseId, ValidationDecision decision, LesionClass clase,
         String sustento, String conducta, int daysAgo) {

@@ -19,12 +19,19 @@ class Prediction {
     required this.fechaInferencia,
   });
 
-  /// Probabilidad calibrada (regresión isotónica) de malignidad, 0..1.
+  /// Probabilidad calibrada (regresión isotónica) de malignidad, 0..1. Es el
+  /// número que ve el médico; no decide la clase.
   final double probabilidadMalignidad;
+
+  /// Clase decidida por el backend con la salida sin calibrar del modelo
+  /// (EXP-04). La app nunca la recalcula a partir de la probabilidad
+  /// calibrada: por los escalones de la calibración, ambos cortes no
+  /// coinciden.
   final LesionClass clasePredicha;
   final String versionModelo;
 
-  /// Umbral operativo sobre la probabilidad calibrada (EXP-04).
+  /// El umbral operativo expresado como probabilidad calibrada, solo para
+  /// mostrar la línea de alerta (EXP-04).
   final double umbralOperativo;
   final DateTime fechaInferencia;
 

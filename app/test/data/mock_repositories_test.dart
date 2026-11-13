@@ -1,5 +1,6 @@
 import 'package:dermavia/core/errors/app_exception.dart';
 import 'package:dermavia/data/mock/mock_backend.dart';
+import 'package:dermavia/data/mock/mock_inference_engine.dart';
 import 'package:dermavia/data/mock/mock_repositories.dart';
 import 'package:dermavia/data/mock/seed_data.dart';
 import 'package:dermavia/domain/models/clinical_case.dart';
@@ -148,7 +149,7 @@ void main() {
       final c = await pendingCase();
       expect(c.status, CaseStatus.pendienteValidacion);
       expect(c.prediction, isNotNull);
-      expect(c.prediction!.umbralOperativo, closeTo(0.07, 1e-9));
+      expect(c.prediction!.umbralOperativo, ModelArtifact.calibratedThreshold);
     });
 
     test('la validación exige sustento clínico (RF-04.3)', () async {
