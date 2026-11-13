@@ -67,9 +67,12 @@ Reglas clínicas que deben respetarse: ver skill [`dermavia-reglas-clinicas`](..
   configurables; las pruebas los ponen en cero/`null`.
 - `now()` usa el reloj inyectado; nunca uses `DateTime.now()` dentro de la capa mock.
 - IDs: `nextCaseId()` → `CASO-0201`…; `nextId('VAL')` → `VAL-1000`…
-- `MockInferenceEngine.predict` es determinista (hash del caso) y
-  `MockInferenceEngine.predictionFor(p, fecha)` construye una `Prediction` concreta para
-  pruebas.
+- `MockInferenceEngine.predict` es determinista (hash del caso): genera una salida sin
+  calibrar y le aplica `ModelArtifact` (parámetros del registro de EXP-04).
+  `MockInferenceEngine.fromModelOutput(salida, fecha)` hace lo mismo con una salida dada
+  (los casos de `seed_data` se definen así) y
+  `MockInferenceEngine.predictionFor(p, fecha, clase: ...)` construye una `Prediction`
+  concreta para pruebas, con la clase explícita.
 
 ## Conectar el backend real
 

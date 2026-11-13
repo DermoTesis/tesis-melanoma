@@ -68,8 +68,11 @@ Scheduler); `CASO-0197` falla en su primer análisis para demostrarlo.
 ### Modelo
 
 La app **no clasifica** lesiones: la inferencia ocurre en el backend. El simulador
-devuelve una probabilidad calibrada determinista con los parámetros del artefacto de
-EXP-04 (fusión de dos vistas en float16, umbral operativo calibrado 0.070). El control
+aplica los parámetros del artefacto de EXP-04 (fusión de dos vistas en float16) a una
+salida sin calibrar determinista: decide la clase con esa salida (umbral 0.0138) y le
+muestra al médico la probabilidad calibrada (isotónica), con la línea de alerta en ~7%.
+La app nunca deduce la clase de la probabilidad calibrada: por los escalones de la
+calibración, el mismo 7% puede tener o no alerta. El control
 local de calidad de imagen (`ImageQualityService`) usa heurísticas —resolución mínima
 1024×1024, formato JPG/PNG, luminancia media y varianza del Laplaciano— que se
 reemplazarán por el control TFLite descrito en la sección 3.1 de la memoria.

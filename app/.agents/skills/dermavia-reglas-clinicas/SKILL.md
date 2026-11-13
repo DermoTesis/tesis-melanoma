@@ -69,8 +69,13 @@ La tarjeta de predicción la lee un médico, no un científico de datos. En text
 - Reutiliza los getters de `Prediction` ([prediction.dart](../../../lib/domain/models/prediction.dart)):
   `headline`, `frequencyText`, `shortSummary`, `riskLabel`, `percent`, `alertPercent`,
   `defaultSuggestion`. No reconstruyas esos textos en las pantallas.
-- Bandas de confianza (RF-06.1): `benigna` (bajo la línea), `baja` (< 0.30),
-  `ambigua` (0.30–0.70), `alta` (≥ 0.70). Umbral operativo: `ModelArtifact.operationalThreshold = 0.070`.
+- Bandas de confianza (RF-06.1): `benigna` (sin alerta), `baja` (< 0.30),
+  `ambigua` (0.30–0.70), `alta` (≥ 0.70).
+- La clase (`clasePredicha`) la decide el backend con la salida **sin calibrar** del
+  modelo (`ModelArtifact.decisionThreshold = 0.0138`). **Nunca** la deduzcas comparando
+  la probabilidad calibrada con la línea de alerta (`ModelArtifact.calibratedThreshold`
+  ≈ 0.070, solo para mostrar): la calibración tiene un escalón que cruza el umbral y el
+  mismo 7% puede tener o no alerta.
 - Toda predicción se presenta como preliminar; la decisión es siempre del especialista.
 
 `test/features/prediction_card_test.dart` comprueba que "calibrada" y "umbral" no
