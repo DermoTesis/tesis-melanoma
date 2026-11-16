@@ -1,0 +1,28 @@
+# EXP-10: ablación de la H3. El modelo de una foto se entrena con las mismas degradaciones que la
+# fusión y se compara su promedio con la fusión de EXP-06, sobre los mismos pares de validación.
+# Ver el criterio en experiments/exp10_una_foto_degradada.py.
+extends: base.yaml
+experiment: exp10
+
+folds: [0, 1, 2, 3, 4]
+resume: null   # exp10/<id> para retomar una corrida cortada
+
+training:
+  # Cada imagen de entrenamiento llega degradada con esta probabilidad. 0.15 es la proporción de
+  # fotos degradadas que vio la fusión: 30% de los pares, con una de sus dos fotos.
+  image_degradation:
+    probability: 0.15
+    blur_sigmas: [1.5, 3.0, 5.0]
+    dark_factor: [0.3, 0.7]
+
+# Pares fijos de validación (los de EXP-06: semilla 42 + fold) y degradaciones de evaluación.
+pairs:
+  max_lesions: null
+  seed: 42
+evaluation_degradations:
+  blur: [2.0, 4.0, 8.0]
+  dark: [0.5, 0.25]
+
+# Referencias: el modelo de una foto sin degradaciones (EXP-03) y la fusión con su promedio (EXP-06).
+single_view_run: exp03/20261003T194439Z_none
+two_view_run: exp06/20261004T053842Z_dos-fotos

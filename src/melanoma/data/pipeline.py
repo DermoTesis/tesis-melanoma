@@ -50,7 +50,8 @@ def augmenter(cfg: dict[str, Any], seed: int) -> keras.Sequential | None:
 
 def make_dataset(df: pd.DataFrame, images_dir: str | Path, data_cfg: dict[str, Any],
                  batch_size: int, training: bool, seed: int,
-                 positive_fraction: float | None = None) -> tf.data.Dataset:
+                 positive_fraction: float | None = None,
+                 degradation: dict[str, Any] | None = None) -> tf.data.Dataset:
     """(imagen float32 0-255, etiqueta float32) por lotes.
 
     En entrenamiento baraja en cada época y aplica el aumento de datos; en evaluación respeta el
@@ -60,9 +61,14 @@ def make_dataset(df: pd.DataFrame, images_dir: str | Path, data_cfg: dict[str, A
     cada imagen es melanoma con esa probabilidad: los melanomas se repiten, con un aumento de datos
     distinto cada vez, y los demás se recorren en orden barajado. Quien entrena debe fijar
     `steps_per_epoch`. Solo se remuestrea el entrenamiento; la validación nunca.
+
+    Con `degradation` (EXP-10), después del aumento de datos cada imagen de entrenamiento llega
+    degradada con esa probabilidad (`views.random_image_degradation`). La validación, nunca.
     """
     if positive_fraction is not None and not training:
         raise ValueError("El sobremuestreo solo se aplica al conjunto de entrenamiento")
+    if degradation and degradation.get("probability") and not training:
+        raise ValueError("La degradación solo se aplica al conjunto de entrenamiento")
     size = data_cfg["image_size"]
 
     def images(part: pd.DataFrame) -> tf.data.Dataset:
@@ -89,6 +95,11 @@ def make_dataset(df: pd.DataFrame, images_dir: str | Path, data_cfg: dict[str, A
     aug = augmenter(data_cfg.get("augmentation") or {}, seed) if training else None
     if aug is not None:
         ds = ds.map(lambda x, y: (aug(x, training=True), y), num_parallel_calls=AUTOTUNE)
+    if training and degradation and degradation.get("probability"):
+        from melanoma.data.views import random_image_degradation   # views importa este módulo
+
+        bad = random_image_degradation(degradation)
+        ds = ds.map(lambda x, y: (bad(x), y), num_parallel_calls=AUTOTUNE)
     return ds.prefetch(AUTOTUNE)
 
 
