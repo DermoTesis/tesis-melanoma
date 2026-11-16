@@ -1,0 +1,25 @@
+{
+  "utc": "2026-11-16T03:24:35+00:00",
+  "host": "0d1240ec8913",
+  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.31",
+  "python": "3.12.14",
+  "wsl": true,
+  "docker": true,
+  "colab": false,
+  "keras_backend": null,
+  "cpu_count": 6,
+  "gpu": [],
+  "packages": {
+    "numpy": "2.5.3",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "tensorflow": "2.21.0",
+    "keras": "3.15.1",
+    "torch": "2.14.0+cpu",
+    "ai-edge-litert": "2.2.0"
+  },
+  "git": {
+    "commit": "30c95c75b9baa6de07efac42a02f96bff776c885",
+    "dirty": false
+  }
+}
