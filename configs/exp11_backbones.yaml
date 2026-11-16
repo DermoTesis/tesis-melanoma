@@ -8,6 +8,7 @@ stage: entrenar          # entrenar (GPU) | latencia (CPU, en el contenedor de d
 folds: [0, 1, 2, 3, 4]
 resume: null             # exp11/<id> para retomar el entrenamiento
 source_run: null         # con stage=latencia: la corrida de entrenamiento (exp11/<id>)
+untrained: false         # con stage=latencia: true mide sin entrenar (la latencia no depende de los pesos)
 
 # Cada backbone hereda la configuración base; aquí van solo sus cambios. Si la GPU se queda sin
 # memoria con EfficientNetV2-S: --set backbones.efficientnet_v2_s.training.batch_size=16

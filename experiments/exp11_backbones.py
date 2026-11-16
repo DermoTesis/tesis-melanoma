@@ -3,6 +3,7 @@
     python experiments/exp11_backbones.py                                  # entrenar (GPU)
     python experiments/exp11_backbones.py --set resume=exp11/<id>          # retoma el entrenamiento
     python experiments/exp11_backbones.py --set stage=latencia --set source_run=exp11/<id>   # CPU
+    python experiments/exp11_backbones.py --set stage=latencia --set untrained=true   # solo latencia
     python experiments/exp11_backbones.py --set "folds=[0]" --set data.max_images=64 \\
         --set training.phases.head.epochs=1 --set training.phases.finetune.epochs=1   # prueba
 
@@ -29,6 +30,10 @@ el modelo no cambia; esto cuantifica el costo de la elección.
 - Un backbone "habría sido preferible" si su ΔAUC-ROC tiene el IC sobre 0 y el p95 de un caso de
   2 fotos queda bajo `max_p95_ms_case` (100 ms, el umbral de EXP-05).
 
+La latencia no depende de los pesos, solo de la arquitectura y del formato. Con `untrained=true`
+se mide con los modelos sin entrenar (pesos aleatorios), sin la AUC: sirve cuando no hay tiempo de
+GPU para entrenar los backbones (así se usó el 2026-11-16).
+
 Si el entrenamiento se corta, se retoma con `--set resume=exp11/<id>`: cada fold terminado queda
 en `outputs/exp11/<id>/<backbone>/fold_<k>/` y no se repite.
 """
@@ -48,7 +53,7 @@ from melanoma.runs import PROJECT_ROOT, reopen_run, start_run
 CONFIG = PROJECT_ROOT / "configs" / "exp11_backbones.yaml"
 REFERENCE = "mobilenet_v3_large"
 EXPERIMENT_KEYS = ("backbones", "stage", "folds", "resume", "source_run", "reference_run",
-                   "benchmark", "max_p95_ms_case")
+                   "benchmark", "max_p95_ms_case", "untrained")
 
 
 def backbone_config(cfg: dict[str, Any], name: str) -> dict[str, Any]:
@@ -173,25 +178,38 @@ def latency(cfg: dict[str, Any]) -> int:
     from melanoma.data.splits import load_splits, train_val
     from melanoma.export_tflite import benchmark, convert, load_trained
 
-    if not cfg.get("source_run"):
-        raise SystemExit("Falta --set source_run=exp11/<id> (la corrida de entrenamiento)")
-    source = PROJECT_ROOT / cfg["paths"]["outputs"] / cfg["source_run"]
-    results = PROJECT_ROOT / cfg["paths"]["results"]
-    metrics = json.loads((results / cfg["source_run"] / "metricas.json").read_text())
-    auc = {r["backbone"]: r for r in metrics["rows"]}
-    run = start_run(cfg, cfg["experiment"], "latencia")
+    untrained = bool(cfg.get("untrained"))
+    if not untrained and not cfg.get("source_run"):
+        raise SystemExit("Falta --set source_run=exp11/<id> (o --set untrained=true para medir solo "
+                         "la latencia)")
+    auc: dict[str, Any] = {}
+    if not untrained:
+        source = PROJECT_ROOT / cfg["paths"]["outputs"] / cfg["source_run"]
+        results = PROJECT_ROOT / cfg["paths"]["results"]
+        metrics = json.loads((results / cfg["source_run"] / "metricas.json").read_text())
+        auc = {r["backbone"]: r for r in metrics["rows"]}
+    run = start_run(cfg, cfg["experiment"], "latencia-sin-entrenar" if untrained else "latencia")
     size, bench = cfg["data"]["image_size"], cfg["benchmark"]
     splits = load_splits(PROJECT_ROOT / cfg["paths"]["splits"] / cfg["split"]["name"])
     images_dir = PROJECT_ROOT / cfg["data"]["sources"]["ham10000"]["images"]
     _, val = train_val(splits, 0)
     jpegs = [(images_dir / f"{i}.jpg").read_bytes()
              for i in sorted(val.image_id)[:bench["images"]]]
-    models = {REFERENCE: PROJECT_ROOT / cfg["paths"]["outputs"] / cfg["reference_run"] / "fold_0"
-              / "modelo.keras",
-              **{name: fold_dir(source, name, 0) / "modelo.keras" for name in cfg["backbones"]}}
+    names = [REFERENCE, *cfg["backbones"]]
     rows = []
-    for name, path in models.items():
-        model = load_trained(path, {**cfg["model"], "backbone": name}, size)
+    for name in names:
+        model_cfg = {**cfg["model"], "backbone": name}
+        if untrained:
+            import keras
+
+            from melanoma.models import build_single_view
+
+            keras.mixed_precision.set_global_policy("float32")
+            model = build_single_view(model_cfg, size, weights=None)
+        else:
+            path = (PROJECT_ROOT / cfg["paths"]["outputs"] / cfg["reference_run"] / "fold_0"
+                    if name == REFERENCE else fold_dir(source, name, 0)) / "modelo.keras"
+            model = load_trained(path, model_cfg, size)
         tflite = run.artifacts_dir / f"{name}_float16.tflite"
         tflite.write_bytes(convert(model, "float16"))
         with ProcessPoolExecutor(max_workers=1, mp_context=get_context("spawn")) as pool:
@@ -210,7 +228,7 @@ def latency(cfg: dict[str, Any]) -> int:
         rows.append(row)
         print(f"{name:20s} {row['params_m']:6.2f} M  {row['size_mb']:6.2f} MB  caso p95 "
               f"{row['case_p95_ms']:7.1f} ms  AUC {row['auc_roc']}")
-    run.save_metrics(rows, details={"source_run": cfg["source_run"]})
+    run.save_metrics(rows, details={"source_run": cfg.get("source_run"), "untrained": untrained})
     print(f"Corrida registrada en {run.results_dir}")
     return 0
 
