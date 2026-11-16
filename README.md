@@ -149,3 +149,9 @@ Reglas del protocolo:
 - Siempre se reportan Accuracy, Precision, Recall, F1, AUC-ROC, PR-AUC, especificidad y matriz de
   confusión, con IC 95% por bootstrap. El recall de melanoma ≥ 90% en el umbral operativo es
   obligatorio. El F1 se reporta, pero no es meta.
+
+## Licencia
+
+El código de este repositorio se publica con la licencia MIT (ver `LICENSE`). HAM10000 no se
+incluye en el repositorio; lo rige su propia licencia, CC BY-NC 4.0, que no permite el uso
+comercial de las imágenes.
