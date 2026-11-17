@@ -118,17 +118,32 @@ def train_fold(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_dir:
                jit_compile: bool = False, verbose: int = 2) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Entrena con los demás folds y predice el fold `fold`. El test nunca entra."""
     seed = cfg["seed"] + fold
-    keras.backend.clear_session()
-    keras.utils.set_random_seed(seed)
-
     train_df, val_df = train_val(splits, fold)
     max_images = cfg["data"].get("max_images")
     train_df = limit_images(train_df, max_images, seed)
     val_df = limit_images(val_df, max_images, seed)
+    predictions, info = train_frames(cfg, train_df, val_df, images_dir, out_dir, seed, build=build,
+                                     jit_compile=jit_compile, verbose=verbose)
+    return predictions.assign(fold=fold)[PREDICTION_COLUMNS + ["fold", "prob"]], info
+
+
+def train_frames(cfg: dict[str, Any], train_df: pd.DataFrame, val_df: pd.DataFrame,
+                 images_dir: Path, out_dir: Path, seed: int, eval_df: pd.DataFrame | None = None,
+                 build: Callable[[], keras.Model] | None = None, jit_compile: bool = False,
+                 verbose: int = 2) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Entrena con `train_df`, detiene por AUC en `val_df` y predice `eval_df` (por defecto, `val_df`).
+
+    Es el entrenamiento de un fold sin la partición en folds: EXP-09 entrena con unas fuentes y
+    predice otra. Con `training.image_degradation` (EXP-10) las imágenes de entrenamiento llegan
+    degradadas con esa probabilidad. Quien llama decide qué entra: aquí no se mira la partición.
+    """
+    keras.backend.clear_session()
+    keras.utils.set_random_seed(seed)
     batch = cfg["training"]["batch_size"]
     imbalance = imbalance_setup(cfg["training"], train_df.label.to_numpy())
     train_ds = make_dataset(train_df, images_dir, cfg["data"], batch, training=True, seed=seed,
-                            positive_fraction=imbalance["positive_fraction"])
+                            positive_fraction=imbalance["positive_fraction"],
+                            degradation=cfg["training"].get("image_degradation"))
     val_ds = make_dataset(val_df, images_dir, cfg["data"], batch, training=False, seed=seed)
     # Con sobremuestreo, tantos lotes por época como sin él: el mismo cómputo en cada estrategia.
     steps = len(train_df) // batch if imbalance["positive_fraction"] is not None else None
@@ -143,7 +158,11 @@ def train_fold(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_dir:
     info["n_train_images"] = int(len(train_df))
     model.save(out_dir / "modelo.keras")
 
-    predictions = val_df[PREDICTION_COLUMNS].assign(fold=fold, prob=predict(model, val_ds))
+    if eval_df is None:
+        eval_df, eval_ds = val_df, val_ds
+    else:
+        eval_ds = make_dataset(eval_df, images_dir, cfg["data"], batch, training=False, seed=seed)
+    predictions = eval_df[PREDICTION_COLUMNS].assign(prob=predict(model, eval_ds))
     return predictions.reset_index(drop=True), info
 
 

@@ -1,4 +1,9 @@
-"""Clasificador de una foto: MobileNetV3-Large → pooling promedio → dropout → densa sigmoide."""
+"""Clasificador de una foto: backbone → pooling promedio → dropout → densa sigmoide.
+
+El backbone del modelo es MobileNetV3-Large. EfficientNetV2-B0 y EfficientNetV2-S solo se usan
+para medir cuánto se pierde con él (EXP-11). Los tres traen su propio preprocesamiento y reciben
+píxeles 0-255.
+"""
 
 from __future__ import annotations
 
@@ -6,7 +11,9 @@ from typing import Any
 
 import keras
 
-BACKBONES = {"mobilenet_v3_large": keras.applications.MobileNetV3Large}
+BACKBONES = {"mobilenet_v3_large": keras.applications.MobileNetV3Large,
+             "efficientnet_v2_b0": keras.applications.EfficientNetV2B0,
+             "efficientnet_v2_s": keras.applications.EfficientNetV2S}
 
 
 def build_single_view(model_cfg: dict[str, Any], image_size: int,

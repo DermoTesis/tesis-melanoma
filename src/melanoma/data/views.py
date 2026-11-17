@@ -106,6 +106,28 @@ def random_view_degradation(cfg: dict[str, Any]):
     return apply
 
 
+def random_image_degradation(cfg: dict[str, Any]):
+    """Función de lote que degrada cada imagen con probabilidad `probability` (EXP-10).
+
+    Mismos tipos y niveles que `random_view_degradation`, pero para el modelo de una foto: el tipo
+    se elige por imagen y el sigma y el factor de brillo, por lote.
+    """
+    sigmas = [float(s) for s in cfg["blur_sigmas"]]
+    low, high = (float(v) for v in cfg["dark_factor"])
+    p = float(cfg["probability"])
+
+    def apply(x: tf.Tensor) -> tf.Tensor:
+        n = tf.shape(x)[0]
+        chosen = (tf.random.uniform([n]) < p)[:, None, None, None]
+        use_blur = (tf.random.uniform([n]) < 0.5)[:, None, None, None]
+        index = tf.random.uniform([], 0, len(sigmas), dtype=tf.int32)
+        factor = tf.random.uniform([], low, high)
+        blurred = tf.switch_case(index, [lambda s=s: gaussian_blur(x, s) for s in sigmas])
+        return tf.where(chosen, tf.where(use_blur, blurred, x * factor), x)
+
+    return apply
+
+
 def training_pairs(images: np.ndarray, groups: list[np.ndarray], labels: np.ndarray,
                    data_cfg: dict[str, Any], degradation_cfg: dict[str, Any] | None,
                    batch_size: int, seed: int, metadata: np.ndarray | None = None) -> tf.data.Dataset:

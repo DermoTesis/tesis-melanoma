@@ -1,0 +1,12 @@
+# EXP-09: validación dejando fuera una fuente de HAM10000 (leave-one-source-out), con el modelo de
+# una foto. Solo usa train+val; el test no entra. Ver el criterio en experiments/exp09_fuentes.py.
+extends: base.yaml
+experiment: exp09
+
+sources: [rosendahl, vidir_modern, vidir_molemax, vienna_dias]
+early_stopping_fold: 0   # de las fuentes de entrenamiento, este fold detiene el entrenamiento
+resume: null             # exp09/<id> para retomar una corrida cortada
+
+# Referencia: las predicciones fuera de fold del modelo de una foto (EXP-03 sin balanceo), que sí
+# vio imágenes de cada fuente al entrenar.
+reference_run: exp03/20261003T194439Z_none

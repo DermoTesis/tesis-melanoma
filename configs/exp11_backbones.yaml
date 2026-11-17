@@ -1,0 +1,28 @@
+# EXP-11: cuánto se pierde con MobileNetV3-Large. Backbones más grandes en el modelo de una foto,
+# con la AUC-ROC fuera de fold y la latencia del .tflite float16 en CPU. Ver el criterio en
+# experiments/exp11_backbones.py.
+extends: base.yaml
+experiment: exp11
+
+stage: entrenar          # entrenar (GPU) | latencia (CPU, en el contenedor de desarrollo)
+folds: [0, 1, 2, 3, 4]
+resume: null             # exp11/<id> para retomar el entrenamiento
+source_run: null         # con stage=latencia: la corrida de entrenamiento (exp11/<id>)
+untrained: false         # con stage=latencia: true mide sin entrenar (la latencia no depende de los pesos)
+
+# Cada backbone hereda la configuración base; aquí van solo sus cambios. Si la GPU se queda sin
+# memoria con EfficientNetV2-S: --set backbones.efficientnet_v2_s.training.batch_size=16
+backbones:
+  efficientnet_v2_b0: {}
+  efficientnet_v2_s: {}
+
+# Referencia: MobileNetV3-Large de EXP-03 sin balanceo (predicciones fuera de fold y modelo del fold 0).
+reference_run: exp03/20261003T194439Z_none
+
+# Latencia como EXP-05: modelo del fold 0, .tflite float16, proceso limitado a 2 núcleos.
+benchmark:
+  threads: 2
+  images: 20
+  warmup_runs: 10
+  timed_runs: 200
+max_p95_ms_case: 100   # el umbral de EXP-05 para las 2 fotos de un caso

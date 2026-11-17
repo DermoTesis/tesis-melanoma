@@ -13,7 +13,7 @@ y la valida el médico.
 ```
 configs/            base.yaml + un YAML por experimento (heredan con `extends`)
 src/melanoma/       paquete con config, registro de corridas, datos, modelos, métricas, etc.
-experiments/        un script por experimento (exp01 ... exp08)
+experiments/        un script por experimento (exp01 ... exp11)
 scripts/            verificación de GPU y lanzador en la imagen de NVIDIA
 notebooks/          lanzador de Colab y análisis
 splits/             particiones congeladas con hash (en git)
@@ -127,10 +127,15 @@ Se ejecutan en este orden. Cada uno lee su YAML de `configs/`.
 | 5b | EXP-07 Datos del paciente | Fusión de dos fotos más edad, sexo y zona del cuerpo, comparada lesión por lesión con EXP-06, para bajar las falsas alarmas sin perder sensibilidad | `bash scripts/gpu.sh experiments/exp06_dos_fotos.py --config configs/exp07_datos_paciente.yaml` |
 | 5c | EXP-08 Funciones de pérdida | BCE, focal loss (γ = 2, α = 0.25) y asymmetric loss (γ− = 4, m = 0.05) en una foto y en la fusión, con 3 semillas; decide la fusión (criterio en el docstring). Unas 12-14 h, reanudable con `--set resume=exp08/<id>` | `bash scripts/gpu.sh experiments/exp08_perdidas.py` |
 | 6 | EXP-04 Modelo final, calibración y umbral | Modelo con todo train+val (GPU), calibración y umbral con margen registrados antes del test, y la única evaluación del test | `bash scripts/gpu.sh experiments/exp04_modelo_final.py`, luego `python experiments/exp04_evaluacion.py` (ver su docstring) |
+| 7 | EXP-09 Dejar fuera una fuente | Modelo de una foto entrenado con 3 fuentes de HAM10000 y evaluado en la cuarta (solo train+val), frente a la AUC fuera de fold dentro de esa fuente. Unas 4 entrenadas, reanudable con `--set resume=exp09/<id>` | `bash scripts/gpu.sh experiments/exp09_fuentes.py` |
+| 7b | EXP-10 Una foto entrenada con fotos degradadas | Ablación de la H3: el promedio de un modelo de una foto entrenado con las degradaciones de la fusión, frente a la fusión de EXP-06, sobre los mismos pares. 5 folds, reanudable | `bash scripts/gpu.sh experiments/exp10_una_foto_degradada.py` |
+| 7c | EXP-11 Backbones más grandes | EfficientNetV2-B0 y -S en el modelo de una foto (5 folds cada uno) frente a MobileNetV3; luego la latencia del `.tflite` float16 en CPU | `bash scripts/gpu.sh experiments/exp11_backbones.py`, luego (en el contenedor de desarrollo) `python experiments/exp11_backbones.py --set stage=latencia --set source_run=exp11/<id>` |
 
 EXP-06 va antes de EXP-04 para que la calibración y la única evaluación en el test usen el
 modelo definitivo. EXP-08 (pedido del asesor) se agregó después de los pasos 1 y 2 de EXP-04: si
 adopta una pérdida, esos dos pasos se rehacen con ella antes de tocar el test.
+El test se evaluó el 2026-11-14. EXP-09 a EXP-11 se agregaron después para el short paper: son
+descriptivos, solo usan train+val y no cambian el modelo registrado.
 
 Las matrices de confusión de cada corrida se generan aparte, en CPU, desde sus predicciones:
 `python scripts/matriz_confusion.py resultados/exp02/<corrida>` (necesita `matplotlib`, extra
@@ -144,3 +149,9 @@ Reglas del protocolo:
 - Siempre se reportan Accuracy, Precision, Recall, F1, AUC-ROC, PR-AUC, especificidad y matriz de
   confusión, con IC 95% por bootstrap. El recall de melanoma ≥ 90% en el umbral operativo es
   obligatorio. El F1 se reporta, pero no es meta.
+
+## Licencia
+
+El código de este repositorio se publica con la licencia MIT (ver `LICENSE`). HAM10000 no se
+incluye en el repositorio; lo rige su propia licencia, CC BY-NC 4.0, que no permite el uso
+comercial de las imágenes.

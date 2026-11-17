@@ -123,3 +123,19 @@ def test_fold_in_separate_process_returns_predictions_and_saves_model(images, tm
     assert pred.prob.between(0, 1).all() and (pred.fold == 1).all()
     assert info["n_train_images"] == 6
     assert (tmp_path / "fold_1" / "modelo.keras").exists()
+
+
+def test_train_frames_predicts_a_separate_set_and_trains_with_degradation(images, tmp_path):
+    from melanoma.training import train_frames
+    images_dir, df = images
+    keras.mixed_precision.set_global_policy("float32")
+    cfg = {"seed": 0, "model": MODEL_CFG, "data": {**DATA_CFG, "max_images": None},
+           "training": {**PHASES, "batch_size": 2, "imbalance": "none",
+                        "image_degradation": {"probability": 0.5, "blur_sigmas": [1.5, 3.0],
+                                              "dark_factor": [0.3, 0.7]}}}
+    train, stop, held = df.iloc[:6], df.iloc[6:9], df.iloc[9:]
+    pred, info = train_frames(cfg, train, stop, images_dir, tmp_path / "frames", seed=0,
+                              eval_df=held, verbose=0)
+    assert list(pred.image_id) == list(held.image_id) and pred.prob.between(0, 1).all()
+    assert "fold" not in pred and info["n_train_images"] == 6
+    assert (tmp_path / "frames" / "modelo.keras").exists()

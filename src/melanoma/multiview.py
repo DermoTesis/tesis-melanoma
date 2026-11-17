@@ -168,6 +168,32 @@ def two_view_fold(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_d
     return pred, info
 
 
+def single_view_pairs(cfg: dict[str, Any], splits: pd.DataFrame, fold: int, images_dir: Path,
+                      model_path: Path, jit_compile: bool = False) -> pd.DataFrame:
+    """Predicciones de un modelo de una foto sobre los pares fijos (A, B) de validación de `fold`.
+
+    Son las columnas `single_*` y `average*` de `two_view_fold`, con los mismos pares y las mismas
+    degradaciones de la foto A, pero sin entrenar la fusión (EXP-10).
+    """
+    size, batch = cfg["data"]["image_size"], cfg["training"]["batch_size"]
+    pair_seed = cfg["pairs"].get("seed", cfg["seed"]) + fold
+    _, val_df = train_val(splits, fold)
+    val_pairs = fixed_pairs(limit_lesions(multi_image_lesions(val_df), cfg["pairs"].get("max_lesions"),
+                                          pair_seed), pair_seed)
+    single = build_single_view(cfg["model"], size, weights=None)
+    single.load_weights(model_path)
+    view_a = load_images(val_pairs.image_a, images_dir, size)
+    view_b = load_images(val_pairs.image_b, images_dir, size)
+    pred = val_pairs.assign(fold=fold)
+    pred["single_a"] = predict_single(single, view_a, batch)
+    pred["single_b"] = predict_single(single, view_b, batch)
+    pred["average"] = (pred.single_a + pred.single_b) / 2
+    for name, kind, level in degradations(cfg):
+        pred[f"single_a_{name}"] = predict_single(single, degraded_copy(view_a, kind, level), batch)
+        pred[f"average_{name}"] = (pred[f"single_a_{name}"] + pred.single_b) / 2
+    return pred
+
+
 def predict_weights(weights: keras.Model, a: np.ndarray, b: np.ndarray, batch_size: int,
                     meta: np.ndarray | None = None) -> np.ndarray:
     """Peso que la fusión le da a la foto A (el de B es 1 menos ese)."""
