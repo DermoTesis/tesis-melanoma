@@ -1,0 +1,10 @@
+# Construye la imagen del backend desde la raíz del repo y la sube a Artifact Registry:
+#   gcloud builds submit --config backend/cloudbuild.yaml \
+#     --substitutions _IMAGEN=southamerica-west1-docker.pkg.dev/PROYECTO/dermavia/backend,_ETIQUETA=$(git rev-parse --short HEAD) .
+substitutions:
+  _ETIQUETA: latest
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "-f", "backend/Dockerfile", "-t", "${_IMAGEN}:${_ETIQUETA}", "."]
+images:
+  - "${_IMAGEN}:${_ETIQUETA}"
