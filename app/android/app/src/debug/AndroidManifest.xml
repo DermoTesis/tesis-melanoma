@@ -4,4 +4,8 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Solo en depuración: el servidor local del backend se sirve por HTTP
+         (http://10.0.2.2:8080 desde el emulador). Las versiones de distribución
+         solo hablan con Cloud Run por HTTPS (INTEGRACION_BACKEND.md, I23). -->
+    <application android:usesCleartextTraffic="true"/>
 </manifest>

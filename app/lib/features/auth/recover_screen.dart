@@ -50,7 +50,18 @@ class _RecoverScreenState extends ConsumerState<RecoverScreen> {
       _error = null;
       _linkOpened = false;
     });
-    final t = await ref.read(authRepositoryProvider).requestPasswordReset(_email.text);
+    final PasswordResetTicket t;
+    try {
+      t = await ref.read(authRepositoryProvider).requestPasswordReset(_email.text);
+    } on AppException catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.message;
+          _loading = false;
+        });
+      }
+      return;
+    }
     if (!mounted) return;
     setState(() {
       _ticket = t;

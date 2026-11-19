@@ -6,6 +6,9 @@ import '../../core/errors/app_exception.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/common.dart';
 import '../../data/mock/seed_data.dart';
+import '../../data/remote/backend_config.dart';
+import '../../data/remote/token_provider.dart';
+import '../../domain/models/user.dart';
 import '../../providers/repository_providers.dart';
 import 'auth_widgets.dart';
 
@@ -78,7 +81,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
     if (email == null || email.trim().isEmpty || !mounted) return;
-    final ticket = await ref.read(authRepositoryProvider).findActivation(email);
+    final ActivationTicket? ticket;
+    try {
+      ticket = await ref.read(authRepositoryProvider).findActivation(email);
+    } on AppException catch (e) {
+      if (mounted) showAppSnack(context, e.message, error: true);
+      return;
+    }
     if (!mounted) return;
     if (ticket == null) {
       showAppSnack(context, 'No hay un enlace de activación pendiente para ese correo.',
@@ -88,7 +97,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     context.push('/activar/${ticket.uid}');
   }
 
+  /// El servidor local no verifica la contraseña; basta con que no esté vacía.
+  static const _devPassword = 'dev';
+
   void _showDemoAccounts() {
+    final local = ref.read(backendConfigProvider).mode == BackendMode.local;
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
@@ -114,19 +127,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Text('Cuentas de demostración',
                     style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               ),
-              tile('Médico especialista', DemoCredentials.specialistEmail,
-                  DemoCredentials.specialistPassword),
-              tile('Administrador', DemoCredentials.adminEmail, DemoCredentials.adminPassword),
-              tile('Especialista con acceso revocado', DemoCredentials.revokedEmail,
-                  DemoCredentials.specialistPassword),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 4, 20, 20),
-                child: Text(
-                  'Cuenta pendiente de activación: ${DemoCredentials.pendingEmail} '
-                  '(usa "Tengo un enlace de activación").',
-                  style: TextStyle(fontSize: 13, color: AppColors.textSubtle),
+              if (local) ...[
+                // Cuentas sembradas por `python -m dermavia.local` (I13).
+                tile('Médico especialista', DevAccounts.specialistEmail, _devPassword),
+                tile('Administrador', DevAccounts.adminEmail, _devPassword),
+                tile('Especialista nuevo (sin aceptar el alcance)',
+                    DevAccounts.newSpecialistEmail, _devPassword),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 4, 20, 20),
+                  child: Text(
+                    'Servidor local: la contraseña no se verifica. Las cuentas que dé de alta '
+                    'el administrador también pueden entrar con su correo.',
+                    style: TextStyle(fontSize: 13, color: AppColors.textSubtle),
+                  ),
                 ),
-              ),
+              ] else ...[
+                tile('Médico especialista', DemoCredentials.specialistEmail,
+                    DemoCredentials.specialistPassword),
+                tile('Administrador', DemoCredentials.adminEmail, DemoCredentials.adminPassword),
+                tile('Especialista con acceso revocado', DemoCredentials.revokedEmail,
+                    DemoCredentials.specialistPassword),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 4, 20, 20),
+                  child: Text(
+                    'Cuenta pendiente de activación: ${DemoCredentials.pendingEmail} '
+                    '(usa "Tengo un enlace de activación").',
+                    style: TextStyle(fontSize: 13, color: AppColors.textSubtle),
+                  ),
+                ),
+              ],
             ],
           ),
         );
