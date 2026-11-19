@@ -61,19 +61,37 @@ enum CaptureSource { camara, galeria }
 class CaseImage {
   const CaseImage({
     required this.view,
-    required this.source,
+    this.source,
     this.localPath,
+    this.remoteUrl,
     this.width,
     this.height,
   });
 
   final ImageView view;
-  final CaptureSource source;
 
-  /// Ruta local del archivo. Es nula en los casos de ejemplo sembrados.
+  /// Origen de la foto. El backend no lo guarda: solo se conoce en los casos
+  /// capturados en este dispositivo.
+  final CaptureSource? source;
+
+  /// Ruta local del archivo. Es nula en los casos de ejemplo sembrados y en
+  /// los casos que vienen del backend sin copia local.
   final String? localPath;
+
+  /// URL firmada de lectura que entrega el backend en el detalle del caso
+  /// (vence en 15 min: no se guarda).
+  final String? remoteUrl;
   final int? width;
   final int? height;
+
+  CaseImage copyWith({String? localPath, String? remoteUrl}) => CaseImage(
+        view: view,
+        source: source,
+        localPath: localPath ?? this.localPath,
+        remoteUrl: remoteUrl ?? this.remoteUrl,
+        width: width,
+        height: height,
+      );
 }
 
 enum OnsetTime { menos3Meses, entre3y12Meses, masDe1Anio, noSabe }
@@ -147,7 +165,7 @@ class ClinicalCase {
   const ClinicalCase({
     required this.id,
     required this.patientId,
-    required this.uidMedico,
+    this.uidMedico,
     required this.status,
     required this.createdAt,
     required this.foto1,
@@ -158,12 +176,17 @@ class ClinicalCase {
     this.queuedOffline = false,
     this.analysisAttempts = 0,
     this.internalNotes = const [],
+    this.lastError,
+    this.overdueAlerted = false,
   });
 
-  /// Identificador visible, p. ej. "CASO-0201".
+  /// Identificador del caso: "CASO-0201" en el simulado, un id de 20
+  /// caracteres en el backend. Para mostrarlo, usar `Fmt.caseId`.
   final String id;
   final String patientId;
-  final String uidMedico;
+
+  /// El backend no lo expone (`CasoOut` ya viene filtrado por médico).
+  final String? uidMedico;
   final CaseStatus status;
   final DateTime createdAt;
   final CaseImage foto1;
@@ -179,9 +202,18 @@ class ClinicalCase {
   final int analysisAttempts;
   final List<InternalNote> internalNotes;
 
+  /// Último error del análisis, con un mensaje apto para el médico.
+  final String? lastError;
+
+  /// El backend ya envió la alerta de caso vencido (RF-04.5).
+  final bool overdueAlerted;
+
   bool get isPendingValidation => status == CaseStatus.pendienteValidacion;
 
-  Duration pendingFor(DateTime now) => now.difference(createdAt);
+  /// Tiempo que lleva pendiente de validación. Se mide desde la predicción,
+  /// como el backend (`casos.vencidos`); sin predicción, desde el registro.
+  Duration pendingFor(DateTime now) =>
+      now.difference(prediction?.fechaInferencia ?? createdAt);
 
   ClinicalCase copyWith({
     CaseStatus? status,
@@ -191,6 +223,10 @@ class ClinicalCase {
     bool? queuedOffline,
     int? analysisAttempts,
     List<InternalNote>? internalNotes,
+    CaseImage? foto1,
+    CaseImage? foto2,
+    String? lastError,
+    bool clearLastError = false,
   }) {
     return ClinicalCase(
       id: id,
@@ -198,14 +234,16 @@ class ClinicalCase {
       uidMedico: uidMedico,
       status: status ?? this.status,
       createdAt: createdAt,
-      foto1: foto1,
-      foto2: foto2,
+      foto1: foto1 ?? this.foto1,
+      foto2: foto2 ?? this.foto2,
       clinicalData: clinicalData,
       prediction: prediction ?? this.prediction,
       suggestion: clearSuggestion ? null : (suggestion ?? this.suggestion),
       queuedOffline: queuedOffline ?? this.queuedOffline,
       analysisAttempts: analysisAttempts ?? this.analysisAttempts,
       internalNotes: internalNotes ?? this.internalNotes,
+      lastError: clearLastError ? null : (lastError ?? this.lastError),
+      overdueAlerted: overdueAlerted,
     );
   }
 }

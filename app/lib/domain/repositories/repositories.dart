@@ -44,7 +44,11 @@ abstract class AuthRepository {
 /// Módulo Identidad, funciones del administrador.
 abstract class AdminRepository {
   Stream<List<AppUser>> watchUsers();
-  Future<ActivationTicket> createSpecialist({
+
+  /// Crea la cuenta pendiente de activación. El especialista la activa con el
+  /// enlace que recibe por correo (en el backend real, el flujo de
+  /// restablecimiento de contraseña de Firebase).
+  Future<AppUser> createSpecialist({
     required String nombres,
     required String correo,
     required String dni,

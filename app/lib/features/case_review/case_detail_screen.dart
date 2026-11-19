@@ -37,7 +37,7 @@ class CaseDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         leading: const SmartBackButton(),
-        title: Text(caseId),
+        title: Text(Fmt.caseId(caseId)),
         actions: [if (chip != null) Padding(padding: const EdgeInsets.only(right: 16), child: chip)],
       ),
       body: caseAsync.when(
@@ -72,6 +72,7 @@ class CaseImagesRow extends StatelessWidget {
             onTap: () => _openImage(context, clinicalCase.foto1),
             child: LesionThumbnail(
               path: clinicalCase.foto1.localPath,
+              url: clinicalCase.foto1.remoteUrl,
               height: height,
               radius: 14,
               dark: true,
@@ -85,6 +86,7 @@ class CaseImagesRow extends StatelessWidget {
             onTap: () => _openImage(context, clinicalCase.foto2),
             child: LesionThumbnail(
               path: clinicalCase.foto2.localPath,
+              url: clinicalCase.foto2.remoteUrl,
               height: height,
               radius: 14,
               dark: true,
@@ -97,7 +99,7 @@ class CaseImagesRow extends StatelessWidget {
   }
 
   void _openImage(BuildContext context, CaseImage image) {
-    if (image.localPath == null) return;
+    if (image.localPath == null && image.remoteUrl == null) return;
     showDialog<void>(
       context: context,
       builder: (ctx) => Dialog(
@@ -106,7 +108,8 @@ class CaseImagesRow extends StatelessWidget {
         child: Stack(
           children: [
             InteractiveViewer(
-              child: LesionThumbnail(path: image.localPath, height: 480, radius: 16),
+              child: LesionThumbnail(
+                  path: image.localPath, url: image.remoteUrl, height: 480, radius: 16),
             ),
             Positioned(
               right: 4,
@@ -230,11 +233,11 @@ class _ErrorViewState extends ConsumerState<_ErrorView> {
           children: [
             CaseImagesRow(clinicalCase: widget.clinicalCase, height: 180),
             const SizedBox(height: 18),
-            const InfoBanner(
+            InfoBanner(
               tone: BannerTone.error,
               title: 'Error de análisis',
-              leading: AlertDot(),
-              message:
+              leading: const AlertDot(),
+              message: widget.clinicalCase.lastError ??
                   'El servicio de inferencia no respondió. Una tarea periódica lo reprocesará automáticamente; también puedes reintentar ahora.',
             ),
             const Spacer(),
@@ -356,8 +359,9 @@ class _ReviewView extends ConsumerWidget {
                     KeyValueRow('Ubicación', c.clinicalData.ubicacionLesion),
                     KeyValueRow('Aparición', c.clinicalData.tiempoAparicion.label),
                     KeyValueRow('Síntomas', c.clinicalData.sintomasLabel),
-                    KeyValueRow('Captura',
-                        c.foto2.source == CaptureSource.camara ? 'Cámara' : 'Galería'),
+                    if (c.foto2.source != null)
+                      KeyValueRow('Captura',
+                          c.foto2.source == CaptureSource.camara ? 'Cámara' : 'Galería'),
                     KeyValueRow('Registrado', Fmt.dateTime(c.createdAt), mono: true),
                   ],
                 ),

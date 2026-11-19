@@ -326,12 +326,13 @@ class AppCard extends StatelessWidget {
   }
 }
 
-/// Imagen de la lesión o, en los casos de ejemplo, el patrón rayado de los
-/// mockups.
+/// Imagen de la lesión (archivo local o URL firmada del backend) o, si no
+/// hay ninguna, el patrón rayado de los mockups.
 class LesionThumbnail extends StatelessWidget {
   const LesionThumbnail({
     super.key,
     this.path,
+    this.url,
     this.size,
     this.height,
     this.radius = 10,
@@ -341,6 +342,9 @@ class LesionThumbnail extends StatelessWidget {
   });
 
   final String? path;
+
+  /// URL de lectura; se usa si no existe el archivo local.
+  final String? url;
   final double? size;
   final double? height;
   final double radius;
@@ -352,16 +356,23 @@ class LesionThumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     final file = path == null ? null : File(path!);
     final hasFile = file != null && file.existsSync();
+    final placeholder = CustomPaint(
+      painter: _StripePainter(
+        dark ? AppColors.lesionDarkA : AppColors.lesionA,
+        dark ? AppColors.lesionDarkB : AppColors.lesionB,
+        dark ? 8 : 5,
+      ),
+      child: const SizedBox.expand(),
+    );
     Widget child = hasFile
         ? Image.file(file, fit: BoxFit.cover, width: double.infinity, height: double.infinity)
-        : CustomPaint(
-            painter: _StripePainter(
-              dark ? AppColors.lesionDarkA : AppColors.lesionA,
-              dark ? AppColors.lesionDarkB : AppColors.lesionB,
-              dark ? 8 : 5,
-            ),
-            child: const SizedBox.expand(),
-          );
+        : url != null
+            ? Image.network(url!,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                errorBuilder: (_, _, _) => placeholder)
+            : placeholder;
     if (faded) child = Opacity(opacity: 0.55, child: child);
     return SizedBox(
       width: size,

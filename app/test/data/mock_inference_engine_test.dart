@@ -15,8 +15,8 @@ void main() {
     });
 
     test('la clase se decide con la salida sin calibrar', () {
-      expect(ModelArtifact.classify(ModelArtifact.decisionThreshold), LesionClass.maligno);
-      expect(ModelArtifact.classify(0.0137), LesionClass.benigno);
+      expect(ModelArtifact.classify(ModelArtifact.decisionThreshold), LesionClass.melanoma);
+      expect(ModelArtifact.classify(0.0137), LesionClass.noMelanoma);
     });
 
     test('en el escalón de la calibración, el mismo riesgo puede tener o no alerta', () {
@@ -26,8 +26,8 @@ void main() {
       final under = MockInferenceEngine.fromModelOutput(0.010, at);
       expect(over.probabilidadMalignidad, under.probabilidadMalignidad);
       expect(over.percent, 7);
-      expect(over.clasePredicha, LesionClass.maligno);
-      expect(under.clasePredicha, LesionClass.benigno);
+      expect(over.clasePredicha, LesionClass.melanoma);
+      expect(under.clasePredicha, LesionClass.noMelanoma);
       // Con el corte antiguo (calibrada >= 0.070) este caso quedaba sin alerta.
       expect(over.probabilidadMalignidad < 0.070, isTrue);
     });

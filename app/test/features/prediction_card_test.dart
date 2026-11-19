@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   testWidgets('la tarjeta usa lenguaje clínico y explica cómo leerla', (tester) async {
     final p = MockInferenceEngine.predictionFor(0.09, DateTime(2026, 10, 29),
-        clase: LesionClass.maligno);
+        clase: LesionClass.melanoma);
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
         body: Padding(padding: const EdgeInsets.all(18), child: PredictionCard(prediction: p)),

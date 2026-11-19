@@ -33,7 +33,7 @@ class ClinicalValidation {
   const ClinicalValidation({
     required this.id,
     required this.caseId,
-    required this.uidEspecialista,
+    this.uidEspecialista,
     required this.especialistaNombre,
     required this.cmp,
     required this.decision,
@@ -48,7 +48,8 @@ class ClinicalValidation {
 
   final String id;
   final String caseId;
-  final String uidEspecialista;
+  /// El backend no lo expone (`ValidacionOut`); solo lo usa el simulado.
+  final String? uidEspecialista;
   final String especialistaNombre;
   final String cmp;
   final ValidationDecision decision;
@@ -81,8 +82,9 @@ class ClinicalValidation {
     if (claseFinal == null) {
       return 'Predicción preliminar descartada; se requiere evaluación clínica';
     }
-    return claseFinal == LesionClass.maligno
-        ? 'Lesión compatible con melanoma maligno'
-        : 'Lesión compatible con proceso benigno';
+    // Mismo texto que `informes.conclusion` del backend.
+    return claseFinal == LesionClass.melanoma
+        ? 'Lesión compatible con melanoma'
+        : 'Lesión no compatible con melanoma';
   }
 }

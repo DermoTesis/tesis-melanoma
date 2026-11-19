@@ -6,9 +6,9 @@ void main() {
   final at = DateTime(2026, 10, 29);
   // La clase la decide el backend; en estas pruebas solo importa el texto.
   Prediction alert(double p) =>
-      MockInferenceEngine.predictionFor(p, at, clase: LesionClass.maligno);
+      MockInferenceEngine.predictionFor(p, at, clase: LesionClass.melanoma);
   Prediction noAlert(double p) =>
-      MockInferenceEngine.predictionFor(p, at, clase: LesionClass.benigno);
+      MockInferenceEngine.predictionFor(p, at, clase: LesionClass.noMelanoma);
 
   group('Textos para el médico', () {
     test('una alerta se presenta como posible melanoma con su riesgo', () {

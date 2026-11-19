@@ -22,6 +22,15 @@ abstract final class Fmt {
 
   static String percent(double p) => '${(p * 100).round()}%';
 
+  /// Identificador visible del caso. El simulado ya usa "CASO-0201"; el
+  /// backend usa ids de 20 caracteres, que se acortan a "CASO-1A2B3C". Los
+  /// casos en cola sin conexión todavía no tienen id del backend.
+  static String caseId(String id) {
+    if (id.startsWith('CASO-')) return id;
+    if (id.startsWith('local-')) return 'En cola';
+    return 'CASO-${id.substring(0, id.length < 6 ? id.length : 6).toUpperCase()}';
+  }
+
   /// Cuenta regresiva "23 h 12 min".
   static String countdown(Duration d) {
     if (d.isNegative) return 'vencido';

@@ -17,14 +17,15 @@ class Consent {
   const Consent({
     required this.otorgado,
     required this.fechaOtorgamiento,
-    required this.uidMedico,
+    this.uidMedico,
     required this.medicoNombre,
     this.fechaRevocacion,
   });
 
   final bool otorgado;
   final DateTime fechaOtorgamiento;
-  final String uidMedico;
+  /// El backend no lo expone (`ConsentimientoOut`); solo lo usa el simulado.
+  final String? uidMedico;
   final String medicoNombre;
   final DateTime? fechaRevocacion;
 
@@ -51,6 +52,10 @@ class Patient {
     required this.uidMedicoRegistro,
     this.consent,
   });
+
+  /// Normaliza el número de historia clínica igual que el backend
+  /// (`pacientes.normalizar_hc`): sin espacios y en mayúsculas.
+  static String normalizeHc(String hc) => hc.replaceAll(RegExp(r'\s+'), '').toUpperCase();
 
   final String id;
   final String numeroHistoriaClinica;

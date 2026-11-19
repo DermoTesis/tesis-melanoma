@@ -8,8 +8,11 @@ enum AuditType {
   consentimiento,
   revocacionConsentimiento,
   registroCaso,
+  prediccion,
+  errorAnalisis,
   validacion,
   cierreCaso,
+  alertaVencido,
   anonimizacion,
 }
 
@@ -32,6 +35,12 @@ extension AuditTypeLabel on AuditType {
         return 'Revocación de consentimiento';
       case AuditType.registroCaso:
         return 'Registro de caso';
+      case AuditType.prediccion:
+        return 'Predicción preliminar';
+      case AuditType.errorAnalisis:
+        return 'Error de análisis';
+      case AuditType.alertaVencido:
+        return 'Alerta de caso vencido';
       case AuditType.validacion:
         return 'Validación registrada';
       case AuditType.cierreCaso:

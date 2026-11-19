@@ -217,7 +217,7 @@ class _HistoryItem extends ConsumerWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              LesionThumbnail(path: c.foto2.localPath, size: 64),
+              LesionThumbnail(path: c.foto2.localPath, url: c.foto2.remoteUrl, size: 64),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(

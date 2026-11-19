@@ -49,7 +49,7 @@ Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 5));
 - Tras `submitCase` llama a `settle()` para que termine el análisis simulado.
 - Paciente sembrado con consentimiento vigente: `'p-jmamani'`.
 - Para fijar el resultado del análisis: `MockBackend(inference: MockInferenceEngine(failingCaseIds: {...}))`
-  o construye la predicción con `MockInferenceEngine.predictionFor(0.09, fecha, clase: LesionClass.maligno)`
+  o construye la predicción con `MockInferenceEngine.predictionFor(0.09, fecha, clase: LesionClass.melanoma)`
   (la clase siempre explícita: no se deduce de la probabilidad calibrada) o con
   `MockInferenceEngine.fromModelOutput(salida, fecha)`.
 - Para tiempo controlado (vencimientos de 48 h, enlaces de 30 min): pasa

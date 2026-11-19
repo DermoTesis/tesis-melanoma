@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
 
+import '../../core/utils/formatters.dart';
 import '../../core/errors/app_exception.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
@@ -42,7 +43,7 @@ class ReportPreviewScreen extends ConsumerWidget {
             Expanded(
               child: PdfPreview(
                 build: (format) => buildReportPdf(doc, format: format),
-                pdfFileName: 'Informe_${doc.caseId}.pdf',
+                pdfFileName: 'Informe_${Fmt.caseId(doc.caseId)}.pdf',
                 canChangeOrientation: false,
                 canChangePageFormat: false,
                 canDebug: false,
@@ -71,7 +72,7 @@ class ReportPreviewScreen extends ConsumerWidget {
                             label: 'Imprimir',
                             icon: Icons.print_outlined,
                             onPressed: () => Printing.layoutPdf(
-                              name: 'Informe_${doc.caseId}',
+                              name: 'Informe_${Fmt.caseId(doc.caseId)}',
                               onLayout: (format) => buildReportPdf(doc, format: format),
                             ),
                           ),
@@ -84,7 +85,7 @@ class ReportPreviewScreen extends ConsumerWidget {
                             onPressed: () async {
                               final bytes = await buildReportPdf(doc);
                               await Printing.sharePdf(
-                                  bytes: bytes, filename: 'Informe_${doc.caseId}.pdf');
+                                  bytes: bytes, filename: 'Informe_${Fmt.caseId(doc.caseId)}.pdf');
                             },
                           ),
                         ),

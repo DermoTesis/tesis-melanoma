@@ -81,7 +81,7 @@ class _Body extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('${c.id} · ${patient?.numeroHistoriaClinica ?? ''}',
+            Text('${Fmt.caseId(c.id)} · ${patient?.numeroHistoriaClinica ?? ''}',
                 style: AppFonts.mono(fontSize: 12)),
             const SizedBox(height: 8),
             Text(title,

@@ -1,11 +1,15 @@
-enum LesionClass { benigno, maligno }
+/// Clase de la lesión según la tarea del modelo: melanoma frente a todas las
+/// demás clases de HAM10000 (no benigno/maligno). Coincide con `ClaseLesion`
+/// del backend (`melanoma` / `no_melanoma`).
+enum LesionClass { melanoma, noMelanoma }
 
 extension LesionClassLabel on LesionClass {
-  String get label => this == LesionClass.benigno ? 'Benigno' : 'Maligno';
+  String get label => this == LesionClass.melanoma ? 'Melanoma' : 'No melanoma';
 }
 
 /// Nivel de confianza de la predicción preliminar, usado para sugerir
-/// exámenes adicionales (RF-06.1).
+/// exámenes adicionales (RF-06.1). Equivale a la `banda` del backend:
+/// `sin_alerta` (benigna), `baja`, `ambigua` y `alta`.
 enum PredictionConfidence { alta, ambigua, baja, benigna }
 
 /// Predicción preliminar devuelta por el módulo Inferencia (RF-03.3).
@@ -17,6 +21,7 @@ class Prediction {
     required this.versionModelo,
     required this.umbralOperativo,
     required this.fechaInferencia,
+    this.banda,
   });
 
   /// Probabilidad calibrada (regresión isotónica) de malignidad, 0..1. Es el
@@ -30,16 +35,20 @@ class Prediction {
   final LesionClass clasePredicha;
   final String versionModelo;
 
-  /// El umbral operativo expresado como probabilidad calibrada, solo para
-  /// mostrar la línea de alerta (EXP-04).
+  /// El umbral operativo expresado como probabilidad calibrada (`linea_alerta`
+  /// del backend), solo para mostrar la línea de alerta (EXP-04).
   final double umbralOperativo;
   final DateTime fechaInferencia;
+
+  /// Banda calculada por el backend. Si falta (backend simulado), se calcula
+  /// con los mismos cortes que `sugerencias.py`.
+  final PredictionConfidence? banda;
 
   int get percent => (probabilidadMalignidad * 100).round();
 
   int get alertPercent => (umbralOperativo * 100).round();
 
-  bool get isAlert => clasePredicha == LesionClass.maligno;
+  bool get isAlert => clasePredicha == LesionClass.melanoma;
 
   // Textos para el médico, sin términos de aprendizaje automático: la
   // probabilidad calibrada se presenta como "riesgo estimado" y el umbral
@@ -58,8 +67,10 @@ class Prediction {
   String get shortSummary => '$headline · riesgo $percent%';
 
   PredictionConfidence get confidence {
+    final b = banda;
+    if (b != null) return b;
     final p = probabilidadMalignidad;
-    if (clasePredicha == LesionClass.benigno) return PredictionConfidence.benigna;
+    if (clasePredicha == LesionClass.noMelanoma) return PredictionConfidence.benigna;
     if (p >= 0.70) return PredictionConfidence.alta;
     if (p >= 0.30) return PredictionConfidence.ambigua;
     return PredictionConfidence.baja;

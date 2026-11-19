@@ -14,7 +14,7 @@ import '../../domain/models/prediction.dart';
 /// umbral (toda salida entre 0.0040 y 0.0193 se calibra a 0.0699), así que
 /// ningún corte sobre la probabilidad calibrada reproduce la decisión.
 abstract final class ModelArtifact {
-  static const version = 'mnv3l-fusion-2v-fp16 v1';
+  static const version = '20261004T172732Z_registro';
 
   /// Umbral de decisión sobre la salida sin calibrar: "melanoma" si la salida
   /// es >= este valor. Asegura sensibilidad >= 90% con 95% de confianza en
@@ -59,7 +59,7 @@ abstract final class ModelArtifact {
 
   /// Clase predicha a partir de la salida sin calibrar, como en el backend.
   static LesionClass classify(double modelOutput) =>
-      modelOutput >= decisionThreshold ? LesionClass.maligno : LesionClass.benigno;
+      modelOutput >= decisionThreshold ? LesionClass.melanoma : LesionClass.noMelanoma;
 
   /// Probabilidad calibrada: interpolación lineal entre los nodos, recortada
   /// en los extremos (igual que `numpy.interp` en `melanoma.calibration.apply`).

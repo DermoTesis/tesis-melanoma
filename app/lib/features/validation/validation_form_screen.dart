@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/utils/formatters.dart';
 import '../../core/errors/app_exception.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/common.dart';
@@ -70,8 +71,8 @@ class _ValidationFormScreenState extends ConsumerState<ValidationFormScreen> {
       appBar: AppBar(
         leading: IconButton(icon: const Icon(Icons.close), onPressed: () => context.pop()),
         title: Text(widget.complementaDe == null
-            ? 'Validación · ${widget.caseId}'
-            : 'Complementaria · ${widget.caseId}'),
+            ? 'Validación · ${Fmt.caseId(widget.caseId)}'
+            : 'Complementaria · ${Fmt.caseId(widget.caseId)}'),
       ),
       body: caseAsync.when(
         loading: () => const LoadingView(),
@@ -84,9 +85,9 @@ class _ValidationFormScreenState extends ConsumerState<ValidationFormScreen> {
                 'La validación no está disponible hasta que termine la predicción preliminar.');
           }
           final sustentoError = _attempted && _sustento.text.trim().isEmpty;
-          final other = p.clasePredicha == LesionClass.maligno
-              ? LesionClass.benigno
-              : LesionClass.maligno;
+          final other = p.clasePredicha == LesionClass.melanoma
+              ? LesionClass.noMelanoma
+              : LesionClass.melanoma;
 
           return SafeArea(
             top: false,
@@ -137,7 +138,7 @@ class _ValidationFormScreenState extends ConsumerState<ValidationFormScreen> {
                                   onTap: () => setState(() => _correctedClass = cls),
                                 ),
                               ),
-                              if (cls == LesionClass.benigno) const SizedBox(width: 8),
+                              if (cls != LesionClass.values.last) const SizedBox(width: 8),
                             ],
                           ],
                         ),

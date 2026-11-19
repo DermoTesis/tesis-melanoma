@@ -13,7 +13,7 @@ import '../../domain/models/report.dart';
 /// observaciones internas ni la predicción sin validar.
 Future<Uint8List> buildReportPdf(ReportDocument doc, {PdfPageFormat? format}) async {
   final pdf = pw.Document(
-    title: 'Informe ${doc.caseId}',
+    title: 'Informe ${Fmt.caseId(doc.caseId)}',
     author: doc.especialistaNombre,
     creator: 'Dermavía',
   );
@@ -82,7 +82,7 @@ Future<Uint8List> buildReportPdf(ReportDocument doc, {PdfPageFormat? format}) as
             pw.Text('Dermavia',
                 style: pw.TextStyle(color: green, fontSize: 16, fontWeight: pw.FontWeight.bold)),
             pw.Spacer(),
-            pw.Text('${doc.caseId} · ${Fmt.date(doc.fechaCierre)}',
+            pw.Text('${Fmt.caseId(doc.caseId)} · ${Fmt.date(doc.fechaCierre)}',
                 style: const pw.TextStyle(color: muted, fontSize: 10)),
           ]),
           pw.Divider(color: divider),

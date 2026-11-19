@@ -170,7 +170,7 @@ class MockAdminRepository implements AdminRepository {
       });
 
   @override
-  Future<ActivationTicket> createSpecialist({
+  Future<AppUser> createSpecialist({
     required String nombres,
     required String correo,
     required String dni,
@@ -210,7 +210,7 @@ class MockAdminRepository implements AdminRepository {
     _b.activations[uid] = ticket;
     _b.log(AuditType.altaCuenta, user.nombres);
     _b.notify();
-    return ticket;
+    return user;
   }
 
   @override
@@ -240,7 +240,7 @@ class MockPatientRepository implements PatientRepository {
   @override
   Stream<Patient?> watchPatient(String id) => _b.watch(() => _b.patients[id]);
 
-  String _normalizeHc(String hc) => hc.trim().toUpperCase();
+  String _normalizeHc(String hc) => Patient.normalizeHc(hc);
 
   @override
   Future<Patient?> findByHistoriaClinica(String hc) async {

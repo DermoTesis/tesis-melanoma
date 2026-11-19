@@ -37,6 +37,10 @@ class ReportDocument {
     required this.alcance,
     this.foto1Path,
     this.foto2Path,
+    this.fechaNacimiento,
+    this.decision,
+    this.sustentoClinico,
+    this.examenesAdicionales,
   });
 
   final String caseId;
@@ -54,6 +58,12 @@ class ReportDocument {
   final String alcance;
   final String? foto1Path;
   final String? foto2Path;
+
+  // Campos que agrega el backend (`DocumentoInformeOut`).
+  final DateTime? fechaNacimiento;
+  final String? decision;
+  final String? sustentoClinico;
+  final String? examenesAdicionales;
 }
 
 const kScopeNotice =

@@ -52,7 +52,7 @@ class AlertsScreen extends ConsumerWidget {
                               tone: ChipTone.error,
                             ),
                             const Spacer(),
-                            Text(c.id, style: AppFonts.mono(fontSize: 11)),
+                            Text(Fmt.caseId(c.id), style: AppFonts.mono(fontSize: 11)),
                           ],
                         ),
                         const SizedBox(height: 10),

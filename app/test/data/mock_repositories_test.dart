@@ -169,7 +169,7 @@ void main() {
     test('corregir conserva la predicción original y el registro es inmutable', () async {
       final c = await pendingCase();
       final predicted = c.prediction!.clasePredicha;
-      final other = predicted == LesionClass.maligno ? LesionClass.benigno : LesionClass.maligno;
+      final other = predicted == LesionClass.melanoma ? LesionClass.noMelanoma : LesionClass.melanoma;
       final v = await validations.registerValidation(
         caseId: c.id,
         decision: ValidationDecision.corregir,

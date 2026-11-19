@@ -94,7 +94,8 @@ de la tesis o en el paper. Varias tareas dependen de una decisión previa; se in
 - [ ] **A7. Justificar los cortes 0.30 y 0.70 de las bandas.** No salen de ningún
   experimento. La tabla de A6 los respalda razonablemente, pero hay que dejarlo escrito en
   la memoria.
-- [ ] **A8. Mostrar la versión del modelo que devuelve el backend.** La app muestra
+- [x] **A8. Mostrar la versión del modelo que devuelve el backend.** Resuelto: la app
+  muestra `version_modelo` del backend y el simulado usa `20261004T172732Z_registro`. La app muestra
   `mnv3l-fusion-2v-fp16 v1`; el artefacto registrado es `20261004T172732Z_registro`, con
   su sha256 en `../resultados/exp04/20261004T172732Z_registro/registro.json`.
 - [ ] **A9. Fijar el contrato del backend real.** La respuesta de inferencia debe traer la

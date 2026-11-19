@@ -42,7 +42,7 @@ class _NewSpecialistScreenState extends ConsumerState<NewSpecialistScreen> {
     if (!_formKey.currentState!.validate() || !_verified) return;
     setState(() => _saving = true);
     try {
-      final ticket = await ref.read(adminRepositoryProvider).createSpecialist(
+      final user = await ref.read(adminRepositoryProvider).createSpecialist(
             nombres: _names.text,
             correo: _email.text,
             dni: _dni.text,
@@ -55,9 +55,10 @@ class _NewSpecialistScreenState extends ConsumerState<NewSpecialistScreen> {
         builder: (ctx) => AlertDialog(
           title: const Text('Especialista dado de alta'),
           content: Text(
-            'Se envió un enlace de activación a ${ticket.correo}, vigente hasta el '
-            '${Fmt.dateTime(ticket.expiresAt)}.\n\nDemo: el especialista puede activar su cuenta '
-            'desde "Tengo un enlace de activación" en el inicio de sesión.',
+            'La cuenta de ${user.nombres} quedó pendiente de activación. El especialista '
+            'recibirá en ${user.correo} un enlace para definir su contraseña.\n\n'
+            'Demo: puede activar su cuenta desde "Tengo un enlace de activación" en el '
+            'inicio de sesión.',
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Entendido')),

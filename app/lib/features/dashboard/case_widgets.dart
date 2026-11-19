@@ -33,7 +33,7 @@ class CaseCard extends StatelessWidget {
     final c = clinicalCase;
     final p = c.prediction;
     final overdue = c.isPendingValidation && c.pendingFor(now) > kValidationDeadline;
-    final highRisk = overdue && p != null && p.clasePredicha == LesionClass.maligno;
+    final highRisk = overdue && p != null && p.clasePredicha == LesionClass.melanoma;
     final isError = c.status == CaseStatus.errorAnalisis;
 
     final chip = switch (c.status) {
@@ -68,7 +68,7 @@ class CaseCard extends StatelessWidget {
                   style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w700)),
             )
           else
-            LesionThumbnail(path: c.foto2.localPath, size: 52),
+            LesionThumbnail(path: c.foto2.localPath, url: c.foto2.remoteUrl, size: 52),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -116,7 +116,9 @@ class CaseCard extends StatelessWidget {
         return ('Error de análisis. Se reprocesará automáticamente.', AppColors.textMuted);
       case CaseStatus.registrado:
         return (
-          c.queuedOffline ? 'Guardado sin conexión · se enviará al reconectar' : 'Enviando a análisis…',
+          c.queuedOffline
+              ? (c.lastError ?? 'Guardado sin conexión · se enviará al reconectar')
+              : 'Enviando a análisis…',
           AppColors.textMuted
         );
       case CaseStatus.enAnalisis:

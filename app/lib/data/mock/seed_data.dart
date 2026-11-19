@@ -224,7 +224,7 @@ abstract final class SeedData {
     closed(
       'CASO-0141',
       ValidationDecision.corregir,
-      LesionClass.benigno,
+      LesionClass.noMelanoma,
       'Patrón reticular regular, sin estructuras atípicas. Compatible con nevus displásico leve.',
       'Control dermatoscópico en 6 meses.',
       138,
@@ -232,7 +232,7 @@ abstract final class SeedData {
     closed(
       'CASO-0098',
       ValidationDecision.confirmar,
-      LesionClass.benigno,
+      LesionClass.noMelanoma,
       'Lesión simétrica, bordes regulares, color homogéneo.',
       'Control anual.',
       290,
