@@ -90,7 +90,7 @@ reemplazarán por el control TFLite descrito en la sección 3.1 de la memoria.
 | 07 | Buscar paciente por HC | HU06·CA2, RF-02.5 |
 | 08 | Registrar paciente | HU06·CA1 |
 | 09 | Consentimiento informado | HU07, RF-02.6 |
-| 10–11 | Captura panorámica y acercamiento | HU08, HU09, RF-02.1/02.2 |
+| 10–11 | Captura de dos fotos dermatoscópicas de la misma lesión | HU08, HU09, RF-02.1/02.2 |
 | 12 | Imágenes de galería validadas | HU10 |
 | 13 | Datos clínicos complementarios | HU11, RF-02.3 |
 | 14 | Caso enviado / en cola sin conexión | HU12, RF-02.4, RNF-08 |

@@ -130,7 +130,6 @@ abstract final class SeedData {
     CaseImage img(ImageView v) => CaseImage(
           view: v,
           source: CaptureSource.camara,
-          conDermatoscopio: true,
           width: 3024,
           height: 4032,
         );
@@ -157,8 +156,8 @@ abstract final class SeedData {
         uidMedico: lucia,
         status: status,
         createdAt: createdAt,
-        panoramica: img(ImageView.panoramica),
-        acercamiento: img(ImageView.acercamiento),
+        foto1: img(ImageView.foto1),
+        foto2: img(ImageView.foto2),
         clinicalData: ClinicalData(
           ubicacionLesion: ubicacion,
           tiempoAparicion: onset,

@@ -47,10 +47,12 @@ extension CaseStatusLabel on CaseStatus {
   }
 }
 
-enum ImageView { panoramica, acercamiento }
+/// Las dos fotos dermatoscópicas de la misma lesión (RF-02.1). El modelo no
+/// distingue cuál es cuál: es simétrico y se entrenó con pares al azar.
+enum ImageView { foto1, foto2 }
 
 extension ImageViewLabel on ImageView {
-  String get label => this == ImageView.panoramica ? 'Panorámica' : 'Acercamiento';
+  String get label => this == ImageView.foto1 ? 'Foto 1' : 'Foto 2';
 }
 
 enum CaptureSource { camara, galeria }
@@ -60,7 +62,6 @@ class CaseImage {
   const CaseImage({
     required this.view,
     required this.source,
-    required this.conDermatoscopio,
     this.localPath,
     this.width,
     this.height,
@@ -68,7 +69,6 @@ class CaseImage {
 
   final ImageView view;
   final CaptureSource source;
-  final bool conDermatoscopio;
 
   /// Ruta local del archivo. Es nula en los casos de ejemplo sembrados.
   final String? localPath;
@@ -150,8 +150,8 @@ class ClinicalCase {
     required this.uidMedico,
     required this.status,
     required this.createdAt,
-    required this.panoramica,
-    required this.acercamiento,
+    required this.foto1,
+    required this.foto2,
     required this.clinicalData,
     this.prediction,
     this.suggestion,
@@ -166,8 +166,8 @@ class ClinicalCase {
   final String uidMedico;
   final CaseStatus status;
   final DateTime createdAt;
-  final CaseImage panoramica;
-  final CaseImage acercamiento;
+  final CaseImage foto1;
+  final CaseImage foto2;
   final ClinicalData clinicalData;
   final Prediction? prediction;
 
@@ -198,8 +198,8 @@ class ClinicalCase {
       uidMedico: uidMedico,
       status: status ?? this.status,
       createdAt: createdAt,
-      panoramica: panoramica,
-      acercamiento: acercamiento,
+      foto1: foto1,
+      foto2: foto2,
       clinicalData: clinicalData,
       prediction: prediction ?? this.prediction,
       suggestion: clearSuggestion ? null : (suggestion ?? this.suggestion),
@@ -214,31 +214,27 @@ class ClinicalCase {
 class CaseDraft {
   const CaseDraft({
     required this.patientId,
-    this.panoramica,
-    this.acercamiento,
-    this.conDermatoscopio = true,
+    this.foto1,
+    this.foto2,
   });
 
   final String patientId;
-  final CaseImage? panoramica;
-  final CaseImage? acercamiento;
-  final bool conDermatoscopio;
+  final CaseImage? foto1;
+  final CaseImage? foto2;
 
-  bool get hasBothImages => panoramica != null && acercamiento != null;
+  bool get hasBothImages => foto1 != null && foto2 != null;
 
   CaseDraft copyWith({
-    CaseImage? panoramica,
-    CaseImage? acercamiento,
-    bool clearPanoramica = false,
-    bool clearAcercamiento = false,
-    bool? conDermatoscopio,
+    CaseImage? foto1,
+    CaseImage? foto2,
+    bool clearFoto1 = false,
+    bool clearFoto2 = false,
   }) {
     return CaseDraft(
       patientId: patientId,
-      panoramica: clearPanoramica ? null : (panoramica ?? this.panoramica),
-      acercamiento:
-          clearAcercamiento ? null : (acercamiento ?? this.acercamiento),
-      conDermatoscopio: conDermatoscopio ?? this.conDermatoscopio,
+      foto1: clearFoto1 ? null : (foto1 ?? this.foto1),
+      foto2:
+          clearFoto2 ? null : (foto2 ?? this.foto2),
     );
   }
 }

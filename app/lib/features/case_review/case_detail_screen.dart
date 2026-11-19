@@ -69,25 +69,26 @@ class CaseImagesRow extends StatelessWidget {
       children: [
         Expanded(
           child: GestureDetector(
-            onTap: () => _openImage(context, clinicalCase.panoramica),
+            onTap: () => _openImage(context, clinicalCase.foto1),
             child: LesionThumbnail(
-              path: clinicalCase.panoramica.localPath,
+              path: clinicalCase.foto1.localPath,
               height: height,
               radius: 14,
-              label: 'panorámica',
+              dark: true,
+              label: 'foto 1',
             ),
           ),
         ),
         const SizedBox(width: 8),
         Expanded(
           child: GestureDetector(
-            onTap: () => _openImage(context, clinicalCase.acercamiento),
+            onTap: () => _openImage(context, clinicalCase.foto2),
             child: LesionThumbnail(
-              path: clinicalCase.acercamiento.localPath,
+              path: clinicalCase.foto2.localPath,
               height: height,
               radius: 14,
               dark: true,
-              label: 'acercamiento',
+              label: 'foto 2',
             ),
           ),
         ),
@@ -356,7 +357,7 @@ class _ReviewView extends ConsumerWidget {
                     KeyValueRow('Aparición', c.clinicalData.tiempoAparicion.label),
                     KeyValueRow('Síntomas', c.clinicalData.sintomasLabel),
                     KeyValueRow('Captura',
-                        '${c.acercamiento.conDermatoscopio ? 'Con' : 'Sin'} dermatoscopio · ${c.acercamiento.source == CaptureSource.camara ? 'cámara' : 'galería'}'),
+                        c.foto2.source == CaptureSource.camara ? 'Cámara' : 'Galería'),
                     KeyValueRow('Registrado', Fmt.dateTime(c.createdAt), mono: true),
                   ],
                 ),

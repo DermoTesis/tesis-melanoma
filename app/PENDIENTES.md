@@ -26,10 +26,13 @@ de la tesis o en el paper. Varias tareas dependen de una decisión previa; se in
   instrucción concreta (por ejemplo, dos tomas con distinto aumento, o volver a apoyar el
   dermatoscopio entre una y otra). Si el médico toma dos fotos casi iguales, la ventaja de
   dos fotos sobre una puede desaparecer; ver el comentario DCA12 del paper sobre la
-  similitud de los pares.
+  similitud de los pares. **Instrucción provisional en la app (A1):** la foto 2 es la misma
+  lesión, retirando el dermatoscopio y volviendo a apoyarlo con otro ángulo o posición.
+  Falta que el equipo la confirme.
 - [ ] **D2. Si se guarda una foto clínica de contexto.** Sería una foto sin dermatoscopio
-  (la panorámica actual), solo para el expediente y el informe, sin mandarla al modelo. Hoy
-  el informe PDF incluye la panorámica (commit `e36f699`). El paper no dice nada.
+  (la antigua panorámica), solo para el expediente y el informe, sin mandarla al modelo. Desde
+  A1 la app ya no la captura y el informe PDF muestra las dos fotos dermatoscópicas. El paper
+  no dice nada.
 - [ ] **D3. El control de calidad de imagen y la H3.** La app rechaza fotos borrosas u
   oscuras antes de enviarlas (`ImageQualityService`). El paper no lo muestra en la Fig. 2,
   lo deja como trabajo futuro (VII-v) y dice en VI-A que, si la app rechaza las fotos
@@ -39,18 +42,21 @@ de la tesis o en el paper. Varias tareas dependen de una decisión previa; se in
 
 ## Cambios en la app
 
-- [ ] **A1. Cambiar la captura a dos tomas dermatoscópicas** (depende de D1 y D2). Hoy los
-  pasos son "1 · Panorámica / 2 · Acercamiento", y la panorámica pide ~30 cm, un marco
-  rectangular y "lesión + zona corporal"
-  ([capture_widgets.dart](lib/features/capture/capture_widgets.dart)). Revisar también
-  `ImageView` en [clinical_case.dart](lib/domain/models/clinical_case.dart), el informe
-  ([report_pdf.dart](lib/features/reports/report_pdf.dart)), los casos de ejemplo y las
-  pruebas.
-- [ ] **A2. Quitar o bloquear la opción "Sin dermatoscopio".** El paper deja fuera del
-  alcance las fotos sin dermatoscopio. O se quita el interruptor
-  ([camera_capture_screen.dart](lib/features/capture/camera_capture_screen.dart)), o un
-  caso "sin dermatoscopio" no se manda a analizar. Para la demo, en la que se fotografía
-  una imagen dermatoscópica, basta con quitarlo.
+- [x] **A1. Cambiar la captura a dos tomas dermatoscópicas** (2026-11-19). Los pasos ahora
+  son "1 · Foto 1 / 2 · Foto 2" de la misma lesión, las dos con el marco circular
+  ([capture_widgets.dart](lib/features/capture/capture_widgets.dart)). La guía de la foto 2
+  pide retirar el dermatoscopio y volver a apoyarlo con otro ángulo (instrucción provisional
+  de D1). `ImageView` pasó a `{foto1, foto2}`
+  ([clinical_case.dart](lib/domain/models/clinical_case.dart)), igual en el informe, la
+  galería, los casos de ejemplo y las pruebas
+  ([capture_widgets_test.dart](test/features/capture_widgets_test.dart)). La app no
+  comprueba que las dos fotos sean distintas; si D1 lo pide, falta ese control.
+- [x] **A2. Quitar la opción "Sin dermatoscopio"** (2026-11-19). El paper deja fuera del
+  alcance las fotos sin dermatoscopio. Se quitó el interruptor de la cámara
+  ([camera_capture_screen.dart](lib/features/capture/camera_capture_screen.dart)) y el campo
+  `conDermatoscopio` de `CaseImage` y `CaseDraft`, que ya no distinguía nada: toda foto del
+  caso es dermatoscópica. El detalle del caso solo muestra si la foto vino de la cámara o
+  de la galería.
 - [ ] **A3. Recortar la foto antes de mandarla al modelo.** El modelo estira la imagen
   entera a 224×224 sin recortar, y se entrenó con imágenes 4:3 (600×450) que solo muestran
   el campo del dermatoscopio. La cámara de la app usa `ResolutionPreset.veryHigh`, que en
@@ -104,7 +110,9 @@ de la tesis o en el paper. Varias tareas dependen de una decisión previa; se in
 
 - [ ] **T1. Alinear el alcance de la captura en la tesis.** El acta de constitución (ACP v3,
   p. 7) y la HU08 de la memoria v4 dicen "con o sin dermatoscopio"; el paper ahora exige
-  dermatoscopio de clip. El RF-02.1 no menciona la panorámica, así que no cambia.
+  dermatoscopio de clip. El RF-02.1 no menciona la panorámica, así que no cambia; sí
+  cambian las pantallas 10–11 del mockup, que todavía muestran la panorámica (A1) y el
+  interruptor "Con dermatoscopio / Sin" (A2).
 - [ ] **T2. Paper III-B: decir que el backend también devuelve la clase.** Hoy dice que
   "returns the calibrated probability". La clase se decide con la salida sin calibrar,
   como muestra la Fig. 1.

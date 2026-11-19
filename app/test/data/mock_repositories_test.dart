@@ -22,15 +22,13 @@ void main() {
   late MockAdminRepository admin;
 
   const image = CaseImage(
-    view: ImageView.panoramica,
+    view: ImageView.foto1,
     source: CaptureSource.camara,
-    conDermatoscopio: true,
     localPath: '/tmp/p.jpg',
   );
-  const closeUp = CaseImage(
-    view: ImageView.acercamiento,
+  const secondPhoto = CaseImage(
+    view: ImageView.foto2,
     source: CaptureSource.camara,
-    conDermatoscopio: true,
     localPath: '/tmp/a.jpg',
   );
   const data = ClinicalData(
@@ -58,7 +56,7 @@ void main() {
   Future<ClinicalCase> pendingCase() async {
     await loginSpecialist();
     final c = await cases.submitCase(
-      const CaseDraft(patientId: 'p-jmamani', panoramica: image, acercamiento: closeUp),
+      const CaseDraft(patientId: 'p-jmamani', foto1: image, foto2: secondPhoto),
       data,
     );
     await settle();
@@ -112,12 +110,12 @@ void main() {
       expect(p.numeroHistoriaClinica, 'HC-009999');
       await expectLater(
         cases.submitCase(
-            CaseDraft(patientId: p.id, panoramica: image, acercamiento: closeUp), data),
+            CaseDraft(patientId: p.id, foto1: image, foto2: secondPhoto), data),
         throwsA(isA<ConsentRequiredException>()),
       );
       await patients.registerConsent(p.id);
       final c = await cases.submitCase(
-          CaseDraft(patientId: p.id, panoramica: image, acercamiento: closeUp), data);
+          CaseDraft(patientId: p.id, foto1: image, foto2: secondPhoto), data);
       expect(c.status, CaseStatus.enAnalisis);
     });
 
@@ -138,7 +136,7 @@ void main() {
     test('el caso exige las dos imágenes', () async {
       await loginSpecialist();
       await expectLater(
-        cases.submitCase(const CaseDraft(patientId: 'p-jmamani', panoramica: image), data),
+        cases.submitCase(const CaseDraft(patientId: 'p-jmamani', foto1: image), data),
         throwsA(isA<AppException>()),
       );
     });
@@ -226,7 +224,7 @@ void main() {
       await loginSpecialist();
       b.setOnline(false);
       final c = await cases.submitCase(
-        const CaseDraft(patientId: 'p-jmamani', panoramica: image, acercamiento: closeUp),
+        const CaseDraft(patientId: 'p-jmamani', foto1: image, foto2: secondPhoto),
         data,
       );
       expect(c.status, CaseStatus.registrado);

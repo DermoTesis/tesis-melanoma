@@ -11,8 +11,8 @@ import '../../domain/models/clinical_case.dart';
 import '../../providers/case_providers.dart';
 import 'capture_widgets.dart';
 
-/// Pantallas 10 y 11 · Captura guiada de la foto panorámica y la de
-/// acercamiento (HU08, HU09, RF-02.1, RF-02.2, RNF-16).
+/// Pantallas 10 y 11 · Captura guiada de las dos fotos dermatoscópicas de
+/// la lesión (HU08, HU09, RF-02.1, RF-02.2, RNF-16).
 class CameraCaptureScreen extends ConsumerStatefulWidget {
   const CameraCaptureScreen({super.key, required this.patientId});
   final String patientId;
@@ -29,7 +29,7 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen>
   bool _initializing = true;
   bool _busy = false;
   bool _torch = false;
-  ImageView _step = ImageView.panoramica;
+  ImageView _step = ImageView.foto1;
   ImageQualityReport? _lastReport;
   ImageView? _reportView;
 
@@ -41,8 +41,8 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen>
     if (draft == null || draft.patientId != widget.patientId) {
       Future.microtask(
           () => ref.read(captureDraftProvider.notifier).start(widget.patientId));
-    } else if (draft.panoramica != null) {
-      _step = ImageView.acercamiento;
+    } else if (draft.foto1 != null) {
+      _step = ImageView.foto2;
     }
     _initCamera();
   }
@@ -144,17 +144,15 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen>
         _reportView = view;
       });
       if (!report.isApt) return;
-      final draft = ref.read(captureDraftProvider);
       ref.read(captureDraftProvider.notifier).setImage(CaseImage(
             view: view,
             source: CaptureSource.camara,
-            conDermatoscopio: draft?.conDermatoscopio ?? true,
             localPath: file.path,
             width: report.header.width,
             height: report.header.height,
           ));
-      if (view == ImageView.panoramica) {
-        setState(() => _step = ImageView.acercamiento);
+      if (view == ImageView.foto1) {
+        setState(() => _step = ImageView.foto2);
       } else {
         await _controller?.setFlashMode(FlashMode.off);
         if (mounted) {
@@ -169,10 +167,10 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen>
     }
   }
 
-  void _retakePanoramic() {
-    ref.read(captureDraftProvider.notifier).clearImage(ImageView.panoramica);
+  void _retakeFirst() {
+    ref.read(captureDraftProvider.notifier).clearImage(ImageView.foto1);
     setState(() {
-      _step = ImageView.panoramica;
+      _step = ImageView.foto1;
       _lastReport = null;
     });
   }
@@ -180,10 +178,9 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen>
   @override
   Widget build(BuildContext context) {
     final draft = ref.watch(captureDraftProvider);
-    final dermatoscope = draft?.conDermatoscopio ?? true;
     final report = _reportView == _step ? _lastReport : null;
     // Al volver de la pantalla de datos, la segunda foto ya existe.
-    final panoramicDone = draft?.panoramica != null;
+    final firstDone = draft?.foto1 != null;
 
     return Scaffold(
       backgroundColor: AppColors.cameraBg,
@@ -199,13 +196,6 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen>
                     onPressed: () => context.pop(),
                   ),
                   const Spacer(),
-                  DarkToggle(
-                    options: const ['Con dermatoscopio', 'Sin'],
-                    selected: dermatoscope ? 0 : 1,
-                    onChanged: (i) =>
-                        ref.read(captureDraftProvider.notifier).setDermatoscope(i == 0),
-                  ),
-                  const Spacer(),
                   TextButton.icon(
                     style: TextButton.styleFrom(foregroundColor: Colors.white),
                     onPressed: _controller == null ? null : _toggleTorch,
@@ -217,7 +207,7 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen>
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: CaptureSteps(current: _step, panoramicDone: panoramicDone),
+              child: CaptureSteps(current: _step, firstDone: firstDone),
             ),
             const SizedBox(height: 10),
             Expanded(child: _buildViewport(report)),
@@ -227,17 +217,17 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _step == ImageView.acercamiento && draft?.panoramica != null
+                  _step == ImageView.foto2 && draft?.foto1 != null
                       ? _SideButton(
-                          label: 'Panorámica',
-                          onTap: _retakePanoramic,
+                          label: 'Foto 1',
+                          onTap: _retakeFirst,
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(color: AppColors.successAccent, width: 2),
                             ),
                             child: LesionThumbnail(
-                                path: draft!.panoramica!.localPath, size: 44, radius: 8),
+                                path: draft!.foto1!.localPath, size: 44, radius: 8),
                           ),
                         )
                       : _SideButton(
@@ -333,7 +323,7 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen>
           right: 14,
           child: QualityChips(view: _step, report: report, analyzing: _busy),
         ),
-        if (report != null || _step == ImageView.acercamiento)
+        if (report != null || _step == ImageView.foto2)
           Positioned(
             left: 16,
             right: 16,

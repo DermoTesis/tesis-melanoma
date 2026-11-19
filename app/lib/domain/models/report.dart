@@ -35,8 +35,8 @@ class ReportDocument {
     required this.cmp,
     required this.establecimiento,
     required this.alcance,
-    this.panoramicaPath,
-    this.acercamientoPath,
+    this.foto1Path,
+    this.foto2Path,
   });
 
   final String caseId;
@@ -52,8 +52,8 @@ class ReportDocument {
 
   /// Nota de alcance de apoyo diagnóstico, obligatoria en todo informe.
   final String alcance;
-  final String? panoramicaPath;
-  final String? acercamientoPath;
+  final String? foto1Path;
+  final String? foto2Path;
 }
 
 const kScopeNotice =

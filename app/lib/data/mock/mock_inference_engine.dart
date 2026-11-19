@@ -94,8 +94,8 @@ class MockInferenceEngine {
     }
     final seed = Object.hash(
       c.id,
-      c.panoramica.localPath ?? '',
-      c.acercamiento.localPath ?? '',
+      c.foto1.localPath ?? '',
+      c.foto2.localPath ?? '',
       c.clinicalData.ubicacionLesion,
     );
     final rnd = Random(seed);

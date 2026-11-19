@@ -5,52 +5,11 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../../domain/models/clinical_case.dart';
 
-/// Conmutador oscuro "Con dermatoscopio / Sin".
-class DarkToggle extends StatelessWidget {
-  const DarkToggle({super.key, required this.options, required this.selected, required this.onChanged});
-  final List<String> options;
-  final int selected;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (var i = 0; i < options.length; i++)
-            GestureDetector(
-              onTap: () => onChanged(i),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: i == selected ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(options[i],
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: i == selected ? AppColors.text : Colors.white,
-                    )),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Indicador de pasos "1 · Panorámica / 2 · Acercamiento".
+/// Indicador de pasos "1 · Foto 1 / 2 · Foto 2".
 class CaptureSteps extends StatelessWidget {
-  const CaptureSteps({super.key, required this.current, required this.panoramicDone});
+  const CaptureSteps({super.key, required this.current, required this.firstDone});
   final ImageView current;
-  final bool panoramicDone;
+  final bool firstDone;
 
   @override
   Widget build(BuildContext context) {
@@ -82,57 +41,41 @@ class CaptureSteps extends StatelessWidget {
       );
     }
 
-    final onPanoramic = current == ImageView.panoramica;
+    final onFirst = current == ImageView.foto1;
     return Row(
       children: [
-        step(panoramicDone && !onPanoramic ? '✓ Panorámica' : '1 · Panorámica',
-            active: onPanoramic, done: panoramicDone && !onPanoramic),
+        step(firstDone && !onFirst ? '✓ Foto 1' : '1 · Foto 1',
+            active: onFirst, done: firstDone && !onFirst),
         const SizedBox(width: 8),
-        step('2 · Acercamiento', active: !onPanoramic, done: false),
+        step('2 · Foto 2', active: !onFirst, done: false),
       ],
     );
   }
 }
 
-/// Marco guía: rectángulo para la panorámica, círculo para el acercamiento.
+/// Marco guía circular: la lesión completa, vista con el dermatoscopio.
 class GuideFrame extends StatelessWidget {
   const GuideFrame({super.key, required this.view});
   final ImageView view;
 
   @override
   Widget build(BuildContext context) {
-    final panoramic = view == ImageView.panoramica;
     return CustomPaint(
-      painter: _GuidePainter(circle: !panoramic),
+      painter: _GuidePainter(),
       child: SizedBox(
-        width: panoramic ? 240 : 220,
-        height: panoramic ? 270 : 220,
+        width: 230,
+        height: 230,
         child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (panoramic)
-                Container(
-                  width: 34,
-                  height: 34,
-                  margin: const EdgeInsets.only(bottom: 10),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.45),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  panoramic ? 'lesión + zona corporal' : 'detalle de la lesión',
-                  style: AppFonts.mono(fontSize: 11, color: Colors.white),
-                ),
-              ),
-            ],
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.45),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              view == ImageView.foto1 ? 'lesión completa' : 'misma lesión, otra toma',
+              style: AppFonts.mono(fontSize: 11, color: Colors.white),
+            ),
           ),
         ),
       ),
@@ -141,8 +84,6 @@ class GuideFrame extends StatelessWidget {
 }
 
 class _GuidePainter extends CustomPainter {
-  _GuidePainter({required this.circle});
-  final bool circle;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -150,12 +91,7 @@ class _GuidePainter extends CustomPainter {
       ..color = Colors.white.withValues(alpha: 0.85)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
-    final path = Path();
-    if (circle) {
-      path.addOval(Offset.zero & size);
-    } else {
-      path.addRRect(RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(20)));
-    }
+    final path = Path()..addOval(Offset.zero & size);
     for (final m in path.computeMetrics()) {
       double d = 0;
       while (d < m.length) {
@@ -166,7 +102,7 @@ class _GuidePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _GuidePainter old) => old.circle != circle;
+  bool shouldRepaint(covariant _GuidePainter old) => false;
 }
 
 /// Chips de enfoque, iluminación y distancia/resolución.
@@ -183,7 +119,7 @@ class QualityChips extends StatelessWidget {
       ('Enfoque', r?.focusOk),
       (r != null && !r.lightOk ? (r.tooBright ? 'Sobreexpuesta' : 'Iluminación baja') : 'Iluminación',
           r?.lightOk),
-      (view == ImageView.panoramica ? '~30 cm' : 'Distancia', r?.resolutionOk),
+      ('Distancia', r?.resolutionOk),
     ];
     if (analyzing) {
       return const Center(child: _Chip(label: 'Analizando calidad…', ok: null));
@@ -231,16 +167,15 @@ class CaptureFeedback extends StatelessWidget {
     final String text;
     if (r == null) {
       ok = true;
-      text = 'Panorámica guardada. Ahora acércate a la lesión para la foto de detalle.';
+      text = 'Foto 1 guardada. Retira el dermatoscopio y vuelve a apoyarlo sobre la misma '
+          'lesión, con otro ángulo, para la foto 2.';
     } else if (r.isApt) {
       ok = true;
-      text = view == ImageView.panoramica
-          ? 'Toma apta. Incluye la lesión y referencias anatómicas cercanas para ubicarla.'
-          : 'Toma apta.';
+      text = 'Toma apta.';
     } else {
       ok = false;
-      text = view == ImageView.acercamiento
-          ? '${r.guidance} La panorámica ya está guardada.'
+      text = view == ImageView.foto2
+          ? '${r.guidance} La foto 1 ya está guardada.'
           : r.guidance;
     }
     return Container(
@@ -310,17 +245,18 @@ class ShutterButton extends StatelessWidget {
 }
 
 void showCaptureGuide(BuildContext context, ImageView view) {
-  final panoramic = view == ImageView.panoramica;
-  final tips = panoramic
+  final first = view == ImageView.foto1;
+  final tips = first
       ? const [
-          'Encuadra la lesión junto con referencias anatómicas cercanas (~30 cm).',
-          'Usa luz difusa y evita sombras sobre la piel.',
+          'Apoya el dermatoscopio sobre la lesión.',
+          'La lesión debe verse completa y centrada en el círculo guía.',
           'Toca la pantalla sobre la lesión para enfocar.',
         ]
       : const [
-          'Acércate o apoya el dermatoscopio sobre la lesión.',
-          'La lesión debe ocupar el círculo guía.',
-          'Si la imagen sale oscura, activa el flash.',
+          'Es la misma lesión de la foto 1.',
+          'Retira el dermatoscopio y vuelve a apoyarlo con otro ángulo o posición: '
+              'dos fotos casi iguales aportan menos que una sola.',
+          'La lesión debe verse completa. Si la imagen sale oscura, activa el flash.',
         ];
   showModalBottomSheet<void>(
     context: context,
@@ -333,7 +269,7 @@ void showCaptureGuide(BuildContext context, ImageView view) {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(panoramic ? 'Foto 1 · Panorámica' : 'Foto 2 · Acercamiento',
+            Text(first ? 'Foto 1 · Lesión completa' : 'Foto 2 · Misma lesión, otra toma',
                 style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
             const SizedBox(height: 12),
             for (final t in tips)
@@ -350,7 +286,7 @@ void showCaptureGuide(BuildContext context, ImageView view) {
             const SizedBox(height: 4),
             const Text(
               'La aplicación revisa enfoque, iluminación, formato y resolución (mín. 1024×1024). '
-              'Las dos fotos son obligatorias.',
+              'Las dos fotos son obligatorias y deben ser de la misma lesión.',
               style: TextStyle(fontSize: 13, color: AppColors.textSubtle, height: 1.4),
             ),
           ],

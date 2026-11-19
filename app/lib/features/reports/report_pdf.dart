@@ -24,8 +24,8 @@ Future<Uint8List> buildReportPdf(ReportDocument doc, {PdfPageFormat? format}) as
     return await file.exists() ? pw.MemoryImage(await file.readAsBytes()) : null;
   }
 
-  final panoramica = await loadImage(doc.panoramicaPath);
-  final acercamiento = await loadImage(doc.acercamientoPath);
+  final foto1 = await loadImage(doc.foto1Path);
+  final foto2 = await loadImage(doc.foto2Path);
 
   const green = PdfColor.fromInt(0xFF1D6B4F);
   const greenDark = PdfColor.fromInt(0xFF14503A);
@@ -97,9 +97,9 @@ Future<Uint8List> buildReportPdf(ReportDocument doc, {PdfPageFormat? format}) as
           kv('Fecha de cierre', Fmt.dateTime(doc.fechaCierre)),
           pw.SizedBox(height: 12),
           pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-            lesionImage(ImageView.panoramica, panoramica),
+            lesionImage(ImageView.foto1, foto1),
             pw.SizedBox(width: 10),
-            lesionImage(ImageView.acercamiento, acercamiento),
+            lesionImage(ImageView.foto2, foto2),
           ]),
           pw.SizedBox(height: 14),
           pw.Container(

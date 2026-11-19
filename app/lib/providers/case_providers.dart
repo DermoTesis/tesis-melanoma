@@ -6,7 +6,7 @@ import 'repository_providers.dart';
 /// Tiempo límite de validación configurado (RF-04.5).
 const kValidationDeadline = Duration(hours: 48);
 
-/// Borrador del caso en captura (panorámica + acercamiento).
+/// Borrador del caso en captura (dos fotos dermatoscópicas de la lesión).
 class CaptureDraftNotifier extends Notifier<CaseDraft?> {
   @override
   CaseDraft? build() => null;
@@ -15,25 +15,20 @@ class CaptureDraftNotifier extends Notifier<CaseDraft?> {
     if (state?.patientId != patientId) state = CaseDraft(patientId: patientId);
   }
 
-  void setDermatoscope(bool value) {
-    final s = state;
-    if (s != null) state = s.copyWith(conDermatoscopio: value);
-  }
-
   void setImage(CaseImage image) {
     final s = state;
     if (s == null) return;
-    state = image.view == ImageView.panoramica
-        ? s.copyWith(panoramica: image)
-        : s.copyWith(acercamiento: image);
+    state = image.view == ImageView.foto1
+        ? s.copyWith(foto1: image)
+        : s.copyWith(foto2: image);
   }
 
   void clearImage(ImageView view) {
     final s = state;
     if (s == null) return;
-    state = view == ImageView.panoramica
-        ? s.copyWith(clearPanoramica: true)
-        : s.copyWith(clearAcercamiento: true);
+    state = view == ImageView.foto1
+        ? s.copyWith(clearFoto1: true)
+        : s.copyWith(clearFoto2: true);
   }
 
   void reset() => state = null;

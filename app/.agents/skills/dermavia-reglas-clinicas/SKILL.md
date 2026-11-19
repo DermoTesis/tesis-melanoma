@@ -32,7 +32,7 @@ REGISTRADO → EN_ANALISIS → (ERROR_ANALISIS) → PENDIENTE_VALIDACION → VAL
 | Regla | Dónde se aplica | Excepción |
 |---|---|---|
 | Sin consentimiento vigente no hay captura ni caso (RF-02.6) | `submitCase` | `ConsentRequiredException` |
-| El caso exige dos imágenes: panorámica y acercamiento (RF-02.1) | `submitCase` | `AppException` |
+| El caso exige dos fotos dermatoscópicas aptas de la misma lesión (RF-02.1) | `submitCase` | `AppException` |
 | Validar requiere predicción y **sustento clínico** no vacío (RF-04.2/04.3) | `registerValidation` | `AppException` |
 | Corregir exige una clase distinta a la predicha | `registerValidation` | `AppException` |
 | Validaciones **solo de inserción**: una segunda validación es complementaria (`complementaDe`), nunca una edición | `registerValidation` | `AppException` |

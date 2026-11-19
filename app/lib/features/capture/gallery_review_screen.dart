@@ -53,7 +53,6 @@ class _GalleryReviewScreenState extends ConsumerState<GalleryReviewScreen> {
         notifier.setImage(CaseImage(
           view: view,
           source: CaptureSource.galeria,
-          conDermatoscopio: ref.read(captureDraftProvider)?.conDermatoscopio ?? true,
           localPath: file.path,
           width: report.header.width,
           height: report.header.height,
@@ -69,9 +68,9 @@ class _GalleryReviewScreenState extends ConsumerState<GalleryReviewScreen> {
   @override
   Widget build(BuildContext context) {
     final draft = ref.watch(captureDraftProvider);
-    final apt = [draft?.panoramica, draft?.acercamiento].where((i) => i != null).length;
+    final apt = [draft?.foto1, draft?.foto2].where((i) => i != null).length;
     final rejected = ImageView.values
-        .firstWhere((v) => _picks[v] != null && !_picks[v]!.report.isApt, orElse: () => ImageView.panoramica);
+        .firstWhere((v) => _picks[v] != null && !_picks[v]!.report.isApt, orElse: () => ImageView.foto1);
     final hasRejected = _picks.values.any((p) => !p.report.isApt);
 
     return Scaffold(
@@ -82,14 +81,15 @@ class _GalleryReviewScreenState extends ConsumerState<GalleryReviewScreen> {
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
           children: [
             const Text(
-              'Indica cuál es la panorámica y cuál el acercamiento. Ambas son obligatorias.',
+              'Elige dos fotos dermatoscópicas de la misma lesión, tomadas por separado. '
+              'Ambas son obligatorias.',
               style: TextStyle(fontSize: 14, height: 1.45, color: AppColors.textMuted),
             ),
             const SizedBox(height: 14),
             for (final view in ImageView.values) ...[
               _Slot(
                 view: view,
-                image: view == ImageView.panoramica ? draft?.panoramica : draft?.acercamiento,
+                image: view == ImageView.foto1 ? draft?.foto1 : draft?.foto2,
                 pick: _picks[view],
                 analyzing: _analyzing == view,
                 onPick: () => _pick(view),

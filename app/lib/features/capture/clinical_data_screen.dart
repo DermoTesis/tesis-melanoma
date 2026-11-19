@@ -60,8 +60,7 @@ class _ClinicalDataScreenState extends ConsumerState<ClinicalDataScreen> {
     super.dispose();
   }
 
-  String get _siteValue =>
-      _site == 'Otra ubicación' ? _otherSite.text.trim() : (_site ?? '');
+  String get _siteValue => _site == 'Otra ubicación' ? _otherSite.text.trim() : (_site ?? '');
 
   Future<void> _send() async {
     setState(() => _attempted = true);
@@ -73,7 +72,9 @@ class _ClinicalDataScreenState extends ConsumerState<ClinicalDataScreen> {
     if (_siteValue.isEmpty || _onset == null) return;
     setState(() => _sending = true);
     try {
-      final c = await ref.read(caseRepositoryProvider).submitCase(
+      final c = await ref
+          .read(caseRepositoryProvider)
+          .submitCase(
             draft,
             ClinicalData(
               ubicacionLesion: _siteValue,
@@ -112,20 +113,20 @@ class _ClinicalDataScreenState extends ConsumerState<ClinicalDataScreen> {
                     padding: const EdgeInsets.all(10),
                     child: Row(
                       children: [
-                        LesionThumbnail(path: draft?.panoramica?.localPath, size: 52),
+                        LesionThumbnail(path: draft?.foto1?.localPath, size: 52),
                         const SizedBox(width: 6),
-                        LesionThumbnail(path: draft?.acercamiento?.localPath, size: 52, dark: true),
+                        LesionThumbnail(path: draft?.foto2?.localPath, size: 52, dark: true),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${[draft?.panoramica, draft?.acercamiento].where((e) => e != null).length} de 2 imágenes aptas',
+                                '${[draft?.foto1, draft?.foto2].where((e) => e != null).length} de 2 imágenes aptas',
                                 style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                               ),
                               Text(
-                                'Panorámica y acercamiento · ${(draft?.conDermatoscopio ?? true) ? 'con' : 'sin'} dermatoscopio',
+                                'Fotos dermatoscópicas de la misma lesión',
                                 style: const TextStyle(fontSize: 12, color: AppColors.primaryDark),
                               ),
                             ],
@@ -143,9 +144,7 @@ class _ClinicalDataScreenState extends ConsumerState<ClinicalDataScreen> {
                     decoration: InputDecoration(
                       errorText: siteError && _site == null ? 'Selecciona la ubicación' : null,
                     ),
-                    items: [
-                      for (final s in kBodySites) DropdownMenuItem(value: s, child: Text(s)),
-                    ],
+                    items: [for (final s in kBodySites) DropdownMenuItem(value: s, child: Text(s))],
                     onChanged: (v) => setState(() => _site = v),
                   ),
                   if (_site == 'Otra ubicación') ...[
@@ -185,8 +184,10 @@ class _ClinicalDataScreenState extends ConsumerState<ClinicalDataScreen> {
                   if (onsetError)
                     const Padding(
                       padding: EdgeInsets.only(top: 6),
-                      child: Text('Selecciona una opción para enviar el caso.',
-                          style: TextStyle(fontSize: 12, color: AppColors.error)),
+                      child: Text(
+                        'Selecciona una opción para enviar el caso.',
+                        style: TextStyle(fontSize: 12, color: AppColors.error),
+                      ),
                     ),
                   const SizedBox(height: 16),
                   const FieldLabel('Síntomas referidos'),
@@ -209,11 +210,7 @@ class _ClinicalDataScreenState extends ConsumerState<ClinicalDataScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: PrimaryButton(
-                label: 'Enviar a análisis',
-                loading: _sending,
-                onPressed: _send,
-              ),
+              child: PrimaryButton(label: 'Enviar a análisis', loading: _sending, onPressed: _send),
             ),
           ],
         ),

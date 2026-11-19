@@ -356,7 +356,7 @@ class MockCaseRepository implements CaseRepository {
     if (!patient.hasValidConsent) throw const ConsentRequiredException();
     if (!draft.hasBothImages) {
       throw const AppException(
-          'El caso requiere dos imágenes aptas: panorámica y acercamiento.');
+          'El caso requiere dos fotos aptas de la lesión.');
     }
     if (data.ubicacionLesion.trim().isEmpty) {
       throw const AppException('Indica la ubicación corporal de la lesión.');
@@ -368,8 +368,8 @@ class MockCaseRepository implements CaseRepository {
       uidMedico: doctor.uid,
       status: CaseStatus.registrado,
       createdAt: _b.now(),
-      panoramica: draft.panoramica!,
-      acercamiento: draft.acercamiento!,
+      foto1: draft.foto1!,
+      foto2: draft.foto2!,
       clinicalData: data,
       queuedOffline: !_b.online,
     );
@@ -572,8 +572,8 @@ class MockReportRepository implements ReportRepository {
       cmp: v.cmp,
       establecimiento: _b.users[v.uidEspecialista]?.establecimiento ?? '',
       alcance: kScopeNotice,
-      panoramicaPath: c.panoramica.localPath,
-      acercamientoPath: c.acercamiento.localPath,
+      foto1Path: c.foto1.localPath,
+      foto2Path: c.foto2.localPath,
     );
   }
 }

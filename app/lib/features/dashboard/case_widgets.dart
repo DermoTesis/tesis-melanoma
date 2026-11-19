@@ -68,7 +68,7 @@ class CaseCard extends StatelessWidget {
                   style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w700)),
             )
           else
-            LesionThumbnail(path: c.acercamiento.localPath, size: 52),
+            LesionThumbnail(path: c.foto2.localPath, size: 52),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
