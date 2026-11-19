@@ -1,0 +1,8 @@
+# Contexto de `docker build -f backend/Dockerfile .`: solo lo que la imagen necesita
+# (nada de data/, outputs/ ni entornos virtuales).
+*
+!pyproject.toml
+!src/melanoma
+!backend/pyproject.toml
+!backend/dermavia
+**/__pycache__

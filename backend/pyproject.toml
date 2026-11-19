@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dermavia-backend"
+version = "0.1.0"
+description = "Backend de Dermavía: monolito modular en Cloud Run (API REST, flujo del caso e inferencia con LiteRT)."
+requires-python = ">=3.12,<3.14"
+authors = [
+    { name = "Ilan Núñez del Arco" },
+    { name = "Jorge Orrego" },
+]
+# Además necesita el paquete `melanoma` de la raíz del repo, instalado sin dependencias
+# (`pip install --no-deps ..`): el módulo Inferencia usa `melanoma.serving`, el mismo código
+# de preprocesamiento con el que EXP-04 fijó el umbral.
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7",
+    "numpy>=1.26",
+    "pillow>=10",
+    "ai-edge-litert>=2.2",
+]
+
+[project.optional-dependencies]
+gcp = [
+    "firebase-admin>=6.5",
+    "google-cloud-firestore>=2.16",
+    "google-cloud-storage>=2.17",
+]
+dev = ["pytest>=8", "httpx>=0.27"]
+
+[tool.setuptools.packages.find]
+include = ["dermavia*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
