@@ -7,8 +7,10 @@ están en [README.md](README.md).
 ## Proyecto
 
 App Android en Flutter 3.35 / Dart 3.9 (Riverpod 3 + go_router) de apoyo diagnóstico
-para melanoma maligno. Funciona con un backend simulado en memoria (`lib/data/mock/`)
-que aplica las mismas reglas de negocio que el backend real. Código, textos de UI,
+para melanoma maligno. Por defecto funciona con un backend simulado en memoria
+(`lib/data/mock/`) que aplica las mismas reglas de negocio que el backend real; con
+`--dart-define=DERMAVIA_BACKEND=local` usa la API REST del backend (`lib/data/remote/`,
+ver [INTEGRACION_BACKEND.md](INTEGRACION_BACKEND.md)). Código, textos de UI,
 pruebas y documentación en español.
 
 ## Comandos

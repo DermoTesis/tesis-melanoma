@@ -58,6 +58,18 @@ Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 5));
 - Cada regla de [`dermavia-reglas-clinicas`](../dermavia-reglas-clinicas/SKILL.md) debe tener al menos una prueba que verifique
   el **rechazo**, no solo el camino feliz.
 
+## Pruebas de la capa remota (backend real)
+
+- En `test/data/remote/`: conversores JSON (`codecs_test.dart`), `ApiClient`
+  (`api_client_test.dart`) y repositorios REST (`rest_repositories_test.dart`).
+- Sin red: `MockClient` de `package:http/testing.dart` (ver `FakeServer` en
+  `rest_repositories_test.dart`), `LocalCaseStore.memory()`,
+  `RefreshHub(pollInterval: null)` y una conectividad falsa.
+- Los ejemplos de JSON viven en `test/data/remote/fixtures.dart` y siguen
+  `backend/dermavia/presentacion/esquemas.py`: si cambia el contrato, cámbialos ahí.
+- `test/e2e/backend_local_test.dart` recorre el flujo contra el servidor local y se
+  salta salvo que se defina `DERMAVIA_E2E_URL=http://127.0.0.1:8080`.
+
 ## Pruebas de widget
 
 App completa:

@@ -14,7 +14,7 @@ UI (lib/features) ──ref.watch/read──▶ providers (lib/providers)
                      contratos (lib/domain/repositories/repositories.dart)
                                         │
                      ┌──────────────────┴──────────────────┐
-           MockXRepository (lib/data/mock)        XRepository real (pendiente)
+           MockXRepository (lib/data/mock)        RestXRepository (lib/data/remote)
                      │
                MockBackend: estado en memoria + reglas + watch() tipo Firestore
 ```
@@ -74,21 +74,27 @@ Reglas clínicas que deben respetarse: ver skill [`dermavia-reglas-clinicas`](..
   `MockInferenceEngine.predictionFor(p, fecha, clase: ...)` construye una `Prediction`
   concreta para pruebas, con la clase explícita.
 
-## Conectar el backend real
+## Backend real (`lib/data/remote/`)
 
-La UI no cambia: consume `Stream`s equivalentes a los listeners de Firestore.
+Estado y pendientes en [INTEGRACION_BACKEND.md](../../../INTEGRACION_BACKEND.md). La
+UI no cambia: consume los mismos `Stream`s.
 
-1. Crear `lib/data/remote/` (o `lib/data/firebase/`) con una clase por contrato:
-   `FirebaseAuthRepository`, `RestCaseRepository`, etc., que implementen la misma
-   interfaz.
-2. Mapear errores del backend a `AppException`/subclases con el mismo `code`
-   (`auth/invalid-credentials`, `permission-denied`, `consent-required`,
-   `validation-required`) para que las pantallas sigan funcionando.
-3. Reemplazar `Mock*Repository(...)` por la implementación real en
-   `repository_providers.dart`. Mantener `mockBackendProvider` para las pruebas o
-   eliminar su uso de `clockProvider`.
-4. Las reglas de negocio pasan a validarse en Cloud Run; la app sigue sin clasificar
-   lesiones (la inferencia es siempre remota).
-5. Pendientes conocidos (README): Firestore, Cloud Storage con URL firmadas, FCM para
-   alertas, persistencia local de la cola offline y control TFLite de calidad de imagen
-   que reemplace a `ImageQualityService`.
+- `repository_providers.dart` elige la implementación con
+  `--dart-define=DERMAVIA_BACKEND=mock|local|nube` (`backendConfigProvider`). `mock`
+  es el valor por defecto y el que usan las pruebas.
+- `ApiClient` agrega el token, manda JSON y traduce `{"error": {"codigo", "mensaje"}}`
+  a `AppException` con el mismo `code`. Un fallo de red es `NetworkException`.
+- `codecs.dart` es el único lugar que conoce el JSON del backend (nombres de campos y
+  valores de los enums, p. ej. `melanoma`/`no_melanoma`, vistas `a`/`b`).
+- `RefreshHub.watch` arma los `Stream` con REST: lee al suscribirse, cada
+  `pollInterval` y tras `notify()`. **Toda escritura en un `Rest*Repository` debe
+  llamar `_hub.notify()`**, como `_b.notify()` en el simulado.
+- `LocalCaseStore` guarda en el dispositivo la cola offline (con `id_solicitud`), la
+  equivalencia id local → id del backend, las fotos de los casos capturados aquí y el
+  orden manual del panel.
+- `TokenProvider`: `DevTokenProvider` (`dev:<uid>`, servidor local) hoy; Firebase en la
+  fase 2.
+- Al añadir una operación: endpoint en `backend/dermavia/presentacion/rutas.py`,
+  conversión en `codecs.dart`, método en el `Rest*Repository`, ejemplo JSON en
+  `test/data/remote/fixtures.dart` y prueba con `MockClient`.
+- Las reglas de negocio las aplica el backend; la app sigue sin clasificar lesiones.

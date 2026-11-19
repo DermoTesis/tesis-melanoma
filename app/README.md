@@ -52,11 +52,74 @@ Los repositorios (`lib/domain/repositories/repositories.dart`) corresponden a lo
 módulos del backend monolítico modular de la Tabla 6: Identidad, Pacientes, Gestión de
 Casos (+ Inferencia), Validación Clínica, Informes y Auditoría.
 
-### Conectar el backend real
+### Backend real (servidor local)
 
-Implementar cada interfaz con clientes REST (Cloud Run) y Firebase (Auth, FCM) y
-reemplazar las clases `Mock*Repository` en `lib/providers/repository_providers.dart`.
-La UI no necesita cambios: consume `Stream`s equivalentes a los listeners de Firestore.
+La app elige el backend al compilar con `--dart-define=DERMAVIA_BACKEND`:
+
+| Valor | Backend |
+|---|---|
+| `mock` (por defecto) | simulado en memoria, con las cuentas de demostración de arriba |
+| `local` | servidor local del backend (`../backend`), con tokens `dev:<uid>` |
+| `nube` | Cloud Run + Firebase (fase 2, pendiente) |
+
+El backend necesita **Python 3.12 o 3.13** (`requires-python` de `../backend/pyproject.toml`).
+Con [uv](https://docs.astral.sh/uv/), `uv venv --python 3.12` lo descarga si no está instalado.
+
+**Windows (PowerShell)**
+
+```powershell
+# 1. Crear el entorno del backend (una sola vez), desde ../backend
+cd ..\backend
+uv venv --python 3.12 .venv
+uv pip install --python .venv\Scripts\python.exe -e ".[gcp,dev]"
+uv pip install --python .venv\Scripts\python.exe --no-deps -e ..
+
+# 2. Arrancar el servidor para el emulador (las URL de las fotos apuntan a 10.0.2.2)
+$env:DERMAVIA_URL_BASE = "http://10.0.2.2:8080"
+.venv\Scripts\python.exe -m dermavia.local --host 0.0.0.0 --puerto 8080
+
+# 3. En otra terminal, desde app\
+flutter run --dart-define=DERMAVIA_BACKEND=local --dart-define=DERMAVIA_API_URL=http://10.0.2.2:8080
+```
+
+`$env:` solo vale para esa terminal; para quitarla: `Remove-Item Env:DERMAVIA_URL_BASE`.
+La primera vez, Windows puede pedir permiso en el firewall para que Python acepte
+conexiones: hay que permitirlo en redes privadas.
+
+**Linux / macOS / Git Bash**
+
+```bash
+cd ../backend
+uv venv --python 3.12 .venv
+uv pip install --python .venv/bin/python -e ".[gcp,dev]"
+uv pip install --python .venv/bin/python --no-deps -e ..
+DERMAVIA_URL_BASE=http://10.0.2.2:8080 .venv/bin/python -m dermavia.local --host 0.0.0.0 --puerto 8080
+```
+
+En Git Bash sobre Windows, el intérprete está en `.venv/Scripts/python.exe`.
+
+**Prueba de extremo a extremo desde la PC** (sin emulador): arrancar el servidor **sin**
+`DERMAVIA_URL_BASE`, para que las URL de las fotos apunten a `127.0.0.1`:
+
+```powershell
+# Terminal 1, en ..\backend
+Remove-Item Env:DERMAVIA_URL_BASE -ErrorAction SilentlyContinue
+.venv\Scripts\python.exe -m dermavia.local --puerto 8080
+
+# Terminal 2, en app\
+$env:DERMAVIA_E2E_URL = "http://127.0.0.1:8080"
+flutter test test/e2e
+```
+
+El servidor busca el modelo (`artefacto.json` y el `.tflite`) en `../backend/model/`,
+luego en `../outputs/exp04/20261004T172732Z_registro/` (o en `DERMAVIA_MODELO_URI`); sin él, todo funciona salvo el análisis, que deja el caso en
+`ERROR_ANALISIS`.
+
+Cuentas del servidor local (la contraseña no se verifica): `especialista@dermavia.local`,
+`admin@dermavia.local` y `nuevo@dermavia.local` (aún no acepta el alcance). En un celular
+físico, usa la IP de la PC en `DERMAVIA_URL_BASE` y en `DERMAVIA_API_URL`.
+Las diferencias de contrato con el backend de `../backend` y los cambios necesarios están
+en [INTEGRACION_BACKEND.md](INTEGRACION_BACKEND.md).
 
 ### Estados del caso
 

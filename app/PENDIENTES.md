@@ -102,6 +102,8 @@ de la tesis o en el paper. Varias tareas dependen de una decisión previa; se in
   clase ya decidida (`clasePredicha`), la probabilidad calibrada y la versión del
   artefacto. La app no debe recalcular la clase (ver la regla en
   [dermavia-reglas-clinicas](.agents/skills/dermavia-reglas-clinicas/SKILL.md)).
+  El backend ya cumple este contrato (`PrediccionOut`); los cambios que faltan en la app
+  están en [INTEGRACION_BACKEND.md](INTEGRACION_BACKEND.md) (I2).
 - [ ] **A10. (Opcional) Avisar en las ubicaciones acrales.** El paper subraya que en Perú
   predomina el melanoma acral y que HAM10000 casi no tiene imágenes de palmas, plantas o
   uñas. La app ofrece "Planta del pie" y "Mano" como ubicaciones; podría mostrar un aviso
@@ -123,4 +125,6 @@ de la tesis o en el paper. Varias tareas dependen de una decisión previa; se in
 - [ ] **T4. Paper Fig. 2 y III-B: el control de calidad** (depende de D3).
 - [ ] **T5. Paper III-B: el estado de la app.** La frase PENDING sobre si la app está
   implementada y el comentario DCA17: hoy existe un prototipo con backend e inferencia
-  simulados, sin backend en Cloud Run ni reglas de Firestore.
+  simulados, sin backend en Cloud Run ni reglas de Firestore. El backend ya existe en
+  `../backend` (sin desplegar); la conexión de la app se registra en
+  [INTEGRACION_BACKEND.md](INTEGRACION_BACKEND.md).
