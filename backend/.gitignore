@@ -1,2 +1,5 @@
 # Fotos del servidor local (python -m dermavia.local)
 .almacen-local/
+
+# Copia local del artefacto del modelo (artefacto.json + .tflite): no se versiona.
+model/

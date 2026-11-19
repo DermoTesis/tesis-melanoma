@@ -102,8 +102,22 @@ uv pip install --python .venv/bin/python --no-deps -e ..   # melanoma.serving
 .venv/bin/python -m dermavia.local --puerto 8080            # servidor sin Google Cloud
 ```
 
-El servidor local guarda todo en memoria, usa el modelo de
-`outputs/exp04/20261004T172732Z_registro/` y acepta `Authorization: Bearer dev:<uid>` con las
+En Windows (PowerShell), el intérprete está en `.venv\Scripts\python.exe` y las variables
+de entorno se definen con `$env:`:
+
+```powershell
+cd backend
+uv venv --python 3.12 .venv
+uv pip install --python .venv\Scripts\python.exe -e ".[gcp,dev]"
+uv pip install --python .venv\Scripts\python.exe --no-deps -e ..
+.venv\Scripts\python.exe -m pytest
+$env:DERMAVIA_URL_BASE = "http://10.0.2.2:8080"   # solo para usarlo desde el emulador
+.venv\Scripts\python.exe -m dermavia.local --host 0.0.0.0 --puerto 8080
+```
+
+El servidor local guarda todo en memoria, usa el modelo de `backend/model/` (copia local de
+`artefacto.json` y el `.tflite`, fuera de git) o, si no existe, de
+`outputs/exp04/20261004T172732Z_registro/`, y acepta `Authorization: Bearer dev:<uid>` con las
 cuentas `admin-dev`, `especialista-dev` y `especialista-nuevo` (ver `dermavia/local.py`). Las
 URL firmadas apuntan al propio servidor (`/dev/almacen/...`). Con `--host 0.0.0.0` lo puede
 usar la app desde un emulador Android (`http://10.0.2.2:8080`). El modo local se niega a

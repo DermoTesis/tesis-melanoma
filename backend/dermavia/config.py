@@ -23,7 +23,14 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
-ARTEFACTO_LOCAL = Path(__file__).resolve().parents[2] / "outputs/exp04/20261004T172732Z_registro"
+# Artefacto del modelo en modo local, si no se define DERMAVIA_MODELO_URI: primero una copia en
+# `backend/model/` (artefacto.json + .tflite, fuera de git), después la salida de EXP-04.
+ARTEFACTOS_LOCALES = (
+    Path(__file__).resolve().parents[1] / "model",
+    Path(__file__).resolve().parents[2] / "outputs/exp04/20261004T172732Z_registro",
+)
+ARTEFACTO_LOCAL = next(
+    (d for d in ARTEFACTOS_LOCALES if (d / "artefacto.json").is_file()), ARTEFACTOS_LOCALES[-1])
 
 
 class ErrorConfiguracion(RuntimeError):

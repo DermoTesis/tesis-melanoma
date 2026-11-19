@@ -10,10 +10,12 @@ import numpy as np
 import pytest
 from conftest import ESP, RAIZ, TAREAS, artefacto_del_registro, caso_con_prediccion, jpeg
 
+from dermavia.config import ARTEFACTO_LOCAL, ARTEFACTOS_LOCALES
 from dermavia.dominio.inferencia import Artefacto, ErrorArtefacto, ModuloInferencia, MotorLiteRT
 from dermavia.dominio.modelos import ClaseLesion
 
-ARTEFACTO = RAIZ / "outputs/exp04/20261004T172732Z_registro"
+# backend/model/ si existe; si no, outputs/exp04/20261004T172732Z_registro/.
+ARTEFACTO = ARTEFACTO_LOCAL
 IMAGENES = RAIZ / "data/ham10000/images"
 
 
@@ -96,7 +98,11 @@ def test_artefacto_rechaza_un_modelo_alterado():
 
 requiere_modelo = pytest.mark.skipif(
     not (ARTEFACTO / "artefacto.json").exists() or not IMAGENES.exists(),
-    reason="Falta el artefacto de EXP-04 en outputs/ o las imágenes de HAM10000 en data/")
+    reason="Falta el artefacto de EXP-04 (backend/model/ u outputs/) o las imágenes de HAM10000 "
+           "en data/")
+requiere_artefacto = pytest.mark.skipif(
+    not (ARTEFACTO / "artefacto.json").exists(),
+    reason="Falta el artefacto de EXP-04 (backend/model/ u outputs/)")
 
 
 @requiere_modelo
@@ -123,7 +129,7 @@ def test_modelo_real_igual_que_melanoma_serving(reloj):
         assert prediccion.sha256_modelo == artefacto.sha256
 
 
-@requiere_modelo
+@requiere_artefacto
 def test_modelo_real_con_imagen_invalida(reloj):
     from dermavia.dominio.errores import ImagenInvalida
     from dermavia.infraestructura.modelo import desde_directorio
@@ -135,6 +141,10 @@ def test_modelo_real_con_imagen_invalida(reloj):
 
 
 def test_ruta_del_artefacto_es_la_del_registro():
-    assert Path(ARTEFACTO).name == json.loads(
+    version = json.loads(
         (RAIZ / "resultados/exp04/20261004T172732Z_registro/registro.json").read_text()
     )["artifact"]["version"]
+    assert Path(ARTEFACTOS_LOCALES[-1]).name == version
+    # La copia local, si existe, tiene que ser el artefacto registrado.
+    if (ARTEFACTO / "artefacto.json").is_file():
+        assert json.loads((ARTEFACTO / "artefacto.json").read_text())["version"] == version

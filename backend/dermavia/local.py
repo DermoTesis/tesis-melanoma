@@ -1,7 +1,8 @@
 """Servidor local, sin Google Cloud: `python -m dermavia.local [--puerto 8080]`.
 
 Todo queda en memoria (se pierde al cerrar), las fotos se guardan en `.almacen-local/` y el
-modelo se lee de `outputs/exp04/20261004T172732Z_registro/` (o de `DERMAVIA_MODELO_URI`). En vez
+modelo se lee de `backend/model/` o de `outputs/exp04/20261004T172732Z_registro/` (o de
+`DERMAVIA_MODELO_URI`). En vez
 de un ID token de Firebase se usa `Authorization: Bearer dev:<uid>` con estas cuentas:
 
 | uid | Rol |
