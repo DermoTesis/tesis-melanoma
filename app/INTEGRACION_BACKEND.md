@@ -370,7 +370,9 @@ que la app puede usar en I6, I9 y I22.
 
 ## 11. Pendientes que dependen del equipo o del backend
 
-- **D1 / A1**: el protocolo de la segunda foto define los nombres finales de las vistas (I3).
+- ~~**D1 / A1**: el protocolo de la segunda foto define los nombres finales de las vistas
+  (I3).~~ Decidido el 2026-11-21 (D1 de [PENDIENTES.md](PENDIENTES.md)): se mantiene la
+  instrucción actual y las vistas quedan como `foto1`/`foto2` en la app y `a`/`b` en el backend.
 - **A3**: el recorte al campo del dermatoscopio en 4:3, ¿en la app o en el backend?
 - **Historial del paciente**: `GET /patients/{id}/cases` solo devuelve los casos del médico
   actual, mientras que `GET /patients/{id}/reports` trae los informes cerrados de todos.

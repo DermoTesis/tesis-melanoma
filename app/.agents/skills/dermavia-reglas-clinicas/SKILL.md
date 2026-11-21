@@ -33,11 +33,13 @@ REGISTRADO → EN_ANALISIS → (ERROR_ANALISIS) → PENDIENTE_VALIDACION → VAL
 |---|---|---|
 | Sin consentimiento vigente no hay captura ni caso (RF-02.6) | `submitCase` | `ConsentRequiredException` |
 | El caso exige dos fotos dermatoscópicas aptas de la misma lesión (RF-02.1) | `submitCase` | `AppException` |
+| El caso exige la impresión clínica del médico, registrada antes de conocer la predicción e inmutable (D4) | `submitCase` | `AppException` |
 | Validar requiere predicción y **sustento clínico** no vacío (RF-04.2/04.3) | `registerValidation` | `AppException` |
 | Corregir exige una clase distinta a la predicha | `registerValidation` | `AppException` |
 | Validaciones **solo de inserción**: una segunda validación es complementaria (`complementaDe`), nunca una edición | `registerValidation` | `AppException` |
 | Sin validación no hay cierre ni informe (RF-07.1) | `closeCase`, `buildReportDocument` | `ValidationRequiredException` |
 | Las observaciones internas no salen en el informe exportable (RF-06.3, RF-05.5) | `ReportDocument` | — |
+| Todo informe deja constancia del uso de Dermavía y de su versión, sin la predicción preliminar (D5) | `ReportDocument.constanciaHerramienta`, `toolUsageNotice` | — |
 | La sugerencia de exámenes solo se edita en `PENDIENTE_VALIDACION` | `updateSuggestion` | `AppException` |
 | Los casos son privados de quien los registró: otro médico no los ve ni los valida, anota o cierra (los pacientes y los informes cerrados sí se comparten) | `_b.ownCase` en lecturas y escrituras de casos | "Caso no encontrado." |
 
@@ -63,15 +65,24 @@ Si creas una acción nueva auditable, añade el valor a `AuditType` y su `label`
 La tarjeta de predicción la lee un médico, no un científico de datos. En textos visibles:
 
 - Usa **"riesgo estimado"**, **"línea de alerta"**, **"Posible melanoma"** /
-  **"Sin alerta de melanoma"** y frecuencias naturales ("Unas 9 de cada 100…").
+  **"Sin alerta de melanoma"** y frecuencias naturales atadas al conjunto de desarrollo
+  ("En las lesiones con las que se desarrolló el sistema, unas 9 de cada 100…"), nunca
+  como si fueran la frecuencia en la consulta del médico.
 - **No** uses "probabilidad calibrada", "umbral", "modelo", "clasificador", "float16",
   "isotónica" ni "confianza del modelo" en la UI. Esos términos solo viven en código y
-  comentarios.
+  comentarios. La versión se muestra como "Versión …".
 - Reutiliza los getters de `Prediction` ([prediction.dart](../../../lib/domain/models/prediction.dart)):
-  `headline`, `frequencyText`, `shortSummary`, `riskLabel`, `percent`, `alertPercent`,
-  `defaultSuggestion`. No reconstruyas esos textos en las pantallas.
-- Bandas de confianza (RF-06.1): `benigna` (sin alerta), `baja` (< 0.30),
-  `ambigua` (0.30–0.70), `alta` (≥ 0.70).
+  `headline`, `riskText`, `frequencyText`, `contextText`, `shortSummary`, `riskLabel`,
+  `alertPercent`, `defaultSuggestion` y `Prediction.scopeText`; las cifras de la
+  evaluación están en `ReferencePerformance`. No reconstruyas esos textos en las pantallas.
+- **Sin alerta no hay porcentaje ni nivel de riesgo**: `shortSummary` es solo
+  "Sin alerta de melanoma", `riskLevel` es nulo y `frequencyText` también. Nunca lo
+  llames "riesgo bajo" o "muy bajo": el modelo deja sin alerta algunos melanomas y no
+  evalúa otros cánceres de piel. Todo resultado va acompañado de `Prediction.scopeText`.
+- El riesgo se muestra con `riskText` (piso "< 3%", techo "> 90%"), no con `percent`.
+- Bandas (RF-06.1): `sinAlerta`, `baja` (< 0.30), `ambigua` (0.30–0.70), `alta` (≥ 0.70).
+- El panel ordena primero los casos con alerta y luego por probabilidad
+  (`sortForPanel`): en el escalón del 7% hay empates entre casos con y sin alerta.
 - La clase (`clasePredicha`) la decide el backend con la salida **sin calibrar** del
   modelo (`ModelArtifact.decisionThreshold = 0.0138`). **Nunca** la deduzcas comparando
   la probabilidad calibrada con la línea de alerta (`ModelArtifact.calibratedThreshold`
