@@ -230,14 +230,21 @@ sin reconstruir la imagen (RNF-13). Para pausar las tareas: `gcloud scheduler jo
   y con reglas que niegan el acceso de clientes; IAM de Firestore no permite dar solo permiso de
   crear a una cuenta de servicio.
 
+## Verificado en la nube (2026-11-21)
+
+Flujo completo contra `tesis-dermavia` con ID tokens reales: alta de un especialista por la API,
+activación con el enlace de Firebase, aceptación del alcance, paciente con consentimiento, caso,
+fotos cargadas y leídas con URL firmadas de Cloud Storage, inferencia, validación, cierre,
+informe, historial y bitácora. Con las fotos de `imagenes_prueba/1_HAM_0001974_melanoma_alto`
+la predicción coincide con la local (melanoma, 0.747, banda alta). También responden como se
+espera las barreras: admin sin acceso clínico, caso sin consentimiento, envío sin fotos,
+validación sin sustento, validación y cierre repetidos, reenvío con la misma `id_solicitud`.
+Antes se habían comprobado `/health` y las dos tareas de Cloud Scheduler.
+
 ## Pendiente
 
 - Medir los umbrales de EXP-05 en Cloud Run (p95 por caso, cuatro casos simultáneos, arranque
   en frío).
-- Probar el flujo completo de un caso contra el proyecto real (Firestore, URL firmadas de Cloud
-  Storage, inferencia). Hasta ahora en la nube se comprobó `/health` con el modelo cargado
-  desde el bucket, el alta del administrador, `GET /users/me` con un ID token real y las dos
-  tareas de Cloud Scheduler.
 - Configurar el sink de auditoría en Cloud Logging (paso 11 del despliegue).
 - `GET /reports/{caseId}/pdf`: hoy el backend entrega el contenido del informe y la app genera
   el PDF (como en el prototipo).
