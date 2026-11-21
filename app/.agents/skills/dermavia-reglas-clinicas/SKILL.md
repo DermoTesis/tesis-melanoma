@@ -39,6 +39,7 @@ REGISTRADO → EN_ANALISIS → (ERROR_ANALISIS) → PENDIENTE_VALIDACION → VAL
 | Sin validación no hay cierre ni informe (RF-07.1) | `closeCase`, `buildReportDocument` | `ValidationRequiredException` |
 | Las observaciones internas no salen en el informe exportable (RF-06.3, RF-05.5) | `ReportDocument` | — |
 | La sugerencia de exámenes solo se edita en `PENDIENTE_VALIDACION` | `updateSuggestion` | `AppException` |
+| Los casos son privados de quien los registró: otro médico no los ve ni los valida, anota o cierra (los pacientes y los informes cerrados sí se comparten) | `_b.ownCase` en lecturas y escrituras de casos | "Caso no encontrado." |
 
 Toda operación clínica empieza con `_b.requireClinician()` (especialista activo, con
 acceso clínico y alcance aceptado); las de administración con `_b.requireAdmin()`.

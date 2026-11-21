@@ -248,6 +248,48 @@ void main() {
     });
   });
 
+  group('Privacidad de los casos entre médicos', () {
+    // Igual que el backend real: los casos son de quien los registró.
+    Future<String> caseByRaul() async {
+      await auth.signIn(DemoCredentials.adminEmail, DemoCredentials.adminPassword);
+      await admin.setClinicalAccess(SeedData.raul, true);
+      await auth.signOut();
+      await auth.signIn(DemoCredentials.revokedEmail, DemoCredentials.specialistPassword);
+      final c = await cases.submitCase(
+          const CaseDraft(patientId: 'p-jmamani', foto1: image, foto2: secondPhoto), data);
+      await settle();
+      await auth.signOut();
+      return c.id;
+    }
+
+    test('otro médico no ve el caso en la ficha del paciente ni en el detalle', () async {
+      final id = await caseByRaul();
+      await loginSpecialist();
+      final ofPatient = await cases.watchCasesForPatient('p-jmamani').first;
+      expect(ofPatient.map((c) => c.id), isNot(contains(id)));
+      expect(ofPatient, isNotEmpty); // Los casos propios de Lucía sí aparecen.
+      expect(await cases.watchCase(id).first, isNull);
+      expect(await validations.watchValidations(id).first, isEmpty);
+    });
+
+    test('otro médico no puede validar, anotar ni cerrar el caso', () async {
+      final id = await caseByRaul();
+      await loginSpecialist();
+      final notFound =
+          throwsA(isA<AppException>().having((e) => e.message, 'message', 'Caso no encontrado.'));
+      expect(b.cases[id]!.prediction, isNotNull); // Se rechaza por ser ajeno, no por el estado.
+      await expectLater(
+          validations.registerValidation(
+              caseId: id,
+              decision: ValidationDecision.confirmar,
+              sustentoClinico: 'Patrón atípico.'),
+          notFound);
+      await expectLater(cases.addInternalNote(id, 'Nota'), notFound);
+      await expectLater(cases.updateSuggestion(id, 'Biopsia'), notFound);
+      await expectLater(reports.closeCase(id, 'Control'), notFound);
+    });
+  });
+
   group('Panel', () {
     test('ordena por probabilidad y respeta el orden manual (RF-06.2)', () {
       final pending = b.cases.values.where((c) => c.isPendingValidation).toList();

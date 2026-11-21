@@ -135,6 +135,15 @@ class MockBackend {
     return fresh;
   }
 
+  /// Caso del médico con sesión. A otro médico se le responde como si no
+  /// existiera, igual que el backend real (`GestionCasos.obtener`): los casos
+  /// son privados de quien los registró. Los informes de casos cerrados, en
+  /// cambio, son parte del historial del paciente y los ve cualquier médico.
+  ClinicalCase? ownCase(String caseId) {
+    final c = cases[caseId];
+    return c != null && c.uidMedico == session?.uid ? c : null;
+  }
+
   // --- Flujo del caso ---
 
   String nextCaseId() => 'CASO-${(++caseSequence).toString().padLeft(4, '0')}';

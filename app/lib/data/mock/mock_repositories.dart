@@ -337,12 +337,15 @@ class MockCaseRepository implements CaseRepository {
       });
 
   @override
-  Stream<ClinicalCase?> watchCase(String id) => _b.watch(() => _b.cases[id]);
+  Stream<ClinicalCase?> watchCase(String id) => _b.watch(() => _b.ownCase(id));
 
   @override
   Stream<List<ClinicalCase>> watchCasesForPatient(String patientId) =>
       _b.watch(() {
-        final list = _b.cases.values.where((c) => c.patientId == patientId).toList()
+        final uid = _b.session?.uid;
+        final list = _b.cases.values
+            .where((c) => c.patientId == patientId && c.uidMedico == uid)
+            .toList()
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
         return list;
       });
@@ -384,7 +387,7 @@ class MockCaseRepository implements CaseRepository {
   Future<void> retryAnalysis(String caseId) async {
     await _b.delay();
     _b.requireClinician();
-    final c = _b.cases[caseId];
+    final c = _b.ownCase(caseId);
     if (c == null || c.status != CaseStatus.errorAnalisis) return;
     if (!_b.online) {
       throw const AppException('Sin conexión. Se reintentará al recuperarla.');
@@ -405,8 +408,9 @@ class MockCaseRepository implements CaseRepository {
   Future<void> updateSuggestion(String caseId, String suggestion) async {
     await _b.delay();
     _b.requireClinician();
-    final c = _b.cases[caseId];
-    if (c == null || c.status != CaseStatus.pendienteValidacion) {
+    final c = _b.ownCase(caseId);
+    if (c == null) throw const AppException('Caso no encontrado.');
+    if (c.status != CaseStatus.pendienteValidacion) {
       throw const AppException('La sugerencia solo puede editarse antes de validar.');
     }
     _b.cases[caseId] = suggestion.trim().isEmpty
@@ -419,7 +423,7 @@ class MockCaseRepository implements CaseRepository {
   Future<void> addInternalNote(String caseId, String text) async {
     await _b.delay();
     final doctor = _b.requireClinician();
-    final c = _b.cases[caseId];
+    final c = _b.ownCase(caseId);
     if (c == null) throw const AppException('Caso no encontrado.');
     if (text.trim().isEmpty) throw const AppException('La observación está vacía.');
     _b.cases[caseId] = c.copyWith(internalNotes: [
@@ -435,8 +439,10 @@ class MockValidationRepository implements ValidationRepository {
   final MockBackend _b;
 
   @override
-  Stream<List<ClinicalValidation>> watchValidations(String caseId) =>
-      _b.watch(() => List.unmodifiable(_b.validations[caseId] ?? const []));
+  Stream<List<ClinicalValidation>> watchValidations(String caseId) => _b.watch(() =>
+      _b.ownCase(caseId) == null
+          ? const <ClinicalValidation>[]
+          : List<ClinicalValidation>.unmodifiable(_b.validations[caseId] ?? const []));
 
   @override
   Future<ClinicalValidation> registerValidation({
@@ -450,7 +456,7 @@ class MockValidationRepository implements ValidationRepository {
   }) async {
     await _b.delay();
     final doctor = _b.requireClinician();
-    final c = _b.cases[caseId];
+    final c = _b.ownCase(caseId);
     if (c == null) throw const AppException('Caso no encontrado.');
     final prediction = c.prediction;
     if (prediction == null) {
@@ -523,7 +529,7 @@ class MockReportRepository implements ReportRepository {
   Future<CaseReport> closeCase(String caseId, String conductaClinica) async {
     await _b.delay();
     _b.requireClinician();
-    final c = _b.cases[caseId];
+    final c = _b.ownCase(caseId);
     final validations = _b.validations[caseId] ?? const [];
     if (c == null) throw const AppException('Caso no encontrado.');
     // Barrera de RF-07.1: sin validación no hay cierre ni informe.
