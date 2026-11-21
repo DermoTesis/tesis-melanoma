@@ -123,48 +123,96 @@ URL firmadas apuntan al propio servidor (`/dev/almacen/...`). Con `--host 0.0.0.
 usar la app desde un emulador Android (`http://10.0.2.2:8080`). El modo local se niega a
 arrancar dentro de Cloud Run.
 
-## Despliegue en Google Cloud (pendiente: falta el proyecto)
+## Despliegue en Google Cloud
 
-Una sola vez, con `PROYECTO`, `REGION=southamerica-west1` y una cuenta de servicio
-`dermavia-api@PROYECTO.iam.gserviceaccount.com` para el servicio y otra `dermavia-tareas@...`
-para Cloud Scheduler:
+Desplegado el 2026-11-21 en el proyecto `tesis-dermavia`:
 
-1. Habilitar Cloud Run, Firestore, Cloud Storage, Cloud Scheduler, Artifact Registry,
-   IAM Credentials y Firebase; agregar Firebase al proyecto y activar el acceso con correo y
-   contraseña en Authentication.
-2. Firestore en modo nativo en `REGION`: la base `(default)` y otra llamada `validaciones`.
-   Desplegar `firestore.rules` en ambas.
-3. Dos buckets privados en `REGION` (acceso uniforme): uno para las fotos de los casos y otro
-   para los modelos.
-4. Permisos de `dermavia-api`: `roles/datastore.user`, `roles/storage.objectAdmin` sobre el
-   bucket de fotos, `roles/storage.objectViewer` sobre el de modelos,
-   `roles/firebaseauth.admin`, `roles/firebasecloudmessaging.admin`, `roles/logging.logWriter`
-   y `roles/iam.serviceAccountTokenCreator` sobre sí misma (para firmar las URL).
-5. Publicar el modelo: `python scripts/publicar_modelo.py --destino gs://<bucket-modelos>/modelos`.
-6. Construir y desplegar (desde la raíz del repo):
+| Recurso | Valor |
+|---|---|
+| Servicio Cloud Run | `dermavia-api` en `southamerica-west1`: https://dermavia-api-432424057783.southamerica-west1.run.app |
+| Imagen | `southamerica-west1-docker.pkg.dev/tesis-dermavia/dermavia/backend:<commit>` |
+| Firestore | `(default)` y `validaciones`, modo nativo, `southamerica-west1` |
+| Buckets | `tesis-dermavia-fotos` (casos) y `tesis-dermavia-modelos` (artefactos) |
+| Cuentas de servicio | `dermavia-api` (servicio) y `dermavia-tareas` (Cloud Scheduler) |
+| Cloud Scheduler | `dermavia-reprocesar` y `dermavia-alertas-vencidas` en `southamerica-east1` |
 
-   ```bash
-   gcloud builds submit --config backend/cloudbuild.yaml \
-     --substitutions _IMAGEN=REGION-docker.pkg.dev/PROYECTO/dermavia/backend .
-   gcloud run deploy dermavia-api --image REGION-docker.pkg.dev/PROYECTO/dermavia/backend \
-     --region REGION --service-account dermavia-api@PROYECTO.iam.gserviceaccount.com \
-     --cpu 2 --memory 2Gi --concurrency 4 --min-instances 0 --cpu-boost --allow-unauthenticated \
-     --set-env-vars GOOGLE_CLOUD_PROJECT=PROYECTO,DERMAVIA_BUCKET_IMAGENES=<bucket-fotos>,\
-   DERMAVIA_MODELO_URI=gs://<bucket-modelos>/modelos,DERMAVIA_MODELO_VERSION=20261004T172732Z_registro,\
-   DERMAVIA_TAREAS_AUDIENCIA=<url-del-servicio>,DERMAVIA_TAREAS_CUENTA=dermavia-tareas@PROYECTO.iam.gserviceaccount.com
+Pasos para repetirlo en otro proyecto (PowerShell; `$URL` se conoce antes de desplegar porque
+Cloud Run usa `https://<servicio>-<número de proyecto>.<región>.run.app`, y el servicio no arranca
+sin `DERMAVIA_TAREAS_AUDIENCIA`):
+
+```powershell
+$PROYECTO = "tesis-dermavia"; $REGION = "southamerica-west1"
+$NUMERO = gcloud projects describe $PROYECTO --format="value(projectNumber)"
+$URL = "https://dermavia-api-$NUMERO.$REGION.run.app"
+$SA_API = "dermavia-api@$PROYECTO.iam.gserviceaccount.com"
+$SA_TAREAS = "dermavia-tareas@$PROYECTO.iam.gserviceaccount.com"
+$IMAGEN = "$REGION-docker.pkg.dev/$PROYECTO/dermavia/backend"; $ETIQUETA = git rev-parse --short HEAD
+```
+
+1. Habilitar `run`, `firestore`, `storage`, `cloudscheduler`, `artifactregistry`, `cloudbuild`,
+   `iamcredentials`, `firebase`, `identitytoolkit`, `fcm`, `logging` y `firebaserules`
+   (`gcloud services enable <api>.googleapis.com ...`).
+2. Agregar Firebase al proyecto (consola de Firebase, o `POST
+   https://firebase.googleapis.com/v1beta1/projects/<proyecto>:addFirebase`) y, en la consola,
+   Authentication → Comenzar → activar correo electrónico/contraseña. Esto último no se puede
+   hacer por API sin pasar a Identity Platform.
+3. Firestore en modo nativo en `REGION`: `gcloud firestore databases create --location=$REGION`
+   y otra vez con `--database=validaciones`. Desplegar `firestore.rules` en ambas (consola, o la
+   API de Firebase Rules con las releases `cloud.firestore` y `cloud.firestore/validaciones`).
+4. Dos buckets privados en `REGION` (`--uniform-bucket-level-access --public-access-prevention`):
+   uno para las fotos de los casos y otro para los modelos.
+5. Permisos de `dermavia-api`: `roles/datastore.user`, `roles/firebaseauth.admin`,
+   `roles/firebasecloudmessaging.admin` y `roles/logging.logWriter` en el proyecto;
+   `roles/storage.objectAdmin` sobre el bucket de fotos; `roles/storage.objectViewer` sobre el de
+   modelos; y `roles/iam.serviceAccountTokenCreator` sobre sí misma (para firmar las URL).
+6. Publicar el modelo, con credenciales de aplicación (`gcloud auth application-default login`
+   y `set-quota-project`):
+   `python scripts/publicar_modelo.py --destino gs://<bucket-modelos>/modelos`.
+7. Construir la imagen desde la raíz del repo. `.gcloudignore` limita lo que se sube a lo que
+   copia el Dockerfile (sin él, gcloud sube `app/build` y `app/.dart_tool`, unos 2 GB). En
+   proyectos nuevos la cuenta de Compute que usa Cloud Build necesita
+   `roles/cloudbuild.builds.builder`, o la compilación falla al leer la fuente.
+
+   ```powershell
+   gcloud artifacts repositories create dermavia --repository-format=docker --location=$REGION
+   gcloud projects add-iam-policy-binding $PROYECTO --role roles/cloudbuild.builds.builder `
+     --member "serviceAccount:$NUMERO-compute@developer.gserviceaccount.com"
+   gcloud builds submit --config backend/cloudbuild.yaml --substitutions "_IMAGEN=$IMAGEN,_ETIQUETA=$ETIQUETA" .
+   ```
+
+8. Desplegar:
+
+   ```powershell
+   gcloud run deploy dermavia-api --image "${IMAGEN}:$ETIQUETA" --region $REGION `
+     --service-account $SA_API --cpu 2 --memory 2Gi --concurrency 4 `
+     --min-instances 0 --max-instances 3 --cpu-boost --allow-unauthenticated `
+     --set-env-vars "GOOGLE_CLOUD_PROJECT=$PROYECTO,DERMAVIA_BUCKET_IMAGENES=<bucket-fotos>,DERMAVIA_MODELO_URI=gs://<bucket-modelos>/modelos,DERMAVIA_MODELO_VERSION=20261004T172732Z_registro,DERMAVIA_TAREAS_AUDIENCIA=$URL,DERMAVIA_TAREAS_CUENTA=$SA_TAREAS"
    ```
 
    `--allow-unauthenticated` es correcto: la app llama directo y el servicio valida el ID token
-   en cada solicitud (no hay API Gateway en Sudamérica).
-7. Cloud Scheduler, con token OIDC de `dermavia-tareas` y audiencia la URL del servicio:
-   `POST /tasks/reprocess` cada 5 min y `POST /tasks/overdue-alerts` cada hora.
-8. Primera cuenta de administrador: `python scripts/crear_admin.py ...`.
-9. Cloud Logging: un sink de `jsonPayload.tipo_registro="auditoria"` a un bucket de registros
-   con retención bloqueada, y una métrica basada en registros con `jsonPayload.evento.detalle`
-   de las validaciones (concordancia por `version_modelo`).
+   en cada solicitud (no hay API Gateway en Sudamérica). `--max-instances 3` acota el gasto.
+   `GET /health` debe devolver la versión del modelo: se carga al arrancar.
+9. Cloud Scheduler, con token OIDC de `dermavia-tareas` y audiencia `$URL`:
+   `POST /tasks/reprocess` cada 5 min y `POST /tasks/overdue-alerts` cada hora. Cloud Scheduler
+   no existe en `southamerica-west1`; las tareas viven en `southamerica-east1` y llaman al
+   servicio en Santiago.
+
+   ```powershell
+   gcloud scheduler jobs create http dermavia-reprocesar --location southamerica-east1 `
+     --schedule "*/5 * * * *" --time-zone "America/Lima" --http-method POST `
+     --uri "$URL/tasks/reprocess" --oidc-service-account-email $SA_TAREAS --oidc-token-audience $URL
+   ```
+
+10. Primera cuenta de administrador: `python scripts/crear_admin.py ...` (también con
+    credenciales de aplicación). Imprime el enlace para definir la contraseña.
+11. Pendiente: Cloud Logging, un sink de `jsonPayload.tipo_registro="auditoria"` a un bucket de
+    registros con retención bloqueada (irreversible), y una métrica basada en registros con
+    `jsonPayload.evento.detalle` de las validaciones (concordancia por `version_modelo`).
 
 Cambiar de modelo = publicar la versión nueva y actualizar `DERMAVIA_MODELO_VERSION`
-(`gcloud run services update ... --update-env-vars`), sin reconstruir la imagen (RNF-13).
+(`gcloud run services update dermavia-api --region southamerica-west1 --update-env-vars ...`),
+sin reconstruir la imagen (RNF-13). Para pausar las tareas: `gcloud scheduler jobs pause
+<tarea> --location southamerica-east1`.
 
 ## Diferencias con la memoria v10 (para actualizar los documentos)
 
@@ -184,10 +232,13 @@ Cambiar de modelo = publicar la versión nueva y actualizar `DERMAVIA_MODELO_VER
 
 ## Pendiente
 
-- Desplegar en Google Cloud y medir los umbrales de EXP-05 en Cloud Run (p95 por caso, cuatro
-  casos simultáneos, arranque en frío).
-- Probar los adaptadores de Firestore contra el emulador o un proyecto real: hoy las pruebas
-  cubren el dominio con los adaptadores en memoria y la conversión a documentos, no el SDK.
+- Medir los umbrales de EXP-05 en Cloud Run (p95 por caso, cuatro casos simultáneos, arranque
+  en frío).
+- Probar el flujo completo de un caso contra el proyecto real (Firestore, URL firmadas de Cloud
+  Storage, inferencia). Hasta ahora en la nube se comprobó `/health` con el modelo cargado
+  desde el bucket, el alta del administrador, `GET /users/me` con un ID token real y las dos
+  tareas de Cloud Scheduler.
+- Configurar el sink de auditoría en Cloud Logging (paso 11 del despliegue).
 - `GET /reports/{caseId}/pdf`: hoy el backend entrega el contenido del informe y la app genera
   el PDF (como en el prototipo).
 - Recorte al campo del dermatoscopio en 4:3 antes del modelo (A3 de la app): decidir si va en la
