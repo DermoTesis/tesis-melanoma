@@ -59,7 +59,13 @@ List<ClinicalCase> sortForPanel(List<ClinicalCase> cases, List<String> manual) {
   return list;
 }
 
+/// Primero los casos con alerta y después la probabilidad: en el escalón de
+/// la calibración (~7%) hay casos con y sin alerta con la misma probabilidad,
+/// y un caso sin alerta no debe quedar por encima de uno con alerta.
 int _byProbability(ClinicalCase a, ClinicalCase b) {
+  int alert(ClinicalCase c) => (c.prediction?.isAlert ?? false) ? 1 : 0;
+  final byAlert = alert(b).compareTo(alert(a));
+  if (byAlert != 0) return byAlert;
   final pa = a.prediction?.probabilidadMalignidad ?? -1;
   final pb = b.prediction?.probabilidadMalignidad ?? -1;
   final cmp = pb.compareTo(pa);

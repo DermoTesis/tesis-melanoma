@@ -300,5 +300,23 @@ void main() {
       final manual = sortForPanel(pending, ['CASO-0195']);
       expect(manual.first.id, 'CASO-0195');
     });
+
+    test('con el mismo riesgo, el caso con alerta va primero (RF-06.2, A14)', () {
+      final pending = b.cases.values.where((c) => c.isPendingValidation).toList()
+        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      final at = DateTime(2026, 11, 21);
+      // Escalón del 7%: misma probabilidad calibrada, con y sin alerta. El
+      // caso sin alerta es el más reciente, así que antes quedaba primero.
+      final withAlert = pending.first.copyWith(
+          prediction: MockInferenceEngine.fromModelOutput(0.015, at));
+      final noAlert = pending.last.copyWith(
+          prediction: MockInferenceEngine.fromModelOutput(0.010, at));
+      expect(noAlert.createdAt.isAfter(withAlert.createdAt), isTrue);
+      expect({withAlert.prediction!.percent, noAlert.prediction!.percent}, {7});
+
+      final sorted = sortForPanel([noAlert, withAlert], const []);
+      expect(sorted.first.prediction!.isAlert, isTrue);
+      expect(sorted.last.prediction!.isAlert, isFalse);
+    });
   });
 }

@@ -99,18 +99,20 @@ class MockInferenceEngine {
       c.clinicalData.ubicacionLesion,
     );
     final rnd = Random(seed);
-    // Tramos de la salida sin calibrar, ilustrativos (no siguen la
-    // distribución real de la validación).
+    // Tramos de la salida sin calibrar con el reparto de las predicciones de
+    // validación de EXP-04 (pendiente A6): 35% sin alerta, 40% baja, 18%
+    // intermedia y 7% alta. La mayoría de las alertas son de riesgo bajo,
+    // como en el modelo real. Dentro de cada tramo la salida es uniforme.
     final bucket = rnd.nextDouble();
     double out;
-    if (bucket < 0.30) {
-      out = 0.82 + rnd.nextDouble() * 0.175; // riesgo alto (75–91%)
-    } else if (bucket < 0.60) {
-      out = 0.25 + rnd.nextDouble() * 0.55; // intermedio (33–64%)
-    } else if (bucket < 0.75) {
-      out = ModelArtifact.decisionThreshold + rnd.nextDouble() * 0.2; // bajo, con alerta
-    } else {
+    if (bucket < 0.35) {
       out = rnd.nextDouble() * ModelArtifact.decisionThreshold; // sin alerta
+    } else if (bucket < 0.75) {
+      out = ModelArtifact.decisionThreshold + rnd.nextDouble() * 0.23; // baja (7–26%)
+    } else if (bucket < 0.93) {
+      out = 0.25 + rnd.nextDouble() * 0.56; // intermedia (33–64%)
+    } else {
+      out = 0.82 + rnd.nextDouble() * 0.175; // alta (74–91%)
     }
     return fromModelOutput(out, now);
   }

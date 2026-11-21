@@ -45,7 +45,7 @@ void main() {
       expect(alerta.clasePredicha, LesionClass.melanoma);
       expect(alerta.isAlert, isTrue);
       expect(sinAlerta.clasePredicha, LesionClass.noMelanoma);
-      expect(sinAlerta.confidence, PredictionConfidence.benigna);
+      expect(sinAlerta.confidence, PredictionConfidence.sinAlerta);
       expect(alerta.confidence, PredictionConfidence.baja);
       expect(alerta.alertPercent, 7);
       expect(alerta.versionModelo, '20261004T172732Z_registro');

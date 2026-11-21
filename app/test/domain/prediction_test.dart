@@ -1,4 +1,5 @@
 import 'package:dermavia/data/mock/mock_inference_engine.dart';
+import 'package:dermavia/domain/models/clinical_case.dart';
 import 'package:dermavia/domain/models/prediction.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -19,10 +20,21 @@ void main() {
       expect(p.alertPercent, 7);
     });
 
-    test('bajo la línea de alerta no se habla de malignidad', () {
-      final p = noAlert(0.03);
+    test('sin alerta no se muestra porcentaje ni un nivel de riesgo', () {
+      final p = noAlert(0.0699);
       expect(p.headline, 'Sin alerta de melanoma');
-      expect(p.riskLabel, 'Riesgo muy bajo');
+      expect(p.shortSummary, 'Sin alerta de melanoma');
+      expect(p.riskLevel, isNull);
+      expect(p.riskLabel, 'Por debajo de la línea de alerta');
+      expect(p.frequencyText, isNull);
+      expect(p.confidence, PredictionConfidence.sinAlerta);
+    });
+
+    test('sin alerta se advierte que no descarta un melanoma', () {
+      expect(noAlert(0.03).contextText,
+          contains('1 de cada 11 melanomas quedó por debajo de la línea de alerta'));
+      expect(alert(0.09).contextText, contains('unas 7 de cada 10 alertas no fueron melanoma'));
+      expect(Prediction.scopeText, contains('carcinoma basocelular'));
     });
 
     test('el nivel de riesgo sigue los tramos de la predicción', () {
@@ -30,11 +42,27 @@ void main() {
       expect(alert(0.82).riskLabel, 'Riesgo alto');
     });
 
-    test('la probabilidad se expresa como frecuencia natural', () {
+    test('el riesgo mostrado tiene piso y techo', () {
+      expect(noAlert(0.0).riskText, '< 3%');
+      expect(alert(0.0699).riskText, '7%');
+      expect(alert(0.913).riskText, '> 90%');
+      expect(alert(1.0).shortSummary, 'Posible melanoma · riesgo > 90%');
+    });
+
+    test('la frecuencia natural se ata al conjunto de desarrollo', () {
       expect(alert(0.30).frequencyText,
-          'Unas 30 de cada 100 lesiones con este resultado son melanoma.');
-      expect(noAlert(0.004).frequencyText,
-          'Menos de 1 de cada 100 lesiones con este resultado son melanoma.');
+          'En las lesiones con las que se desarrolló el sistema, unas 30 de cada 100 '
+          'con este resultado fueron melanoma.');
+      expect(alert(1.0).frequencyText, contains('más de 90 de cada 100'));
+    });
+  });
+
+  group('Ubicaciones fuera del dominio del modelo (A10)', () {
+    test('avisa en la región subungueal y en palmas y plantas', () {
+      expect(siteNoticeFor('Región subungueal'), contains('sin lesiones subungueales'));
+      expect(siteNoticeFor('Planta del pie derecho'), contains('palma o la planta'));
+      expect(siteNoticeFor('Mano izquierda'), contains('palma o la planta'));
+      expect(siteNoticeFor('Espalda, región escapular'), isNull);
     });
   });
 }

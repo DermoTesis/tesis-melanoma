@@ -89,9 +89,17 @@ class _ScopeAcceptanceScreenState extends ConsumerState<ScopeAcceptanceScreen> {
                       '2',
                       const TextSpan(
                           text:
-                              'Ningún caso se cierra ni se exporta sin tu validación y sustento clínico.')),
+                              'Solo evalúa melanoma, a partir de dos fotos dermatoscópicas: no descarta '
+                              'otros cánceres de piel. Se desarrolló con dermatoscopias de Austria y '
+                              'Australia y aún no se ha validado con dermatoscopio de clip para celular '
+                              'ni en pacientes peruanos.')),
                   point(
                       '3',
+                      const TextSpan(
+                          text:
+                              'Ningún caso se cierra ni se exporta sin tu validación y sustento clínico.')),
+                  point(
+                      '4',
                       const TextSpan(
                           text:
                               'No reemplaza tu criterio médico ni los exámenes clínicos pertinentes. No agenda citas ni brinda telemedicina.')),

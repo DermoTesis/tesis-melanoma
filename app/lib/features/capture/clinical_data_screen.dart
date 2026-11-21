@@ -156,6 +156,10 @@ class _ClinicalDataScreenState extends ConsumerState<ClinicalDataScreen> {
                       errorText: siteError ? 'Describe la ubicación' : null,
                     ),
                   ],
+                  if (siteNoticeFor(_siteValue) case final notice?) ...[
+                    const SizedBox(height: 10),
+                    InfoBanner(tone: BannerTone.warning, message: notice),
+                  ],
                   const SizedBox(height: 16),
                   FieldLabel('Tiempo de aparición *', error: onsetError),
                   Container(

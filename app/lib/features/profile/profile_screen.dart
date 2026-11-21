@@ -58,7 +58,7 @@ class ProfileScreen extends ConsumerWidget {
                         KeyValueRow('Verificado', Fmt.date(user.fechaVerificacion!), mono: true),
                       if (user.termsAcceptedAt != null)
                         KeyValueRow('Alcance aceptado', Fmt.dateTime(user.termsAcceptedAt!), mono: true),
-                      const KeyValueRow('Modelo activo', ModelArtifact.version, mono: true),
+                      const KeyValueRow('Versión de análisis',ModelArtifact.version, mono: true),
                     ],
                   ),
                 ),

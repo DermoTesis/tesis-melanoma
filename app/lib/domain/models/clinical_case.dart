@@ -145,6 +145,28 @@ class ClinicalData {
   String get sintomasLabel => sintomas.isEmpty
       ? 'Ninguno referido'
       : sintomas.map((s) => s.label).join(', ');
+
+  /// Aviso si la ubicación queda fuera del dominio del modelo.
+  String? get siteNotice => siteNoticeFor(ubicacionLesion);
+}
+
+/// Aviso para ubicaciones fuera del dominio del modelo (pendiente A10).
+/// HAM10000 excluyó las lesiones subungueales y casi no tiene imágenes de
+/// palmas y plantas (7 imágenes con la etiqueta "acral", todas de nevus),
+/// mientras que en el Perú el melanoma acral es frecuente. Si la ubicación
+/// subungueal se bloquea o no es una decisión pendiente del equipo.
+String? siteNoticeFor(String ubicacion) {
+  final u = ubicacion.toLowerCase();
+  if (u.contains('subungue') || u.contains('uña')) {
+    return 'El sistema se desarrolló sin lesiones subungueales: en esta ubicación su '
+        'resultado no tiene respaldo. Basa tu evaluación en el examen clínico.';
+  }
+  if (u.contains('planta') || u.contains('palma') || u.contains('mano')) {
+    return 'Si la lesión está en la palma o la planta, el resultado es menos confiable: '
+        'el sistema se desarrolló con muy pocas imágenes de esas zonas, donde el '
+        'melanoma acral es frecuente en el Perú.';
+  }
+  return null;
 }
 
 /// Observación clínica interna: visible solo para personal médico y

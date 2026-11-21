@@ -127,14 +127,15 @@ class CaseCard extends StatelessWidget {
       case CaseStatus.cerrado:
       case CaseStatus.pendienteValidacion:
         if (p == null) return ('Sin predicción', AppColors.textMuted);
-        final label = '${p.shortSummary} (${p.riskLevel})';
+        final level = p.riskLevel;
+        final label = level == null ? p.shortSummary : '${p.shortSummary} ($level)';
         if (c.status != CaseStatus.pendienteValidacion) {
-          return ('Modelo: ${p.shortSummary}', AppColors.textMuted);
+          return ('Preliminar: ${p.shortSummary}', AppColors.textMuted);
         }
         final color = switch (p.confidence) {
           PredictionConfidence.alta => AppColors.errorText,
           PredictionConfidence.ambigua || PredictionConfidence.baja => AppColors.warningText,
-          PredictionConfidence.benigna => AppColors.textBody,
+          PredictionConfidence.sinAlerta => AppColors.textBody,
         };
         return (label, color);
     }

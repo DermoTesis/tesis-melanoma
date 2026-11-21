@@ -246,7 +246,7 @@ class _ValidationRecord extends StatelessWidget {
           const SizedBox(height: 8),
           _Line('Especialista', '${v.especialistaNombre} · CMP ${v.cmp}'),
           _Line('Fecha', Fmt.dateTimeSeconds(v.fechaValidacion), mono: true),
-          _Line('Modelo', '${p.shortSummary} (${p.versionModelo})'),
+          _Line('Predicción', '${p.shortSummary} (${p.versionModelo})'),
           _Line('Sustento', v.sustentoClinico),
           if (v.sugerenciaTomada != null)
             _Line('Sugerencia', v.sugerenciaTomada! ? 'Tomada' : 'No tomada'),

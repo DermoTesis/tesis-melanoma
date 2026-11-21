@@ -77,7 +77,7 @@ const accountStatusCodes = {
 };
 
 const confidenceCodes = {
-  PredictionConfidence.benigna: 'sin_alerta',
+  PredictionConfidence.sinAlerta: 'sin_alerta',
   PredictionConfidence.baja: 'baja',
   PredictionConfidence.ambigua: 'ambigua',
   PredictionConfidence.alta: 'alta',

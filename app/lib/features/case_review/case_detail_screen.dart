@@ -314,6 +314,10 @@ class _ReviewView extends ConsumerWidget {
                 ),
               const SizedBox(height: 12),
               PredictionCard(prediction: p),
+              if (c.clinicalData.siteNotice case final notice?) ...[
+                const SizedBox(height: 12),
+                InfoBanner(tone: BannerTone.warning, message: notice),
+              ],
               if (c.suggestion != null) ...[
                 const SizedBox(height: 12),
                 Container(
@@ -414,13 +418,14 @@ class PredictionCard extends StatelessWidget {
     final barColor = switch (p.confidence) {
       PredictionConfidence.alta => AppColors.error,
       PredictionConfidence.ambigua || PredictionConfidence.baja => AppColors.warningAccent,
-      PredictionConfidence.benigna => AppColors.primary,
+      PredictionConfidence.sinAlerta => AppColors.primary,
     };
     final riskColor = switch (p.confidence) {
       PredictionConfidence.alta => AppColors.errorText,
       PredictionConfidence.ambigua || PredictionConfidence.baja => AppColors.warningText,
-      PredictionConfidence.benigna => AppColors.primaryDark,
+      PredictionConfidence.sinAlerta => AppColors.primaryDark,
     };
+    final frequency = p.frequencyText;
     return DashedBorderBox(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -435,15 +440,17 @@ class PredictionCard extends StatelessWidget {
                 child: Text(p.headline,
                     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text('Riesgo estimado',
-                      style: TextStyle(fontSize: 11, color: AppColors.textSubtle)),
-                  Text('${p.percent}%',
-                      style: AppFonts.mono(fontSize: 20, color: AppColors.text)),
-                ],
-              ),
+              // Sin alerta no se muestra el porcentaje (pendiente A5).
+              if (p.isAlert)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text('Riesgo estimado',
+                        style: TextStyle(fontSize: 11, color: AppColors.textSubtle)),
+                    Text(p.riskText,
+                        style: AppFonts.mono(fontSize: 20, color: AppColors.text)),
+                  ],
+                ),
             ],
           ),
           const SizedBox(height: 4),
@@ -499,14 +506,19 @@ class PredictionCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Text(p.frequencyText,
-              style: const TextStyle(fontSize: 13, height: 1.4, color: AppColors.textBody)),
+          if (frequency != null) ...[
+            Text(frequency,
+                style: const TextStyle(fontSize: 13, height: 1.4, color: AppColors.textBody)),
+            const SizedBox(height: 4),
+          ],
+          Text(p.contextText,
+              style: TextStyle(
+                  fontSize: 13,
+                  height: 1.4,
+                  color: p.isAlert ? AppColors.textMuted : AppColors.textBody)),
           const SizedBox(height: 4),
-          Text(
-            'El sistema avisa desde un ${p.alertPercent}% de riesgo para no pasar por alto '
-            'melanomas; por eso muchas alertas resultan benignas.',
-            style: const TextStyle(fontSize: 13, height: 1.4, color: AppColors.textMuted),
-          ),
+          const Text(Prediction.scopeText,
+              style: TextStyle(fontSize: 13, height: 1.4, color: AppColors.textMuted)),
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
@@ -551,29 +563,44 @@ class PredictionCard extends StatelessWidget {
               const Text('Cómo leer este resultado',
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               const SizedBox(height: 16),
-              section(
-                'Riesgo estimado: ${p.percent}%',
-                'Es la proporción de lesiones con fotos parecidas a estas que resultaron '
-                    'ser melanoma. ${p.frequencyText}',
-              ),
+              if (p.isAlert)
+                section(
+                  'Riesgo estimado: ${p.riskText}',
+                  '${p.frequencyText} En esas lesiones, 1 de cada 5 era melanoma; en '
+                      'su consulta la proporción probablemente será menor, y también la '
+                      'de alertas que resulten melanoma.',
+                )
+              else
+                section(
+                  'Por debajo de la línea de alerta',
+                  'El sistema no marca la lesión como posible melanoma, pero eso no la '
+                      'descarta: en sus pruebas, ${ReferencePerformance.missedText}.',
+                ),
               section(
                 'Línea de alerta: ${p.alertPercent}%',
                 'Desde ese riesgo, el sistema marca la lesión como posible melanoma. '
-                    'Es baja a propósito: es preferible revisar una lesión benigna de más '
-                    'que dejar pasar un melanoma.',
+                    'Es baja a propósito: es preferible revisar de más una lesión que no '
+                    'es melanoma que dejar pasar uno.',
               ),
               section(
                 'Qué esperar de las alertas',
-                'Como la línea de alerta es baja, el sistema detecta la gran mayoría de los '
-                    'melanomas, pero también marca muchas lesiones que resultan benignas. '
-                    'Una alerta indica que la lesión merece su revisión, no que sea maligna.',
+                'En sus pruebas, el sistema ${ReferencePerformance.detectedText}, pero '
+                    '${ReferencePerformance.falseAlertsText}. Una alerta indica que la '
+                    'lesión merece su revisión, no que sea maligna.',
+              ),
+              section(
+                'Qué no evalúa',
+                '${Prediction.scopeText} Se desarrolló con dermatoscopias de Austria y '
+                    'Australia, sin lesiones subungueales y con muy pocas de palmas y '
+                    'plantas. No se ha validado con dermatoscopio de clip para celular '
+                    'ni en pacientes peruanos.',
               ),
               section(
                 'La decisión es suya',
                 'El resultado no es un diagnóstico. Confírmelo o corríjalo con su criterio '
                     'clínico y los exámenes que considere necesarios.',
               ),
-              Text('Modelo ${p.versionModelo}',
+              Text('Versión ${p.versionModelo}',
                   style: const TextStyle(fontSize: 12, color: AppColors.textSubtle)),
             ],
           ),
