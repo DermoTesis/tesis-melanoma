@@ -6,6 +6,9 @@ import '../../core/errors/app_exception.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/common.dart';
+import '../../data/remote/backend_config.dart';
+import '../../data/remote/rest_repositories.dart' show ActivationEmailException;
+import '../../domain/models/user.dart';
 import '../../providers/repository_providers.dart';
 import '../auth/auth_widgets.dart';
 
@@ -54,22 +57,62 @@ class _NewSpecialistScreenState extends ConsumerState<NewSpecialistScreen> {
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('Especialista dado de alta'),
-          content: Text(
-            'La cuenta de ${user.nombres} quedó pendiente de activación. El especialista '
-            'recibirá en ${user.correo} un enlace para definir su contraseña.\n\n'
-            'Demo: puede activar su cuenta desde "Tengo un enlace de activación" en el '
-            'inicio de sesión.',
-          ),
+          content: Text(_createdMessage(user)),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Entendido')),
           ],
         ),
       );
       if (mounted) context.pop();
+    } on ActivationEmailException catch (e) {
+      // La cuenta ya existe: solo falló el correo (N7).
+      if (mounted) await _emailFailed(e.user);
+      if (mounted) context.pop();
     } on AppException catch (e) {
       if (mounted) showAppSnack(context, e.message, error: true);
     } finally {
       if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  String _createdMessage(AppUser user) {
+    final base = 'La cuenta de ${user.nombres} quedó pendiente de activación. ';
+    return switch (ref.read(backendConfigProvider).mode) {
+      BackendMode.nube => '${base}Le enviamos a ${user.correo} un enlace para definir su '
+          'contraseña, con el asunto «$kFirebaseEmailSubject»: aunque diga "cambia", es su '
+          'enlace de activación. Vence en 1 hora; si no le llega, que revise la carpeta de '
+          'spam o reenvíalo desde la lista de usuarios.',
+      BackendMode.local => '${base}El servidor local no envía correos: el especialista '
+          'puede entrar con su correo y cualquier contraseña.',
+      BackendMode.mock => '${base}El especialista recibirá en ${user.correo} un enlace para '
+          'definir su contraseña, válido por 24 horas.\n\n'
+          'Demo: puede activar su cuenta desde "Tengo un enlace de activación" en el '
+          'inicio de sesión.',
+    };
+  }
+
+  Future<void> _emailFailed(AppUser user) async {
+    final resend = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cuenta creada'),
+        content: Text('La cuenta de ${user.nombres} quedó pendiente de activación, pero no se '
+            'pudo enviar el correo a ${user.correo}.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Más tarde')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true), child: const Text('Reenviar enlace')),
+        ],
+      ),
+    );
+    if (resend != true || !mounted) return;
+    try {
+      await ref.read(adminRepositoryProvider).resendActivationLink(user.correo);
+      if (mounted) showAppSnack(context, 'Enlace enviado a ${user.correo}.');
+    } on AppException catch (e) {
+      if (mounted) {
+        showAppSnack(context, '${e.message} Reenvíalo desde la lista de usuarios.', error: true);
+      }
     }
   }
 
@@ -147,7 +190,7 @@ class _NewSpecialistScreenState extends ConsumerState<NewSpecialistScreen> {
               ),
             ],
             bottom: [
-              const Text('Se enviará un enlace de activación con vigencia limitada.',
+              const Text('Se enviará por correo un enlace de activación con vigencia limitada.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 12, color: AppColors.textSubtle)),
               const SizedBox(height: 8),

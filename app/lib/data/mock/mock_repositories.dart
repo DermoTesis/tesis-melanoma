@@ -224,6 +224,26 @@ class MockAdminRepository implements AdminRepository {
         '${enabled ? 'Acceso restablecido' : 'Acceso revocado'} · ${user.nombres}');
     _b.notify();
   }
+
+  @override
+  Future<void> resendActivationLink(String correo) async {
+    await _b.delay();
+    _b.requireAdmin();
+    final email = correo.trim().toLowerCase();
+    final user = _b.users.values.where((u) => u.correo.toLowerCase() == email).firstOrNull;
+    if (user == null) throw const AppException('Usuario no encontrado.');
+    if (user.status != AccountStatus.pendienteActivacion) {
+      throw const AppException('La cuenta ya está activa.');
+    }
+    // Un enlace nuevo reemplaza al anterior.
+    _b.activations[user.uid] = ActivationTicket(
+      uid: user.uid,
+      nombres: user.nombres,
+      correo: user.correo,
+      expiresAt: _b.now().add(const Duration(hours: 24)),
+    );
+    _b.notify();
+  }
 }
 
 class MockPatientRepository implements PatientRepository {

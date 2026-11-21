@@ -67,7 +67,7 @@ int _byProbability(ClinicalCase a, ClinicalCase b) {
 }
 
 /// Casos pendientes de validación que superan el tiempo límite.
-final overdueCasesProvider = Provider<List<ClinicalCase>>((ref) {
+final overdueCasesProvider = Provider.autoDispose<List<ClinicalCase>>((ref) {
   final cases = ref.watch(myCasesProvider).value ?? const [];
   final now = ref.watch(clockProvider)();
   final overdue = cases

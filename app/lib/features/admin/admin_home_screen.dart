@@ -40,6 +40,17 @@ class AdminHomeScreen extends ConsumerWidget {
     }
   }
 
+  /// Nuevo enlace para definir la contraseña de una cuenta pendiente (HU01):
+  /// si el correo del alta no llegó o el enlace venció.
+  Future<void> _resendLink(BuildContext context, WidgetRef ref, AppUser u) async {
+    try {
+      await ref.read(adminRepositoryProvider).resendActivationLink(u.correo);
+      if (context.mounted) showAppSnack(context, 'Enlace de activación enviado a ${u.correo}.');
+    } on AppException catch (e) {
+      if (context.mounted) showAppSnack(context, e.message, error: true);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final admin = ref.watch(authStateProvider).value;
@@ -80,6 +91,7 @@ class AdminHomeScreen extends ConsumerWidget {
                   _UserRow(
                     user: users[i],
                     onChanged: (v) => _toggle(context, ref, users[i], v),
+                    onResendLink: () => _resendLink(context, ref, users[i]),
                   ),
                   if (i < users.length - 1) const Divider(height: 1, color: AppColors.surfaceMuted),
                 ],
@@ -107,9 +119,10 @@ class AdminHomeScreen extends ConsumerWidget {
 }
 
 class _UserRow extends StatelessWidget {
-  const _UserRow({required this.user, required this.onChanged});
+  const _UserRow({required this.user, required this.onChanged, required this.onResendLink});
   final AppUser user;
   final ValueChanged<bool> onChanged;
+  final VoidCallback onResendLink;
 
   @override
   Widget build(BuildContext context) {
@@ -137,6 +150,12 @@ class _UserRow extends StatelessWidget {
               ],
             ),
           ),
+          if (user.status == AccountStatus.pendienteActivacion)
+            IconButton(
+              tooltip: 'Reenviar enlace',
+              icon: const Icon(Icons.forward_to_inbox_outlined, color: AppColors.textMuted),
+              onPressed: onResendLink,
+            ),
           Switch(value: user.clinicalAccess, onChanged: onChanged),
         ],
       ),

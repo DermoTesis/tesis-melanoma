@@ -48,7 +48,7 @@ void main() {
     final store = LocalCaseStore.memory();
     final auth = RestAuthRepository(api, tokens);
     final patients = RestPatientRepository(api, hub);
-    final cases = RestCaseRepository(api, hub, store, _Online());
+    final cases = RestCaseRepository(api, hub, store, _Online(), currentUid: () => tokens.uid);
     final validations = RestValidationRepository(api, hub);
     final reports = RestReportRepository(api, hub, store);
     final dir = await Directory.systemTemp.createTemp('dermavia_e2e');

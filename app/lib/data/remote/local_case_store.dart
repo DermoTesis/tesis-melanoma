@@ -10,9 +10,14 @@ import 'codecs.dart';
 /// Caso guardado en el dispositivo mientras no hay conexión (RF-02.4, RNF-08).
 /// El `requestId` viaja como `id_solicitud`: el backend devuelve el caso ya
 /// creado si la app lo reenvía, así que reintentar nunca lo duplica (I18).
+///
+/// `ownerUid` es el médico que lo registró: si otro médico entra en el mismo
+/// celular, el caso no se le muestra ni se envía con su identidad
+/// (CONEXION_NUBE.md, N5). Espera a que su dueño vuelva a iniciar sesión.
 class QueuedCase {
   const QueuedCase({
     required this.requestId,
+    required this.ownerUid,
     required this.patientId,
     required this.clinicalData,
     required this.createdAt,
@@ -21,6 +26,10 @@ class QueuedCase {
   });
 
   final String requestId;
+
+  /// Null solo en casos guardados antes de que la cola registrara al dueño
+  /// (fase 1, servidor local): los puede enviar cualquier sesión.
+  final String? ownerUid;
   final String patientId;
   final ClinicalData clinicalData;
   final DateTime createdAt;
@@ -32,8 +41,11 @@ class QueuedCase {
   /// Id temporal con el que la app muestra el caso hasta tener el del backend.
   String get localId => 'local-$requestId';
 
+  bool belongsTo(String? uid) => uid != null && (ownerUid == null || ownerUid == uid);
+
   QueuedCase withError(String? error) => QueuedCase(
         requestId: requestId,
+        ownerUid: ownerUid,
         patientId: patientId,
         clinicalData: clinicalData,
         createdAt: createdAt,
@@ -61,6 +73,7 @@ class QueuedCase {
 
   Json toJson() => {
         'request_id': requestId,
+        'owner_uid': ownerUid,
         'patient_id': patientId,
         'clinical_data': clinicalDataToJson(clinicalData),
         'created_at': createdAt.toUtc().toIso8601String(),
@@ -70,6 +83,7 @@ class QueuedCase {
 
   factory QueuedCase.fromJson(Json j) => QueuedCase(
         requestId: j['request_id'] as String,
+        ownerUid: j['owner_uid'] as String?,
         patientId: j['patient_id'] as String,
         clinicalData: clinicalDataFromJson(j['clinical_data'] as Json),
         createdAt: parseDateTime(j['created_at']),
@@ -192,6 +206,17 @@ class LocalCaseStore {
     resolvedIds[q.localId] = remoteId;
     localImages[remoteId] = q.imagePaths;
     await _save();
+  }
+
+  /// Guarda una foto descargada del backend, para que las listas la muestren (el
+  /// backend solo da sus URL en el detalle del caso) y se vea sin conexión.
+  Future<String> savePhoto(String caseId, ImageView view, List<int> bytes) async {
+    final dir = await (_photosDir ?? () async => Directory.systemTemp)();
+    final file = await File('${dir.path}/${caseId}_${imageViewCodes[view]}.jpg')
+        .writeAsBytes(bytes, flush: true);
+    localImages[caseId] = {...?localImages[caseId], view: file.path};
+    await _save();
+    return file.path;
   }
 
   Future<void> setLocalImages(String caseId, Map<ImageView, String> paths) async {

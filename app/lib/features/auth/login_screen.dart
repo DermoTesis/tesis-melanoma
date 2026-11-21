@@ -49,7 +49,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  bool get _cloud => ref.read(backendConfigProvider).mode == BackendMode.nube;
+
   Future<void> _openActivation() async {
+    if (_cloud) return _requestActivationLink();
     final controller = TextEditingController(text: _email.text);
     final email = await showDialog<String>(
       context: context,
@@ -97,37 +100,96 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     context.push('/activar/${ticket.uid}');
   }
 
+  /// En la nube el enlace de activación es el correo de Firebase para definir
+  /// la contraseña (I15, N8). Si venció, se pide uno nuevo aquí.
+  Future<void> _requestActivationLink() async {
+    final controller = TextEditingController(text: _email.text);
+    final email = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Enlace de activación'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Abre el correo «$kFirebaseEmailSubject»: aunque diga "cambia", es tu enlace '
+              'de activación. Define tu contraseña y vuelve aquí para iniciar sesión. Si el '
+              'enlace venció o no lo encuentras, te enviamos uno nuevo.',
+              style: TextStyle(fontSize: 14, color: AppColors.textMuted, height: 1.4),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(hintText: 'correo@hospital.gob.pe'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, controller.text),
+              child: const Text('Enviar enlace')),
+        ],
+      ),
+    );
+    if (email == null || email.trim().isEmpty || !mounted) return;
+    try {
+      await ref.read(authRepositoryProvider).requestPasswordReset(email);
+      if (mounted) showAppSnack(context, kPasswordLinkSent);
+    } on AppException catch (e) {
+      if (mounted) showAppSnack(context, e.message, error: true);
+    }
+  }
+
   /// El servidor local no verifica la contraseña; basta con que no esté vacía.
   static const _devPassword = 'dev';
 
   void _showDemoAccounts() {
-    final local = ref.read(backendConfigProvider).mode == BackendMode.local;
+    final mode = ref.read(backendConfigProvider).mode;
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) {
-        Widget tile(String title, String email, String pw) => ListTile(
+        Widget tile(String title, String email, String? pw) => ListTile(
               title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-              subtitle: Text('$email · $pw'),
+              subtitle: Text(pw == null ? email : '$email · $pw'),
               onTap: () {
                 _email.text = email;
-                _password.text = pw;
+                // En la nube solo se completa el correo (N6).
+                _password.text = pw ?? '';
                 Navigator.pop(ctx);
               },
             );
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+          // Desplazable: en pantallas bajas las cuentas no caben en la hoja.
+          child: ListView(
+            shrinkWrap: true,
             children: [
               const Padding(
                 padding: EdgeInsets.fromLTRB(20, 20, 20, 4),
                 child: Text('Cuentas de demostración',
                     style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               ),
-              if (local) ...[
+              if (mode == BackendMode.nube) ...[
+                // Mismas cuentas que el simulado, con otras contraseñas que el
+                // equipo reparte fuera del repositorio (CONEXION_NUBE.md, N6).
+                tile('Médico especialista', DemoCredentials.specialistEmail, null),
+                tile('Administrador', DemoCredentials.adminEmail, null),
+                tile('Especialista con acceso revocado', DemoCredentials.revokedEmail, null),
+                tile('Especialista pendiente de activación', DemoCredentials.pendingEmail, null),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 4, 20, 20),
+                  child: Text(
+                    'Escribe la contraseña que te dio el equipo. La cuenta pendiente se activa '
+                    'con el enlace que llega por correo.',
+                    style: TextStyle(fontSize: 13, color: AppColors.textSubtle),
+                  ),
+                ),
+              ] else if (mode == BackendMode.local) ...[
                 // Cuentas sembradas por `python -m dermavia.local` (I13).
                 tile('Médico especialista', DevAccounts.specialistEmail, _devPassword),
                 tile('Administrador', DevAccounts.adminEmail, _devPassword),

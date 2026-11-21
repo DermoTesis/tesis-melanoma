@@ -23,15 +23,26 @@ import 'local_case_store.dart';
 import 'refresh_hub.dart';
 import 'token_provider.dart';
 
-/// Mensaje para los flujos de cuenta que dependen de Firebase (I15, I16).
+/// Mensaje para los flujos de cuenta que usan el correo de Firebase (I15,
+/// I16) cuando la app habla con el servidor local, que no envía correos.
 const kFirebasePending =
-    'Esta función usa el correo de Firebase y todavía no está disponible con el '
+    'Esta función usa el correo de Firebase y no está disponible con el '
     'servidor local. Pide al administrador que active tu cuenta.';
+
+/// El backend creó la cuenta, pero Firebase no pudo enviar el correo de
+/// activación (CONEXION_NUBE.md, N7). El administrador puede reenviarlo.
+class ActivationEmailException extends AppException {
+  const ActivationEmailException(this.user)
+      : super('Cuenta creada, pero no se pudo enviar el correo de activación.',
+            code: 'activation-email-failed');
+
+  final AppUser user;
+}
 
 List<Json> _list(dynamic json) => [for (final e in json as List) e as Json];
 
-/// Firebase Authentication (fase 2) o tokens de desarrollo (fase 1) + módulo
-/// Identidad (I13, I14).
+/// Firebase Authentication (nube) o tokens de desarrollo (servidor local) +
+/// módulo Identidad (I13–I16).
 class RestAuthRepository implements AuthRepository {
   RestAuthRepository(this._api, this._tokens);
 
@@ -98,8 +109,10 @@ class RestAuthRepository implements AuthRepository {
     return user;
   }
 
-  // Flujos de cuenta con enlace por correo: en el backend real los maneja
-  // Firebase (sendPasswordResetEmail), pendiente para la fase 2.
+  // Flujos de cuenta con enlace por correo. En la nube los dos usan
+  // sendPasswordResetEmail de Firebase: la contraseña se define en la página
+  // de Firebase y la primera petición autenticada activa la cuenta pendiente.
+  // La activación dentro de la app (`/activar/:uid`) es solo del simulado.
 
   @override
   Future<ActivationTicket?> findActivation(String correo) async =>
@@ -113,8 +126,16 @@ class RestAuthRepository implements AuthRepository {
       throw const AppException(kFirebasePending, code: 'unimplemented');
 
   @override
-  Future<PasswordResetTicket> requestPasswordReset(String correo) async =>
+  Future<PasswordResetTicket> requestPasswordReset(String correo) async {
+    final tokens = _tokens;
+    if (tokens is! PasswordLinkSender) {
       throw const AppException(kFirebasePending, code: 'unimplemented');
+    }
+    if (correo.trim().isEmpty) throw const AppException('Ingresa tu correo institucional.');
+    await (tokens as PasswordLinkSender).sendPasswordLink(correo);
+    // Firebase lleva el vencimiento del enlace (1 h); la app no lo controla.
+    return PasswordResetTicket(correo: correo.trim());
+  }
 
   @override
   Future<void> resetPassword(String correo, String newPassword) async =>
@@ -128,10 +149,13 @@ class RestAuthRepository implements AuthRepository {
 
 /// Módulo Identidad, funciones del administrador.
 class RestAdminRepository implements AdminRepository {
-  RestAdminRepository(this._api, this._hub);
+  RestAdminRepository(this._api, this._hub, {PasswordLinkSender? links}) : _links = links;
 
   final ApiClient _api;
   final RefreshHub _hub;
+
+  /// Firebase en la nube; null con el servidor local, que no envía correos.
+  final PasswordLinkSender? _links;
 
   @override
   Stream<List<AppUser>> watchUsers() => _hub.watch(() async {
@@ -156,7 +180,25 @@ class RestAdminRepository implements AdminRepository {
       'colegiatura_verificada': colegiaturaVerificada,
     });
     _hub.notify();
-    return userFromJson(json as Json);
+    final user = userFromJson(json as Json);
+    // El backend no envía correos: la app pide a Firebase el enlace para
+    // definir la contraseña. No cambia la sesión del administrador (I15).
+    final links = _links;
+    if (links != null) {
+      try {
+        await links.sendPasswordLink(user.correo);
+      } on AppException {
+        throw ActivationEmailException(user);
+      }
+    }
+    return user;
+  }
+
+  @override
+  Future<void> resendActivationLink(String correo) async {
+    final links = _links;
+    if (links == null) throw const AppException(kFirebasePending, code: 'unimplemented');
+    await links.sendPasswordLink(correo);
   }
 
   @override
@@ -249,9 +291,11 @@ class RestCaseRepository implements CaseRepository {
     this._hub,
     this._store,
     this._connectivity, {
+    required String? Function() currentUid,
     this.analysisTimeout = const Duration(seconds: 120),
     Uuid uuid = const Uuid(),
-  }) : _uuid = uuid {
+  })  : _currentUid = currentUid,
+        _uuid = uuid {
     _connectivitySub = _connectivity.onlineChanges().listen((online) {
       if (online) unawaited(flushOfflineQueue());
     });
@@ -261,6 +305,10 @@ class RestCaseRepository implements CaseRepository {
   final RefreshHub _hub;
   final LocalCaseStore _store;
   final ConnectivityService _connectivity;
+
+  /// Uid del médico con sesión: la cola offline solo muestra y envía sus
+  /// casos (CONEXION_NUBE.md, N5).
+  final String? Function() _currentUid;
   final Duration analysisTimeout;
   final Uuid _uuid;
   late final StreamSubscription<bool> _connectivitySub;
@@ -271,8 +319,12 @@ class RestCaseRepository implements CaseRepository {
   final _urls = <String, (DateTime, CaseImage, CaseImage)>{};
   static const _urlReuse = Duration(minutes: 10);
 
-  // Último valor leído, para mostrar algo sin conexión.
+  /// Casos cuya foto de la lista ya se intentó recuperar mientras la app está abierta.
+  final _photoAttempts = <String>{};
+
+  // Último valor leído, para mostrar algo sin conexión, y de quién es.
   List<ClinicalCase> _lastMine = const [];
+  String? _lastMineUid;
 
   ClinicalCase _decode(Json json) =>
       caseFromJson(json, localPaths: _store.localImages[json['id']] ?? const {});
@@ -292,16 +344,67 @@ class RestCaseRepository implements CaseRepository {
     return c;
   }
 
+  /// Las listas del backend no traen las URL de las fotos; solo el detalle del caso.
+  /// Las miniaturas salen de la copia local, que solo existe si el caso se registró en
+  /// este dispositivo y la app no se reinstaló. Para los demás casos se pide el detalle
+  /// una vez y se guarda la foto de la miniatura (foto 2): desde entonces las listas la
+  /// muestran, también sin conexión.
+  List<ClinicalCase> _restoreListPhotos(List<ClinicalCase> cases) {
+    final missing = <String>[];
+    for (final c in cases) {
+      // En REGISTRADO las fotos pueden no haberse subido todavía.
+      if (c.id.startsWith('local-') || c.status == CaseStatus.registrado) continue;
+      final path = c.foto2.localPath;
+      if (path != null && File(path).existsSync()) continue;
+      if (_photoAttempts.add(c.id)) missing.add(c.id);
+    }
+    if (missing.isNotEmpty) unawaited(_downloadListPhotos(missing));
+    return cases;
+  }
+
+  Future<void> _downloadListPhotos(List<String> ids) async {
+    var saved = false;
+    for (var i = 0; i < ids.length; i++) {
+      final id = ids[i];
+      try {
+        final url = caseFromJson(await _api.get('/cases/$id') as Json).foto2.remoteUrl;
+        if (url == null) continue;
+        await _store.savePhoto(id, ImageView.foto2, await _api.download(url));
+        saved = true;
+      } on NetworkException {
+        // Sin conexión: se reintentan cuando las listas se vuelvan a leer.
+        _photoAttempts.removeAll(ids.sublist(i));
+        break;
+      } on AppException {
+        // Sin foto o caso ajeno (cambió la sesión): queda la imagen de relleno.
+      }
+    }
+    if (saved) _hub.notify();
+  }
+
+  /// Casos de la cola del médico con sesión. Los de otro médico esperan a
+  /// que su dueño vuelva a entrar.
+  List<QueuedCase> _myQueue() {
+    final uid = _currentUid();
+    return [for (final q in _store.queue) if (q.belongsTo(uid)) q];
+  }
+
   List<ClinicalCase> _queued({String? patientId}) => [
-        for (final q in _store.queue)
+        for (final q in _myQueue())
           if (patientId == null || q.patientId == patientId) q.toCase(),
       ];
 
   @override
   Stream<List<ClinicalCase>> watchMyCases() => _hub.watch(() async {
-        if (_store.queue.isNotEmpty && _connectivity.isOnline) unawaited(flushOfflineQueue());
+        if (_myQueue().isNotEmpty && _connectivity.isOnline) unawaited(flushOfflineQueue());
+        final uid = _currentUid();
+        if (_lastMineUid != uid) {
+          // Otro médico: los casos leídos antes no son suyos.
+          _lastMine = const [];
+          _lastMineUid = uid;
+        }
         try {
-          _lastMine = _list(await _api.get('/cases')).map(_decode).toList();
+          _lastMine = _restoreListPhotos(_list(await _api.get('/cases')).map(_decode).toList());
         } on NetworkException {
           // Sin conexión: se muestran los últimos casos leídos y la cola.
         }
@@ -314,7 +417,7 @@ class RestCaseRepository implements CaseRepository {
         if (id.startsWith('local-')) {
           final resolved = _store.resolvedIds[id];
           if (resolved == null) {
-            return _store.queue.where((q) => q.localId == id).firstOrNull?.toCase();
+            return _myQueue().where((q) => q.localId == id).firstOrNull?.toCase();
           }
           remoteId = resolved;
         }
@@ -329,7 +432,8 @@ class RestCaseRepository implements CaseRepository {
   @override
   Stream<List<ClinicalCase>> watchCasesForPatient(String patientId) => _hub.watch(() async => [
         ..._queued(patientId: patientId),
-        ..._list(await _api.get('/patients/$patientId/cases')).map(_decode),
+        ..._restoreListPhotos(
+            _list(await _api.get('/patients/$patientId/cases')).map(_decode).toList()),
       ]);
 
   @override
@@ -342,11 +446,16 @@ class RestCaseRepository implements CaseRepository {
     if (data.ubicacionLesion.trim().isEmpty) {
       throw const AppException('Indica la ubicación corporal de la lesión.');
     }
+    final owner = _currentUid();
+    if (owner == null) {
+      throw const AppException('Tu sesión expiró. Inicia sesión otra vez.', code: 'unauthenticated');
+    }
     final requestId = _uuid.v4();
     final paths = await _store.keepPhotos(
         requestId, {ImageView.foto1: pan, ImageView.foto2: close});
     final queued = QueuedCase(
       requestId: requestId,
+      ownerUid: owner,
       patientId: draft.patientId,
       clinicalData: data,
       createdAt: DateTime.now(),
@@ -422,12 +531,15 @@ class RestCaseRepository implements CaseRepository {
     }
   }
 
-  /// Envía en orden los casos guardados sin conexión (RF-02.4, RNF-08).
+  /// Envía en orden los casos guardados sin conexión (RF-02.4, RNF-08). Solo
+  /// los del médico con sesión: nunca con la identidad de otro (N5).
   Future<void> flushOfflineQueue() async {
     if (_flushing || !_connectivity.isOnline) return;
     _flushing = true;
     try {
-      for (final q in List.of(_store.queue)) {
+      for (final q in _myQueue()) {
+        // La sesión pudo cerrarse o cambiar durante el envío.
+        if (!q.belongsTo(_currentUid())) break;
         try {
           final c = await _register(q);
           await _store.resolve(q, c.id);

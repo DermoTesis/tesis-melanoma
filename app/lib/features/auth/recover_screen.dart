@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,11 +9,17 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/common.dart';
 import '../../data/mock/mock_repositories.dart';
+import '../../data/remote/password_link_throttle.dart';
 import '../../domain/models/user.dart';
 import '../../providers/repository_providers.dart';
 import 'auth_widgets.dart';
 
 /// Pantalla 04 · Recuperar contraseña con enlace de tiempo limitado (HU03).
+///
+/// En la nube el enlace lo envía Firebase y la contraseña se define en su
+/// página: la pantalla solo pide el correo y confirma el envío (I16, N8). El
+/// enlace simulado (abrirlo, vencerlo, definir la contraseña aquí) es del
+/// backend simulado.
 class RecoverScreen extends ConsumerStatefulWidget {
   const RecoverScreen({super.key});
 
@@ -27,6 +35,11 @@ class _RecoverScreenState extends ConsumerState<RecoverScreen> {
   bool _loading = false;
   String? _error;
 
+  /// Segundos que faltan para poder reenviar el enlace de Firebase. El límite lo
+  /// aplica la capa de datos (`PasswordLinkThrottle`); aquí solo se muestra.
+  int _resendIn = 0;
+  Timer? _resendTimer;
+
   @override
   void initState() {
     super.initState();
@@ -35,9 +48,20 @@ class _RecoverScreenState extends ConsumerState<RecoverScreen> {
 
   @override
   void dispose() {
+    _resendTimer?.cancel();
     _email.dispose();
     _newPassword.dispose();
     super.dispose();
+  }
+
+  void _startResendCooldown(Duration wait) {
+    _resendTimer?.cancel();
+    setState(() => _resendIn = (wait.inMilliseconds / 1000).ceil());
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return timer.cancel();
+      setState(() => _resendIn--);
+      if (_resendIn <= 0) timer.cancel();
+    });
   }
 
   Future<void> _request() async {
@@ -53,6 +77,15 @@ class _RecoverScreenState extends ConsumerState<RecoverScreen> {
     final PasswordResetTicket t;
     try {
       t = await ref.read(authRepositoryProvider).requestPasswordReset(_email.text);
+    } on PasswordLinkCooldownException catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.message;
+          _loading = false;
+        });
+        _startResendCooldown(e.remaining);
+      }
+      return;
     } on AppException catch (e) {
       if (mounted) {
         setState(() {
@@ -67,6 +100,7 @@ class _RecoverScreenState extends ConsumerState<RecoverScreen> {
       _ticket = t;
       _loading = false;
     });
+    if (!t.opensInApp) _startResendCooldown(PasswordLinkThrottle.cooldown);
   }
 
   Future<void> _reset() async {
@@ -96,6 +130,8 @@ class _RecoverScreenState extends ConsumerState<RecoverScreen> {
     final now = ref.watch(clockProvider)();
     final ticket = _ticket;
     final expired = ticket?.isExpired(now) ?? false;
+    // Enlace de Firebase: se abre en el correo, fuera de la app.
+    final external = ticket != null && !ticket.opensInApp;
 
     return Scaffold(
       appBar: AppBar(),
@@ -108,7 +144,9 @@ class _RecoverScreenState extends ConsumerState<RecoverScreen> {
               ticket == null ? 'Recupera tu acceso' : 'Revisa tu correo',
               subtitle: ticket == null
                   ? 'Te enviaremos un enlace de tiempo limitado para restablecer tu contraseña.'
-                  : 'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.',
+                  : external
+                      ? kPasswordLinkSent
+                      : 'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.',
             ),
             const SizedBox(height: 24),
             if (_error != null) ...[
@@ -140,7 +178,7 @@ class _RecoverScreenState extends ConsumerState<RecoverScreen> {
                           child: Text('Validez del enlace',
                               style: TextStyle(fontSize: 14, color: AppColors.textMuted)),
                         ),
-                        Text(expired ? 'vencido' : '30 min',
+                        Text(external ? '1 hora' : (expired ? 'vencido' : '30 min'),
                             style: AppFonts.mono(fontSize: 13, color: AppColors.text)),
                       ],
                     ),
@@ -148,7 +186,12 @@ class _RecoverScreenState extends ConsumerState<RecoverScreen> {
                 ),
               ),
               const SizedBox(height: 18),
-              if (expired)
+              if (external)
+                const InfoBanner(
+                  message: 'Abre el enlace del correo, define tu nueva contraseña y vuelve para '
+                      'iniciar sesión.',
+                )
+              else if (expired)
                 const InfoBanner(
                   tone: BannerTone.warning,
                   title: 'Enlace vencido',
@@ -177,6 +220,12 @@ class _RecoverScreenState extends ConsumerState<RecoverScreen> {
           bottom: [
             if (ticket == null)
               PrimaryButton(label: 'Enviar enlace', loading: _loading, onPressed: _request)
+            else if (external)
+              PrimaryButton(
+                label: _resendIn > 0 ? 'Reenviar enlace en $_resendIn s' : 'Reenviar enlace',
+                loading: _loading,
+                onPressed: _resendIn > 0 ? null : _request,
+              )
             else if (expired) ...[
               PrimaryButton(label: 'Solicitar nuevo enlace', loading: _loading, onPressed: _request),
             ] else if (_linkOpened)

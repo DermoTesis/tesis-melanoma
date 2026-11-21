@@ -98,11 +98,17 @@ class ActivationTicket {
 class PasswordResetTicket {
   const PasswordResetTicket({
     required this.correo,
-    required this.expiresAt,
+    this.expiresAt,
   });
 
   final String correo;
-  final DateTime expiresAt;
 
-  bool isExpired(DateTime now) => now.isAfter(expiresAt);
+  /// Null cuando el enlace lo envía Firebase y se abre fuera de la app: su
+  /// vencimiento (1 h) lo controla Firebase.
+  final DateTime? expiresAt;
+
+  /// El enlace se abre en la app (solo el backend simulado).
+  bool get opensInApp => expiresAt != null;
+
+  bool isExpired(DateTime now) => expiresAt != null && now.isAfter(expiresAt!);
 }

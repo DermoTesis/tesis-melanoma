@@ -34,7 +34,13 @@ abstract class AuthRepository {
   /// Registra la aceptación fechada del alcance de apoyo diagnóstico.
   Future<AppUser> acceptScope();
 
+  /// Envía el enlace de recuperación (o de activación de una cuenta
+  /// pendiente). Responde igual exista o no el correo (HU04·CA2). En la nube
+  /// lo envía Firebase y el ticket no trae vencimiento (I15, I16).
   Future<PasswordResetTicket> requestPasswordReset(String correo);
+
+  // Solo del simulado: en la nube la contraseña se define en la página de
+  // Firebase, fuera de la app (como findActivation y activateAccount).
   Future<void> resetPassword(String correo, String newPassword);
 
   /// Solo para la demo: vence el enlace de recuperación enviado.
@@ -56,6 +62,9 @@ abstract class AdminRepository {
     required bool colegiaturaVerificada,
   });
   Future<void> setClinicalAccess(String uid, bool enabled);
+
+  /// Vuelve a enviar el enlace de activación a una cuenta pendiente (HU01).
+  Future<void> resendActivationLink(String correo);
 }
 
 /// Módulo Pacientes.

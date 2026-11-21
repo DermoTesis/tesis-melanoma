@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 
+/// Asunto del correo que envía Firebase en la nube, tanto para activar una cuenta
+/// como para recuperarla. Es su plantilla por defecto en español: Firebase no deja
+/// personalizarla en este proyecto (CONEXION_NUBE.md, C2). "Dermavía" sale del nombre
+/// público del proyecto en la consola de Firebase.
+const kFirebaseEmailSubject = 'Cambia la contraseña de Dermavía';
+
+/// Respuesta tras pedir un enlace por correo en la nube (I15, I16): no revela
+/// si la cuenta existe (HU04·CA2). El enlace lo envía Firebase y vence en 1 h.
+const kPasswordLinkSent =
+    'Si la cuenta existe, te enviamos un enlace para definir tu contraseña. Busca el correo '
+    '«$kFirebaseEmailSubject» (revisa también la carpeta de spam). Vence en 1 hora.';
+
 class DermaviaLogo extends StatelessWidget {
   const DermaviaLogo({super.key, this.size = 56});
   final double size;

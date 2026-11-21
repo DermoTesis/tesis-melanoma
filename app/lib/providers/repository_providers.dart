@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/errors/app_exception.dart';
 import '../data/mock/mock_backend.dart';
 import '../data/mock/mock_repositories.dart';
 import '../data/remote/api_client.dart';
@@ -75,10 +74,19 @@ final tokenProviderProvider = Provider<TokenProvider>((ref) {
         }
       });
     case BackendMode.nube:
+      // Firebase ya está inicializado en `main` (CONEXION_NUBE.md, N2).
+      return FirebaseTokenProvider(PluginFirebaseAuthGateway());
     case BackendMode.mock:
-      // Fase 2: Firebase Authentication (getIdToken).
-      return _FirebasePendingTokenProvider();
+      // El simulado no usa tokens: sus repositorios llevan la sesión.
+      return DevTokenProvider();
   }
+});
+
+/// Correo de Firebase para definir la contraseña (activación y recuperación,
+/// I15 e I16). Null con el servidor local, que no envía correos.
+final passwordLinkSenderProvider = Provider<PasswordLinkSender?>((ref) {
+  final tokens = ref.watch(tokenProviderProvider);
+  return tokens is PasswordLinkSender ? tokens as PasswordLinkSender : null;
 });
 
 final Provider<ApiClient> apiClientProvider = Provider<ApiClient>((ref) {
@@ -109,7 +117,8 @@ final Provider<AuthRepository> authRepositoryProvider = Provider<AuthRepository>
 });
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) => _isRemote(ref)
-    ? RestAdminRepository(ref.watch(apiClientProvider), ref.watch(refreshHubProvider))
+    ? RestAdminRepository(ref.watch(apiClientProvider), ref.watch(refreshHubProvider),
+        links: ref.watch(passwordLinkSenderProvider))
     : MockAdminRepository(ref.watch(mockBackendProvider)));
 
 final patientRepositoryProvider = Provider<PatientRepository>((ref) => _isRemote(ref)
@@ -123,6 +132,8 @@ final caseRepositoryProvider = Provider<CaseRepository>((ref) {
     ref.watch(refreshHubProvider),
     ref.watch(localCaseStoreProvider),
     ref.watch(connectivityServiceProvider),
+    // La cola offline solo muestra y envía los casos del médico con sesión (N5).
+    currentUid: () => ref.read(authRepositoryProvider).currentUser?.uid,
     analysisTimeout: ref.watch(backendConfigProvider).analysisTimeout,
   );
   ref.onDispose(repo.dispose);
@@ -159,48 +170,47 @@ final authStateProvider = StreamProvider<AppUser?>(
 final onlineProvider = StreamProvider<bool>(
     (ref) => ref.watch(connectivityServiceProvider).onlineChanges());
 
-final myCasesProvider = StreamProvider<List<ClinicalCase>>((ref) {
-  // Se reconstruye al cambiar la sesión.
-  ref.watch(authStateProvider.select((s) => s.value?.uid));
-  return ref.watch(caseRepositoryProvider).watchMyCases();
-});
+// Los datos son de la sesión: al cambiar de usuario no puede quedar nada leído con
+// la cuenta anterior (los casos son privados de cada médico). Por eso cada flujo:
+// - observa el uid de la sesión y, sin sesión, se vacía de inmediato;
+// - es autoDispose: al cerrar sesión la app vuelve a /login, se cierran todas las
+//   pantallas y su estado se destruye. Riverpod conserva el valor anterior mientras
+//   recarga, así que la siguiente cuenta empieza desde cero en vez de ver, por unos
+//   segundos, lo que vio la anterior.
 
-final caseProvider = StreamProvider.family<ClinicalCase?, String>(
-    (ref, id) => ref.watch(caseRepositoryProvider).watchCase(id));
+/// Uid de la sesión actual; null sin sesión.
+String? _sessionUid(Ref ref) => ref.watch(authStateProvider.select((s) => s.value?.uid));
 
-final patientCasesProvider = StreamProvider.family<List<ClinicalCase>, String>(
-    (ref, patientId) =>
-        ref.watch(caseRepositoryProvider).watchCasesForPatient(patientId));
+/// Flujo de datos de la sesión: [empty] sin sesión, [read] con ella.
+Stream<T> _forSession<T>(Ref ref, T empty, Stream<T> Function() read) =>
+    _sessionUid(ref) == null ? Stream.value(empty) : read();
 
-final patientsProvider = StreamProvider<List<Patient>>(
-    (ref) => ref.watch(patientRepositoryProvider).watchPatients());
+final myCasesProvider = StreamProvider.autoDispose<List<ClinicalCase>>((ref) =>
+    _forSession(ref, const [], () => ref.watch(caseRepositoryProvider).watchMyCases()));
 
-final patientProvider = StreamProvider.family<Patient?, String>(
-    (ref, id) => ref.watch(patientRepositoryProvider).watchPatient(id));
+final caseProvider = StreamProvider.autoDispose.family<ClinicalCase?, String>((ref, id) =>
+    _forSession(ref, null, () => ref.watch(caseRepositoryProvider).watchCase(id)));
+
+final patientCasesProvider = StreamProvider.autoDispose.family<List<ClinicalCase>, String>(
+    (ref, patientId) => _forSession(ref, const [],
+        () => ref.watch(caseRepositoryProvider).watchCasesForPatient(patientId)));
+
+final patientsProvider = StreamProvider.autoDispose<List<Patient>>((ref) =>
+    _forSession(ref, const [], () => ref.watch(patientRepositoryProvider).watchPatients()));
+
+final patientProvider = StreamProvider.autoDispose.family<Patient?, String>((ref, id) =>
+    _forSession(ref, null, () => ref.watch(patientRepositoryProvider).watchPatient(id)));
 
 final validationsProvider =
-    StreamProvider.family<List<ClinicalValidation>, String>((ref, caseId) =>
-        ref.watch(validationRepositoryProvider).watchValidations(caseId));
+    StreamProvider.autoDispose.family<List<ClinicalValidation>, String>((ref, caseId) =>
+        _forSession(ref, const [],
+            () => ref.watch(validationRepositoryProvider).watchValidations(caseId)));
 
-final reportProvider = StreamProvider.family<CaseReport?, String>(
-    (ref, caseId) => ref.watch(reportRepositoryProvider).watchReport(caseId));
+final reportProvider = StreamProvider.autoDispose.family<CaseReport?, String>((ref, caseId) =>
+    _forSession(ref, null, () => ref.watch(reportRepositoryProvider).watchReport(caseId)));
 
-final usersProvider = StreamProvider<List<AppUser>>(
-    (ref) => ref.watch(adminRepositoryProvider).watchUsers());
+final usersProvider = StreamProvider.autoDispose<List<AppUser>>((ref) =>
+    _forSession(ref, const [], () => ref.watch(adminRepositoryProvider).watchUsers()));
 
-final auditEventsProvider = StreamProvider<List<AuditEvent>>(
-    (ref) => ref.watch(auditRepositoryProvider).watchEvents());
-
-/// Fase 2 (Firebase Authentication): todavía no hay proyecto de Firebase.
-class _FirebasePendingTokenProvider implements TokenProvider {
-  @override
-  Future<String?> token() async => null;
-
-  @override
-  Future<String> signIn(String correo, String password) async =>
-      throw const AppException(
-          'El inicio de sesión con Firebase todavía no está configurado.', code: 'unimplemented');
-
-  @override
-  Future<void> signOut() async {}
-}
+final auditEventsProvider = StreamProvider.autoDispose<List<AuditEvent>>((ref) =>
+    _forSession(ref, const [], () => ref.watch(auditRepositoryProvider).watchEvents()));

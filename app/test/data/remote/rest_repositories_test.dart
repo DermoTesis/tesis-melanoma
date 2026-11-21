@@ -80,12 +80,35 @@ class FakeServer {
         return _json([caseJson(estado: caseState)]);
       case 'POST /validations':
         return _json(validationJson(), 201);
+      case 'POST /admin/specialists':
+        final body = jsonDecode(r.body) as Map;
+        return _json({
+          ...userJson(uid: 'nuevo', aceptacion: null),
+          'nombres': body['nombres'],
+          'correo': body['correo'],
+          'estado': 'PENDIENTE_ACTIVACION',
+        }, 201);
     }
     if (r.method == 'PUT' && r.url.host == 'almacen') return http.Response('', 200);
+    if (r.method == 'GET' && r.url.host == 'almacen') {
+      return http.Response.bytes([0xFF, 0xD8, 0xFF], 200);
+    }
     return _json({
       'error': {'codigo': 'not-found', 'mensaje': 'No encontrado'}
     }, 404);
   });
+}
+
+/// Correo de Firebase simulado (I15, I16).
+class FakeLinks implements PasswordLinkSender {
+  final sent = <String>[];
+  var fail = false;
+
+  @override
+  Future<void> sendPasswordLink(String correo) async {
+    if (fail) throw const NetworkException();
+    sent.add(correo);
+  }
 }
 
 void main() {
@@ -98,6 +121,7 @@ void main() {
   late RestCaseRepository cases;
   late Directory dir;
   late CaseDraft draft;
+  String? sessionUid;
   const data = ClinicalData(ubicacionLesion: 'Brazo derecho', tiempoAparicion: OnsetTime.noSabe);
 
   Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 20));
@@ -109,7 +133,8 @@ void main() {
     hub = RefreshHub(pollInterval: null);
     store = LocalCaseStore.memory();
     connectivity = FakeConnectivity();
-    cases = RestCaseRepository(api, hub, store, connectivity);
+    sessionUid = 'especialista-dev';
+    cases = RestCaseRepository(api, hub, store, connectivity, currentUid: () => sessionUid);
     dir = await Directory.systemTemp.createTemp('dermavia_test');
     CaseImage image(ImageView v) {
       final f = File('${dir.path}/${v.name}.jpg')..writeAsBytesSync([0xFF, 0xD8, 0xFF]);
@@ -229,6 +254,114 @@ void main() {
       final body = jsonDecode(server.requests.first.body) as Map;
       expect('local-${body['id_solicitud']}', queued.id);
     });
+
+    test('los casos en cola de otro médico no se muestran ni se envían (N5)', () async {
+      connectivity.online = false;
+      final queued = await cases.submitCase(draft, data);
+      expect(store.queue.single.ownerUid, 'especialista-dev');
+
+      // Otro médico entra en el mismo celular.
+      sessionUid = 'otro-medico';
+      connectivity.setOnline(true);
+      await settle();
+      final mine = await cases.watchMyCases().first;
+      expect(mine.where((c) => c.id == queued.id), isEmpty);
+      expect(await cases.watchCase(queued.id).first, isNull);
+      expect(server.calls.where((c) => c == 'POST /cases'), isEmpty);
+      expect(store.queue, hasLength(1));
+
+      // Vuelve su dueño: se envía una sola vez.
+      sessionUid = 'especialista-dev';
+      await cases.flushOfflineQueue();
+      await settle();
+      expect(store.queue, isEmpty);
+      expect(server.calls.where((c) => c == 'POST /cases'), hasLength(1));
+    });
+
+    test('sin sesión no se registra ni se envía nada', () async {
+      sessionUid = null;
+      await expectLater(cases.submitCase(draft, data), throwsA(isA<AppException>()));
+      expect(store.queue, isEmpty);
+      expect(server.requests, isEmpty);
+    });
+  });
+
+  group('Correo para definir la contraseña (I15, I16)', () {
+    test('el alta envía el enlace de activación con Firebase (N7)', () async {
+      final links = FakeLinks();
+      final admin = RestAdminRepository(api, hub, links: links);
+      final user = await admin.createSpecialist(
+          nombres: 'Dra. Nueva', correo: 'nueva@h.pe', dni: '12345678', cmp: '999',
+          colegiaturaVerificada: true);
+      expect(user.correo, 'nueva@h.pe');
+      expect(links.sent, ['nueva@h.pe']);
+    });
+
+    test('si el correo falla, la cuenta queda creada y se puede reenviar (N7)', () async {
+      final links = FakeLinks()..fail = true;
+      final admin = RestAdminRepository(api, hub, links: links);
+      await expectLater(
+          admin.createSpecialist(
+              nombres: 'Dra. Nueva', correo: 'nueva@h.pe', dni: '12345678', cmp: '999',
+              colegiaturaVerificada: true),
+          throwsA(isA<ActivationEmailException>()
+              .having((e) => e.user.correo, 'correo', 'nueva@h.pe')));
+      expect(server.calls, contains('POST /admin/specialists'));
+
+      links.fail = false;
+      await admin.resendActivationLink('nueva@h.pe');
+      expect(links.sent, ['nueva@h.pe']);
+    });
+
+    test('la recuperación en la nube no trae un enlace dentro de la app (N8)', () async {
+      final links = _LinkTokens();
+      final auth = RestAuthRepository(api, links);
+      final ticket = await auth.requestPasswordReset(' lramirez@h.pe ');
+      expect(ticket.opensInApp, isFalse);
+      expect(ticket.isExpired(DateTime(2100)), isFalse);
+      expect(links.sent, ['lramirez@h.pe']);
+    });
+
+    test('con el servidor local los enlaces por correo no están disponibles', () async {
+      final auth = RestAuthRepository(api, DevTokenProvider());
+      await expectLater(auth.requestPasswordReset('lramirez@h.pe'),
+          throwsA(isA<AppException>().having((e) => e.message, 'message', kFirebasePending)));
+      await expectLater(RestAdminRepository(api, hub).resendActivationLink('x@h.pe'),
+          throwsA(isA<AppException>()));
+    });
+  });
+
+  group('Fotos de las listas', () {
+    test('si no hay copia local, se baja una vez la foto de la miniatura', () async {
+      // Caso registrado en otro dispositivo, o la app se reinstaló: no hay copia local.
+      server.caseState = 'PENDIENTE_VALIDACION';
+      final emitted = <List<ClinicalCase>>[];
+      final sub = cases.watchMyCases().listen(emitted.add);
+      await settle();
+      await settle();
+
+      expect(emitted.first.single.foto2.localPath, isNull);
+      expect(server.calls, containsAllInOrder(['GET /cases', 'GET /cases/a1b2c3d4e5f6a7b8c9d0']));
+      expect(server.calls.where((c) => c == 'GET /b'), hasLength(1),
+          reason: 'solo la foto 2, la de la miniatura');
+      final path = emitted.last.single.foto2.localPath;
+      expect(path, isNotNull);
+      expect(File(path!).existsSync(), isTrue);
+
+      // Las siguientes lecturas usan la copia: no la vuelven a bajar.
+      hub.notify();
+      await settle();
+      expect(server.calls.where((c) => c == 'GET /b'), hasLength(1));
+      await sub.cancel();
+      File(path).deleteSync();
+    });
+
+    test('un caso recién registrado no busca fotos que quizá no se subieron', () async {
+      final sub = cases.watchMyCases().listen((_) {});
+      await settle();
+      expect(server.calls, ['GET /cases']);
+      await sub.cancel();
+    });
   });
 
   group('Validación (I8)', () {
@@ -254,4 +387,12 @@ void main() {
       expect((jsonDecode(server.requests.last.body) as Map)['clase_final'], 'no_melanoma');
     });
   });
+}
+
+/// TokenProvider que además envía enlaces, como FirebaseTokenProvider.
+class _LinkTokens extends DevTokenProvider implements PasswordLinkSender {
+  final sent = <String>[];
+
+  @override
+  Future<void> sendPasswordLink(String correo) async => sent.add(correo.trim());
 }
