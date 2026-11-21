@@ -65,6 +65,13 @@ Future<void> _submit() async {
 - Las pestañas del especialista (`/casos`, `/pacientes`, `/alertas`, `/perfil`) viven en
   el `StatefulShellRoute`; el resto son rutas de nivel superior que se abren con
   `context.push`.
+- Toda ruta de nivel superior se registra con `_page(ruta, AppTransition.x, …)`, que
+  define cómo entra la pantalla ([transitions.dart](../../../lib/core/router/transitions.dart)):
+  `drillIn` para un detalle que se abre desde un listado (caso, paciente, informe),
+  `step` para el siguiente paso de un flujo (registro de un caso, recuperar la cuenta) y
+  `fadeThrough` para un cambio de contexto (login, panel, confirmación del caso enviado).
+  Las pestañas cambian con `fadeThrough` mediante `FadeThroughBranches`. No uses
+  `builder:` en rutas nuevas: la pantalla entraría con otra animación.
 - El `redirect` global ya aplica: sin sesión → `/login`; alcance no aceptado →
   `/alcance`; admin → solo `/admin*`. Si la ruta es pública, añádela a `isPublic`; si es
   de administrador, empiézala por `/admin`.

@@ -26,6 +26,7 @@ import '../../features/profile/profile_screen.dart';
 import '../../features/reports/report_preview_screen.dart';
 import '../../features/validation/validation_form_screen.dart';
 import '../../providers/repository_providers.dart';
+import 'transitions.dart';
 
 class _AuthRefresh extends ChangeNotifier {
   _AuthRefresh(Ref ref) {
@@ -59,17 +60,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
-      GoRoute(path: '/recuperar', builder: (_, _) => const RecoverScreen()),
-      GoRoute(
-        path: '/activar/:uid',
-        builder: (_, s) => ActivationScreen(uid: s.pathParameters['uid']!),
-      ),
-      GoRoute(path: '/alcance', builder: (_, _) => const ScopeAcceptanceScreen()),
+      _page('/login', AppTransition.fadeThrough, (_) => const LoginScreen()),
+      _page('/recuperar', AppTransition.step, (_) => const RecoverScreen()),
+      _page('/activar/:uid', AppTransition.step,
+          (s) => ActivationScreen(uid: s.pathParameters['uid']!)),
+      _page('/alcance', AppTransition.fadeThrough, (_) => const ScopeAcceptanceScreen()),
 
       // --- Médico especialista ---
-      StatefulShellRoute.indexedStack(
-        builder: (_, _, shell) => HomeShell(shell: shell),
+      StatefulShellRoute(
+        pageBuilder: (_, s, shell) =>
+            transitionPage(s, AppTransition.fadeThrough, HomeShell(shell: shell)),
+        navigatorContainerBuilder: (_, shell, children) =>
+            FadeThroughBranches(currentIndex: shell.currentIndex, children: children),
         branches: [
           StatefulShellBranch(routes: [
             GoRoute(path: '/casos', builder: (_, _) => const CasesPanelScreen()),
@@ -85,55 +87,47 @@ final routerProvider = Provider<GoRouter>((ref) {
           ]),
         ],
       ),
-      GoRoute(path: '/nuevo-caso', builder: (_, _) => const PatientSearchScreen()),
-      GoRoute(
-        path: '/paciente/nuevo',
-        builder: (_, s) => RegisterPatientScreen(initialHc: s.uri.queryParameters['hc']),
-      ),
-      GoRoute(
-        path: '/paciente/:id',
-        builder: (_, s) => PatientHistoryScreen(patientId: s.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/paciente/:id/consentimiento',
-        builder: (_, s) => ConsentScreen(patientId: s.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/captura/:patientId',
-        builder: (_, s) => CameraCaptureScreen(patientId: s.pathParameters['patientId']!),
-      ),
-      GoRoute(
-        path: '/captura/:patientId/galeria',
-        builder: (_, s) => GalleryReviewScreen(patientId: s.pathParameters['patientId']!),
-      ),
-      GoRoute(
-        path: '/captura/:patientId/datos',
-        builder: (_, s) => ClinicalDataScreen(patientId: s.pathParameters['patientId']!),
-      ),
-      GoRoute(
-        path: '/caso/:id',
-        builder: (_, s) => CaseDetailScreen(caseId: s.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/caso/:id/enviado',
-        builder: (_, s) => CaseSubmittedScreen(caseId: s.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/caso/:id/validar',
-        builder: (_, s) => ValidationFormScreen(
+      // Registro de un caso, paso a paso.
+      _page('/nuevo-caso', AppTransition.step, (_) => const PatientSearchScreen()),
+      _page('/paciente/nuevo', AppTransition.step,
+          (s) => RegisterPatientScreen(initialHc: s.uri.queryParameters['hc'])),
+      _page('/paciente/:id', AppTransition.drillIn,
+          (s) => PatientHistoryScreen(patientId: s.pathParameters['id']!)),
+      _page('/paciente/:id/consentimiento', AppTransition.step,
+          (s) => ConsentScreen(patientId: s.pathParameters['id']!)),
+      _page('/captura/:patientId', AppTransition.step,
+          (s) => CameraCaptureScreen(patientId: s.pathParameters['patientId']!)),
+      _page('/captura/:patientId/galeria', AppTransition.step,
+          (s) => GalleryReviewScreen(patientId: s.pathParameters['patientId']!)),
+      _page('/captura/:patientId/datos', AppTransition.step,
+          (s) => ClinicalDataScreen(patientId: s.pathParameters['patientId']!)),
+      _page('/caso/:id', AppTransition.drillIn,
+          (s) => CaseDetailScreen(caseId: s.pathParameters['id']!)),
+      _page('/caso/:id/enviado', AppTransition.fadeThrough,
+          (s) => CaseSubmittedScreen(caseId: s.pathParameters['id']!)),
+      _page(
+        '/caso/:id/validar',
+        AppTransition.drillIn,
+        (s) => ValidationFormScreen(
           caseId: s.pathParameters['id']!,
           complementaDe: s.uri.queryParameters['complementa'],
         ),
       ),
-      GoRoute(
-        path: '/caso/:id/informe',
-        builder: (_, s) => ReportPreviewScreen(caseId: s.pathParameters['id']!),
-      ),
+      _page('/caso/:id/informe', AppTransition.drillIn,
+          (s) => ReportPreviewScreen(caseId: s.pathParameters['id']!)),
 
       // --- Administrador ---
-      GoRoute(path: '/admin', builder: (_, _) => const AdminHomeScreen()),
-      GoRoute(path: '/admin/nuevo', builder: (_, _) => const NewSpecialistScreen()),
-      GoRoute(path: '/admin/bitacora', builder: (_, _) => const AuditLogScreen()),
+      _page('/admin', AppTransition.fadeThrough, (_) => const AdminHomeScreen()),
+      _page('/admin/nuevo', AppTransition.drillIn, (_) => const NewSpecialistScreen()),
+      _page('/admin/bitacora', AppTransition.drillIn, (_) => const AuditLogScreen()),
     ],
   );
 });
+
+/// Ruta de nivel superior con su transición (ver [AppTransition]).
+GoRoute _page(String path, AppTransition transition, Widget Function(GoRouterState) build) {
+  return GoRoute(
+    path: path,
+    pageBuilder: (_, s) => transitionPage(s, transition, build(s)),
+  );
+}
