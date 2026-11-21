@@ -100,6 +100,8 @@ class ModuloCasos:
         datos = replace(datos, ubicacion_lesion=" ".join(datos.ubicacion_lesion.split()))
         if not datos.ubicacion_lesion:
             raise DatosInvalidos("Indica la ubicación de la lesión.")
+        if datos.impresion_clinica is None:
+            raise DatosInvalidos("Registra tu impresión clínica antes de enviar el caso.")
         caso = Caso(
             id=self._generar_id(),
             id_paciente=id_paciente,

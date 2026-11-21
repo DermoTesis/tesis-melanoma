@@ -105,6 +105,10 @@ class ModuloValidacion:
             clase_predicha=prediccion.clase_predicha.value,
             clase_final=final.value if final else None,
             concordante=validacion.concordante,
+            # Impresión previa a la predicción (D4): permite medir si el médico cambia de
+            # opinión al ver el resultado.
+            impresion_clinica=(caso.datos_clinicos.impresion_clinica.value
+                               if caso.datos_clinicos.impresion_clinica else None),
         )
         return validacion
 

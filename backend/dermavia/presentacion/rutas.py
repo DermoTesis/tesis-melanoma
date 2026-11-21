@@ -143,7 +143,8 @@ def registrar_caso(c: Cont, medico: Clinico, datos: CasoIn):
         medico, datos.id_paciente,
         DatosClinicos(ubicacion_lesion=clinicos.ubicacion_lesion,
                       tiempo_aparicion=clinicos.tiempo_aparicion,
-                      sintomas=tuple(clinicos.sintomas)),
+                      sintomas=tuple(clinicos.sintomas),
+                      impresion_clinica=clinicos.impresion_clinica),
         id_solicitud=datos.id_solicitud)
     return CasoOut.desde(caso)
 

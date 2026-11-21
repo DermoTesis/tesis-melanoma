@@ -143,7 +143,8 @@ def crear_caso(cliente: TestClient, id_paciente: str, **extra) -> dict:
     r = cliente.post("/cases", headers=ESP, json={
         "id_paciente": id_paciente,
         "datos_clinicos": {"ubicacion_lesion": "Espalda", "tiempo_aparicion": "menos_3_meses",
-                           "sintomas": ["cambio_color", "picor"]},
+                           "sintomas": ["cambio_color", "picor"],
+                           "impresion_clinica": "dudosa"},
         **extra})
     assert r.status_code == 201, r.text
     return r.json()

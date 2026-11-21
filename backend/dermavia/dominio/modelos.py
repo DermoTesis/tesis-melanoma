@@ -57,8 +57,9 @@ class Vista(StrEnum):
     """Las dos fotos dermatoscópicas del caso, en el orden de las entradas del modelo.
 
     El modelo es simétrico (se entrenó con pares al azar), así que el orden no cambia la
-    predicción de forma sistemática. Se usan nombres neutros porque el protocolo de captura de
-    la segunda foto (D1 en `app/PENDIENTES.md`) todavía no está decidido.
+    predicción de forma sistemática. La segunda foto es la misma lesión tras retirar el
+    dermatoscopio y volver a apoyarlo con otro ángulo o posición (D1 en `app/PENDIENTES.md`);
+    los nombres son neutros porque ninguna de las dos tiene un papel distinto.
     """
 
     A = "a"
@@ -164,11 +165,26 @@ class Paciente:
         return self.consentimiento is not None and self.consentimiento.vigente
 
 
+class ImpresionClinica(StrEnum):
+    """Impresión del especialista antes de conocer la predicción (D4 en `app/PENDIENTES.md`).
+
+    Se registra con el caso, antes del análisis, para que la predicción no la condicione: un
+    consejo erróneo de la IA empeoró las decisiones de los médicos en experimentos de lectura
+    (Tschandl et al., 2020, citado en el short paper, VI-C).
+    """
+
+    SOSPECHA_MELANOMA = "sospecha_melanoma"
+    SIN_SOSPECHA = "sin_sospecha"
+    DUDOSA = "dudosa"
+
+
 @dataclass(frozen=True)
 class DatosClinicos:
     ubicacion_lesion: str
     tiempo_aparicion: TiempoAparicion
     sintomas: tuple[Sintoma, ...] = ()
+    # Obligatoria al registrar un caso; nula solo en casos registrados antes de D4.
+    impresion_clinica: ImpresionClinica | None = None
 
 
 @dataclass(frozen=True)

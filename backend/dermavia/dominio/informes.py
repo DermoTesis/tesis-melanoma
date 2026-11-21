@@ -2,8 +2,9 @@
 
 El cierre solo procede si Validación Clínica entrega una validación registrada y el caso está en
 VALIDADO (RF-07.1, RF-05.2). El informe lleva la conclusión validada por el especialista y el
-alcance de apoyo diagnóstico (RF-05.3); nunca la predicción preliminar sin validar ni las
-observaciones internas (RF-05.5, RF-06.3).
+alcance de apoyo diagnóstico (RF-05.3) y la constancia de que el caso se evaluó con apoyo de la
+herramienta, con la versión del modelo (D5 en `app/PENDIENTES.md`); nunca la predicción
+preliminar sin validar ni las observaciones internas (RF-05.5, RF-06.3).
 
 Un informe cerrado forma parte del expediente del paciente, así que lo puede consultar cualquier
 especialista habilitado (historial, RF-05.6). Los casos abiertos solo los ve quien los registró.
@@ -27,6 +28,15 @@ ALCANCE = (
     "Herramienta de apoyo diagnóstico. No reemplaza el criterio médico ni los exámenes "
     "clínicos pertinentes."
 )
+
+
+def constancia_herramienta(version_modelo: str) -> str:
+    """Mismo texto que `toolUsageNotice` de la app."""
+    return (
+        f"Caso evaluado con apoyo de Dermavía (versión {version_modelo}), herramienta de apoyo "
+        "diagnóstico para melanoma. Su predicción preliminar fue revisada por el especialista, "
+        "a quien corresponde la conclusión."
+    )
 
 
 def conclusion(validacion: Validacion) -> str:
@@ -57,6 +67,7 @@ class DocumentoInforme:
     numero_colegiatura: str
     establecimiento: str
     alcance: str
+    constancia_herramienta: str
 
 
 class ModuloInformes:
@@ -122,6 +133,8 @@ class ModuloInformes:
             numero_colegiatura=validacion.numero_colegiatura,
             establecimiento=especialista.establecimiento if especialista else "",
             alcance=ALCANCE,
+            constancia_herramienta=constancia_herramienta(
+                validacion.prediccion_original.version_modelo),
         )
 
     def historial(self, id_paciente: str) -> list[DocumentoInforme]:

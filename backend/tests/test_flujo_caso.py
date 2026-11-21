@@ -16,6 +16,7 @@ def test_flujo_completo_registro_prediccion_validacion_cierre(cliente, almacen, 
     caso = crear_caso(cliente, paciente["id"])
     assert caso["estado"] == "REGISTRADO"
     assert caso["prediccion"] is None
+    assert caso["datos_clinicos"]["impresion_clinica"] == "dudosa"
 
     cargar_fotos(cliente, almacen, caso["id"])
     motor.salida_siguiente = 0.5
@@ -52,6 +53,8 @@ def test_flujo_completo_registro_prediccion_validacion_cierre(cliente, almacen, 
     assert informe["conclusion"] == "Lesión compatible con melanoma."
     assert informe["conducta_clinica"] == "Biopsia escisional en 2 semanas."
     assert "apoyo diagnóstico" in informe["alcance"]
+    assert informe["constancia_herramienta"].startswith(
+        "Caso evaluado con apoyo de Dermavía (versión 20261004T172732Z_registro)")
     texto = str(informe)
     assert "Nota interna" not in texto and "probabilidad" not in texto
 
@@ -62,13 +65,24 @@ def test_flujo_completo_registro_prediccion_validacion_cierre(cliente, almacen, 
         assert esperado in tipos
     evento_validacion = next(e for e in registro.eventos if e.tipo == TipoEvento.VALIDACION)
     assert evento_validacion.detalle["concordante"] is True
+    assert evento_validacion.detalle["impresion_clinica"] == "dudosa"
+
+
+def test_sin_impresion_clinica_no_hay_caso(cliente):
+    # D4: la impresión se registra antes de conocer la predicción.
+    paciente = crear_paciente(cliente)
+    r = cliente.post("/cases", headers=ESP, json={
+        "id_paciente": paciente["id"],
+        "datos_clinicos": {"ubicacion_lesion": "Brazo", "tiempo_aparicion": "no_sabe"}})
+    assert r.status_code == 422
 
 
 def test_sin_consentimiento_no_hay_caso(cliente):
     paciente = crear_paciente(cliente, consentimiento=False)
     r = cliente.post("/cases", headers=ESP, json={
         "id_paciente": paciente["id"],
-        "datos_clinicos": {"ubicacion_lesion": "Brazo", "tiempo_aparicion": "no_sabe"}})
+        "datos_clinicos": {"ubicacion_lesion": "Brazo", "tiempo_aparicion": "no_sabe",
+                           "impresion_clinica": "sin_sospecha"}})
     assert r.status_code == 409
     assert r.json()["error"]["codigo"] == "consent-required"
 

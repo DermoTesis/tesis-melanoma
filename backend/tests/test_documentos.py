@@ -6,7 +6,7 @@ from datetime import UTC, date, datetime
 
 from dermavia.dominio.modelos import (
     Caso, ClaseLesion, Consentimiento, DatosClinicos, Decision, EstadoCaso, EstadoCuenta,
-    EventoAuditoria, Fototipo, Informe, NotaInterna, Paciente, Prediccion, Rol, Sexo, Sintoma,
+    EventoAuditoria, Fototipo, ImpresionClinica, Informe, NotaInterna, Paciente, Prediccion, Rol, Sexo, Sintoma,
     TiempoAparicion, TipoEvento, Usuario, Validacion,
 )
 from dermavia.infraestructura.documentos import a_documento, desde_documento
@@ -46,12 +46,20 @@ def test_paciente_con_fecha_sin_hora():
 def test_caso_completo():
     caso = Caso(id="c1", id_paciente="p1", uid_medico="u1", estado=EstadoCaso.PENDIENTE_VALIDACION,
                 datos_clinicos=DatosClinicos("Espalda", TiempoAparicion.NO_SABE,
-                                             (Sintoma.PICOR, Sintoma.DOLOR)),
+                                             (Sintoma.PICOR, Sintoma.DOLOR),
+                                             ImpresionClinica.SOSPECHA_MELANOMA),
                 fecha_creacion=AHORA, imagenes={"a": "casos/c1/a", "b": "casos/c1/b"},
                 prediccion=PREDICCION, sugerencia_examenes="Biopsia",
                 notas_internas=(NotaInterna("n", "u1", "Dra. A", AHORA),), intentos_analisis=1,
                 id_solicitud="cola-1")
     assert ida_y_vuelta(caso) == caso
+
+
+def test_caso_anterior_a_la_impresion_clinica():
+    # Los casos registrados antes de D4 no tienen el campo en Firestore.
+    documento = a_documento(DatosClinicos("Espalda", TiempoAparicion.NO_SABE))
+    del documento["impresion_clinica"]
+    assert desde_documento(DatosClinicos, documento).impresion_clinica is None
 
 
 def test_validacion_informe_y_evento():

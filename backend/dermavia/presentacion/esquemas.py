@@ -19,8 +19,8 @@ from pydantic import BaseModel, ConfigDict, Field, computed_field
 from ..dominio import sugerencias
 from ..dominio.informes import DocumentoInforme
 from ..dominio.modelos import (
-    Caso, ClaseLesion, Decision, EstadoCaso, EstadoCuenta, Fototipo, Prediccion, Rol, Sexo,
-    Sintoma, TiempoAparicion, TipoEvento, Vista,
+    Caso, ClaseLesion, Decision, EstadoCaso, EstadoCuenta, Fototipo, ImpresionClinica,
+    Prediccion, Rol, Sexo, Sintoma, TiempoAparicion, TipoEvento, Vista,
 )
 
 
@@ -127,12 +127,16 @@ class DatosClinicosIn(Entrada):
     ubicacion_lesion: str = Field(min_length=1, max_length=200)
     tiempo_aparicion: TiempoAparicion
     sintomas: list[Sintoma] = Field(default_factory=list, max_length=len(Sintoma))
+    impresion_clinica: ImpresionClinica = Field(
+        description="Impresión del especialista, registrada antes de conocer la predicción.")
 
 
 class DatosClinicosOut(Modelo):
     ubicacion_lesion: str
     tiempo_aparicion: TiempoAparicion
     sintomas: list[Sintoma]
+    impresion_clinica: ImpresionClinica | None = Field(
+        default=None, description="Nula solo en casos registrados antes de que fuera obligatoria.")
 
 
 class CasoIn(Entrada):
@@ -283,6 +287,8 @@ class DocumentoInformeOut(Modelo):
     numero_colegiatura: str
     establecimiento: str
     alcance: str
+    constancia_herramienta: str = Field(
+        description="Constancia de que el caso se evaluó con apoyo de Dermavía, con la versión.")
 
     @classmethod
     def desde(cls, d: DocumentoInforme) -> DocumentoInformeOut:

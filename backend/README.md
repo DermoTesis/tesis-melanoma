@@ -125,7 +125,11 @@ arrancar dentro de Cloud Run.
 
 ## Despliegue en Google Cloud
 
-Desplegado el 2026-11-21 en el proyecto `tesis-dermavia`:
+Desplegado el 2026-11-21 en el proyecto `tesis-dermavia`. Ese mismo día se redesplegó con la
+impresión clínica (D4) y la constancia del informe (D5): imagen `20261121-d4d5`, revisión
+`dermavia-api-00002-pzr`. La etiqueta no es un commit porque se construyó antes de confirmar
+los cambios; la revisión anterior (`00001-t9r`, imagen `379b206`) queda disponible para
+volver atrás con `gcloud run services update-traffic`.
 
 | Recurso | Valor |
 |---|---|
@@ -226,6 +230,11 @@ sin reconstruir la imagen (RNF-13). Para pausar las tareas: `gcloud scheduler jo
   umbral, la línea de alerta, el sha256 y la latencia; las observaciones internas viven en el
   caso (`notas_internas`), no en la validación; se agrega la colección `historias_clinicas`
   (unicidad de la HC) y `auditoria`.
+- `datos_clinicos` agrega `impresion_clinica` (`sospecha_melanoma`, `sin_sospecha`, `dudosa`):
+  obligatoria al registrar un caso, antes de la predicción (D4 de `app/PENDIENTES.md`). Los
+  casos anteriores la tienen nula. El evento de auditoría de la validación la incluye.
+- El documento del informe agrega `constancia_herramienta`: que el caso se evaluó con apoyo de
+  Dermavía y con qué versión (D5).
 - La "base de solo inserción" se garantiza en la aplicación (el repositorio solo usa `create`)
   y con reglas que niegan el acceso de clientes; IAM de Firestore no permite dar solo permiso de
   crear a una cuenta de servicio.
@@ -243,6 +252,9 @@ Antes se habían comprobado `/health` y las dos tareas de Cloud Scheduler.
 
 ## Pendiente
 
+- Las instalaciones de la app anteriores a D4 no envían `impresion_clinica`, y el servicio
+  redesplegado las rechaza al registrar un caso (422). Hay que reinstalar la app en los
+  celulares de prueba.
 - Medir los umbrales de EXP-05 en Cloud Run (p95 por caso, cuatro casos simultáneos, arranque
   en frío).
 - Configurar el sink de auditoría en Cloud Logging (paso 11 del despliegue).
