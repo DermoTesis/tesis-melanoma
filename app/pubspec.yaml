@@ -108,3 +108,16 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Ícono de la app: el logo de Dermavía. Las imágenes fuente y cómo regenerarlas están en
+# assets/icon/generar_icono.py; después, `dart run flutter_launcher_icons`.
+flutter_launcher_icons:
+  android: true
+  ios: false
+  min_sdk_android: 24
+  image_path: assets/icon/icon.png
+  adaptive_icon_background: "#1D6B4F"
+  adaptive_icon_foreground: assets/icon/foreground.png
+  # foreground.png ya deja el margen de la zona segura del ícono adaptable.
+  adaptive_icon_foreground_inset: 0
+  adaptive_icon_monochrome: assets/icon/monochrome.png
