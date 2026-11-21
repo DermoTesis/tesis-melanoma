@@ -7,11 +7,11 @@ import 'package:image/image.dart' as img;
 
 /// Control local de la calidad técnica de cada imagen (RF-02.2, RNF-16).
 ///
-/// Primera versión basada en heurísticas: resolución, formato, luminancia
-/// media (iluminación) y varianza del Laplaciano (enfoque). Según la memoria
-/// (sección 3.1), este control será reemplazado por un modelo TFLite local
-/// (`tflite_flutter`); la clasificación de la lesión se ejecuta siempre en
-/// el backend.
+/// Heurísticas de resolución, formato, luminancia media (iluminación) y
+/// varianza del Laplaciano (enfoque). Se mantienen como control definitivo,
+/// sin un modelo TFLite (D3 de PENDIENTES.md), pero sus cortes **no están
+/// validados**: no se contrastaron con el modelo ni con las degradaciones de
+/// EXP-10. La clasificación de la lesión se ejecuta siempre en el backend.
 class ImageQualityService {
   const ImageQualityService();
 

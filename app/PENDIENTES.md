@@ -85,16 +85,18 @@ el mismo 2026-11-21. Quedan abiertos A15 (necesita un dermatólogo) y A7 (memori
   excluyó esas lesiones (IV-A), así que "Región subungueal" salió de la lista de ubicaciones
   (`kBodySites`). Si se escribe en "Otra ubicación" (por ejemplo, "uña"), se mantiene el aviso
   de A10.
+- [x] **D3. El control de calidad de las fotos** (decidido el 2026-11-21). Se mantienen las
+  heurísticas de `ImageQualityService` (lado mínimo de 1024 px, luminancia entre 55 y 228,
+  varianza del Laplaciano ≥ 18) y la memoria las describe como **no validadas**: sus cortes no
+  se contrastaron con el modelo. No se reemplazan por un modelo con `tflite_flutter`. El
+  paper tampoco evalúa un control de calidad (V-B, VII-v), y el test muestra por qué importa:
+  con una foto degradada, la fusión bajó a 86.0–87.7% de sensibilidad, por debajo del 90%
+  (V-D). La redacción en la memoria queda en T10.
 
 ## Decisiones pendientes
 
-- [ ] **D3. Qué hacer con el control de calidad actual.** La app rechaza fotos borrosas u
-  oscuras con heurísticas (`ImageQualityService`: lado mínimo de 1024 px, luminancia entre 55
-  y 228, varianza del Laplaciano ≥ 18) cuyos cortes no se contrastaron con el modelo. El paper
-  lo deja sin evaluar, y la memoria v10 dice que será un modelo con `tflite_flutter` (T10). El
-  test muestra que importa: con una foto degradada, la fusión bajó a 86.0–87.7% de
-  sensibilidad, por debajo del 90% (V-D). Opciones: mantener las heurísticas y describirlas en
-  la memoria como no validadas, o calibrar los cortes con las degradaciones de EXP-10.
+Ninguna por ahora.
+
 ## Cómo se presenta el resultado al médico
 
 Revisión de la tarjeta de predicción
@@ -227,10 +229,14 @@ para que el sistema coincida con lo que ella describe.
 - [ ] **T9. "Benigno/maligno" en RF-03.3 y en la memoria.** RF-03.3, la sección 3.3 y el CU de
   envío hablan de clasificación "benigno/maligno". El modelo, el backend, la app y el paper
   usan melanoma / no melanoma. Es el mismo problema de fondo que A12.
-- [ ] **T10. El control de calidad y el almacenamiento local en la tabla de componentes.** La
-  memoria lista `tflite_flutter (solo control de calidad)` y `flutter_secure_storage`. La app
-  usa heurísticas (D3) y guarda la cola offline con `shared_preferences`. Actualizar la tabla o
-  la app.
+- [ ] **T10. El control de calidad y el almacenamiento local en la memoria.** La tabla de
+  componentes lista `tflite_flutter (solo control de calidad)` y `flutter_secure_storage`, y la
+  sección 3.1 dice que el control será un modelo TFLite. Por D3, la memoria debe describir las
+  heurísticas que usa la app (resolución, formato, luminancia media y varianza del Laplaciano,
+  con sus cortes) y decir que **no están validadas**: sus cortes no se contrastaron con el
+  modelo ni con las degradaciones de EXP-10, y con una foto degradada la sensibilidad bajó a
+  86.0–87.7% en el test. Quitar `tflite_flutter` de la tabla. Además, la cola offline se guarda
+  con `shared_preferences`, no con `flutter_secure_storage`.
 - [ ] **T11. Región de Cloud Scheduler.** La Tabla 5 de la memoria pone todos los nodos en
   Santiago, pero las tareas `dermavia-reprocesar` y `dermavia-alertas-vencidas` corren en
   `southamerica-east1` (São Paulo) según [backend/README.md](../backend/README.md). No llevan
