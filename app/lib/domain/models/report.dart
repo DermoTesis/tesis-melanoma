@@ -35,6 +35,7 @@ class ReportDocument {
     required this.cmp,
     required this.establecimiento,
     required this.alcance,
+    required this.constanciaHerramienta,
     this.foto1Path,
     this.foto2Path,
     this.fechaNacimiento,
@@ -56,6 +57,10 @@ class ReportDocument {
 
   /// Nota de alcance de apoyo diagnóstico, obligatoria en todo informe.
   final String alcance;
+
+  /// Constancia de que el caso se evaluó con apoyo de Dermavía y con qué
+  /// versión (D5). No incluye la predicción preliminar (RF-05.5).
+  final String constanciaHerramienta;
   final String? foto1Path;
   final String? foto2Path;
 
@@ -64,6 +69,15 @@ class ReportDocument {
   final String? decision;
   final String? sustentoClinico;
   final String? examenesAdicionales;
+}
+
+/// Constancia de uso de la herramienta (D5). Mismo texto que
+/// `informes.constancia_herramienta` del backend.
+String toolUsageNotice(String? versionModelo) {
+  final version = versionModelo == null ? '' : ' (versión $versionModelo)';
+  return 'Caso evaluado con apoyo de Dermavía$version, herramienta de apoyo diagnóstico '
+      'para melanoma. Su predicción preliminar fue revisada por el especialista, a quien '
+      'corresponde la conclusión.';
 }
 
 const kScopeNotice =

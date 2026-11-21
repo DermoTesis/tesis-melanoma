@@ -87,7 +87,10 @@ void main() {
         foto1: photo(ImageView.foto1, 180),
         foto2: photo(ImageView.foto2, 120),
       ),
-      const ClinicalData(ubicacionLesion: 'Antebrazo izquierdo', tiempoAparicion: OnsetTime.noSabe),
+      const ClinicalData(
+          ubicacionLesion: 'Antebrazo izquierdo',
+          tiempoAparicion: OnsetTime.noSabe,
+          impresionClinica: ClinicalImpression.dudosa),
     );
     expect(created.queuedOffline, isFalse);
 

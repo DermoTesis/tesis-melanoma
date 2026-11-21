@@ -133,7 +133,16 @@ Future<Uint8List> buildReportPdf(ReportDocument doc, {PdfPageFormat? format}) as
             width: double.infinity,
             padding: const pw.EdgeInsets.all(10),
             decoration: pw.BoxDecoration(color: surface, borderRadius: pw.BorderRadius.circular(6)),
-            child: pw.Text(doc.alcance, style: const pw.TextStyle(color: muted, fontSize: 9)),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // Constancia de uso de la herramienta (D5).
+                pw.Text(doc.constanciaHerramienta,
+                    style: const pw.TextStyle(color: muted, fontSize: 9)),
+                pw.SizedBox(height: 4),
+                pw.Text(doc.alcance, style: const pw.TextStyle(color: muted, fontSize: 9)),
+              ],
+            ),
           ),
         ],
       ),

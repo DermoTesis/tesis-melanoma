@@ -99,8 +99,13 @@ class _ValidationFormScreenState extends ConsumerState<ValidationFormScreen> {
                     children: [
                       AppCard(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        child: KeyValueRow('Predicción original',
-                            p.shortSummary, bold: true),
+                        child: Column(
+                          children: [
+                            // D4: la impresión previa, registrada antes de la predicción.
+                            KeyValueRow('Tu impresión previa', c.clinicalData.impresionLabel),
+                            KeyValueRow('Predicción original', p.shortSummary, bold: true),
+                          ],
+                        ),
                       ),
                       if (widget.complementaDe != null) ...[
                         const SizedBox(height: 12),

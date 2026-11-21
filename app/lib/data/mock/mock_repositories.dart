@@ -384,6 +384,9 @@ class MockCaseRepository implements CaseRepository {
     if (data.ubicacionLesion.trim().isEmpty) {
       throw const AppException('Indica la ubicación corporal de la lesión.');
     }
+    if (data.impresionClinica == null) {
+      throw const AppException('Registra tu impresión clínica antes de enviar el caso.');
+    }
     final id = _b.nextCaseId();
     final c = ClinicalCase(
       id: id,
@@ -598,6 +601,7 @@ class MockReportRepository implements ReportRepository {
       cmp: v.cmp,
       establecimiento: _b.users[v.uidEspecialista]?.establecimiento ?? '',
       alcance: kScopeNotice,
+      constanciaHerramienta: toolUsageNotice(v.prediccionOriginal.versionModelo),
       foto1Path: c.foto1.localPath,
       foto2Path: c.foto2.localPath,
     );

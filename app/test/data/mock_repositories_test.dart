@@ -32,7 +32,9 @@ void main() {
     localPath: '/tmp/a.jpg',
   );
   const data = ClinicalData(
-      ubicacionLesion: 'Brazo derecho', tiempoAparicion: OnsetTime.entre3y12Meses);
+      ubicacionLesion: 'Brazo derecho',
+      tiempoAparicion: OnsetTime.entre3y12Meses,
+      impresionClinica: ClinicalImpression.dudosa);
 
   setUp(() {
     b = MockBackend(
@@ -133,6 +135,18 @@ void main() {
       );
     });
 
+    test('el caso exige la impresión clínica antes del análisis (D4)', () async {
+      await loginSpecialist();
+      const sinImpresion = ClinicalData(
+          ubicacionLesion: 'Brazo derecho', tiempoAparicion: OnsetTime.entre3y12Meses);
+      await expectLater(
+        cases.submitCase(
+            const CaseDraft(patientId: 'p-jmamani', foto1: image, foto2: secondPhoto),
+            sinImpresion),
+        throwsA(isA<AppException>()),
+      );
+    });
+
     test('el caso exige las dos imágenes', () async {
       await loginSpecialist();
       await expectLater(
@@ -208,6 +222,9 @@ void main() {
       final doc = await reports.buildReportDocument(c.id);
       expect(doc.conducta, 'Biopsia excisional');
       expect(doc.alcance, contains('No reemplaza el criterio médico'));
+      // D5: constancia del uso de la herramienta, con la versión.
+      expect(doc.constanciaHerramienta,
+          contains('Caso evaluado con apoyo de Dermavía (versión 20261004T172732Z_registro)'));
       final everything = [
         doc.conclusion,
         doc.conducta,

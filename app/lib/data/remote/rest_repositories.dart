@@ -446,6 +446,9 @@ class RestCaseRepository implements CaseRepository {
     if (data.ubicacionLesion.trim().isEmpty) {
       throw const AppException('Indica la ubicación corporal de la lesión.');
     }
+    if (data.impresionClinica == null) {
+      throw const AppException('Registra tu impresión clínica antes de enviar el caso.');
+    }
     final owner = _currentUid();
     if (owner == null) {
       throw const AppException('Tu sesión expiró. Inicia sesión otra vez.', code: 'unauthenticated');

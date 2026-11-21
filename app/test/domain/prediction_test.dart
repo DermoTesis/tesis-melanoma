@@ -58,8 +58,10 @@ void main() {
   });
 
   group('Ubicaciones fuera del dominio del modelo (A10)', () {
-    test('avisa en la región subungueal y en palmas y plantas', () {
-      expect(siteNoticeFor('Región subungueal'), contains('sin lesiones subungueales'));
+    test('avisa en palmas y plantas, y en lesiones subungueales escritas a mano', () {
+      // "Región subungueal" ya no está en la lista (D6), pero puede escribirse en
+      // "Otra ubicación".
+      expect(siteNoticeFor('Uña del pulgar derecho'), contains('sin lesiones subungueales'));
       expect(siteNoticeFor('Planta del pie derecho'), contains('palma o la planta'));
       expect(siteNoticeFor('Mano izquierda'), contains('palma o la planta'));
       expect(siteNoticeFor('Espalda, región escapular'), isNull);

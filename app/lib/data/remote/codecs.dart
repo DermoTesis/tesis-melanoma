@@ -63,6 +63,13 @@ const symptomCodes = {
   Symptom.dolor: 'dolor',
 };
 
+/// `ImpresionClinica` del backend (D4).
+const impressionCodes = {
+  ClinicalImpression.sospechaMelanoma: 'sospecha_melanoma',
+  ClinicalImpression.sinSospecha: 'sin_sospecha',
+  ClinicalImpression.dudosa: 'dudosa',
+};
+
 const decisionCodes = {
   ValidationDecision.confirmar: 'confirmar',
   ValidationDecision.corregir: 'corregir',
@@ -207,12 +214,17 @@ ClinicalData clinicalDataFromJson(Json j) => ClinicalData(
       sintomas: {
         for (final s in j['sintomas'] as List) _decode(symptomCodes, s, 'sintomas'),
       },
+      // Nula en casos registrados antes de D4.
+      impresionClinica: j['impresion_clinica'] == null
+          ? null
+          : _decode(impressionCodes, j['impresion_clinica'], 'impresion_clinica'),
     );
 
 Json clinicalDataToJson(ClinicalData d) => {
       'ubicacion_lesion': d.ubicacionLesion.trim(),
       'tiempo_aparicion': onsetCodes[d.tiempoAparicion],
       'sintomas': [for (final s in d.sintomas) symptomCodes[s]],
+      if (d.impresionClinica != null) 'impresion_clinica': impressionCodes[d.impresionClinica],
     };
 
 /// Caso del backend. Las imágenes combinan la copia local (si el caso se
@@ -300,6 +312,8 @@ ReportDocument reportDocumentFromJson(Json j,
       cmp: j['numero_colegiatura'] as String,
       establecimiento: j['establecimiento'] as String,
       alcance: j['alcance'] as String,
+      // Un backend anterior a D5 no la envía: se usa la constancia sin versión.
+      constanciaHerramienta: j['constancia_herramienta'] as String? ?? toolUsageNotice(null),
       foto1Path: foto1Path,
       foto2Path: foto2Path,
       fechaNacimiento: j['fecha_nacimiento'] == null ? null : parseDate(j['fecha_nacimiento']),

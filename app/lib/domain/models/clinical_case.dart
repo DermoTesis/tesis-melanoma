@@ -130,17 +130,43 @@ extension SymptomLabel on Symptom {
   }
 }
 
+/// Impresión clínica del especialista, registrada con el caso y antes de
+/// conocer la predicción (D4 de PENDIENTES.md): un consejo erróneo de la IA
+/// empeoró las decisiones de los médicos en experimentos de lectura
+/// (short paper, VI-C). Coincide con `ImpresionClinica` del backend.
+enum ClinicalImpression { sospechaMelanoma, sinSospecha, dudosa }
+
+extension ClinicalImpressionLabel on ClinicalImpression {
+  String get label {
+    switch (this) {
+      case ClinicalImpression.sospechaMelanoma:
+        return 'Sospecho melanoma';
+      case ClinicalImpression.sinSospecha:
+        return 'No sospecho melanoma';
+      case ClinicalImpression.dudosa:
+        return 'Dudosa';
+    }
+  }
+}
+
 /// Información clínica complementaria (RF-02.3).
 class ClinicalData {
   const ClinicalData({
     required this.ubicacionLesion,
     required this.tiempoAparicion,
     this.sintomas = const {},
+    this.impresionClinica,
   });
 
   final String ubicacionLesion;
   final OnsetTime tiempoAparicion;
   final Set<Symptom> sintomas;
+
+  /// Obligatoria para registrar un caso (`submitCase`); nula solo en casos
+  /// registrados antes de D4.
+  final ClinicalImpression? impresionClinica;
+
+  String get impresionLabel => impresionClinica?.label ?? 'No registrada';
 
   String get sintomasLabel => sintomas.isEmpty
       ? 'Ninguno referido'
@@ -150,11 +176,12 @@ class ClinicalData {
   String? get siteNotice => siteNoticeFor(ubicacionLesion);
 }
 
-/// Aviso para ubicaciones fuera del dominio del modelo (pendiente A10).
-/// HAM10000 excluyó las lesiones subungueales y casi no tiene imágenes de
-/// palmas y plantas (7 imágenes con la etiqueta "acral", todas de nevus),
-/// mientras que en el Perú el melanoma acral es frecuente. Si la ubicación
-/// subungueal se bloquea o no es una decisión pendiente del equipo.
+/// Aviso para ubicaciones fuera del dominio del modelo (A10). HAM10000
+/// excluyó las lesiones subungueales y casi no tiene imágenes de palmas y
+/// plantas (7 imágenes con la etiqueta "acral", todas de nevus), mientras que
+/// en el Perú el melanoma acral es frecuente. La región subungueal ya no está
+/// en la lista de ubicaciones (D6); el aviso cubre lo que se escriba en
+/// "Otra ubicación".
 String? siteNoticeFor(String ubicacion) {
   final u = ubicacion.toLowerCase();
   if (u.contains('subungue') || u.contains('uña')) {

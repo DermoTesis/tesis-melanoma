@@ -82,12 +82,22 @@ void main() {
         ubicacionLesion: ' Espalda ',
         tiempoAparicion: OnsetTime.masDe1Anio,
         sintomas: {Symptom.cambioTamano},
+        impresionClinica: ClinicalImpression.sospechaMelanoma,
       ));
       expect(json, {
         'ubicacion_lesion': 'Espalda',
         'tiempo_aparicion': 'mas_de_1_anio',
         'sintomas': ['cambio_tamano'],
+        'impresion_clinica': 'sospecha_melanoma',
       });
+    });
+
+    test('la impresión clínica vuelve del backend y puede faltar en casos antiguos (D4)', () {
+      final json = caseJson()['datos_clinicos'] as Map<String, dynamic>;
+      expect(clinicalDataFromJson(json).impresionClinica, ClinicalImpression.dudosa);
+      final antiguo = Map<String, dynamic>.of(json)..remove('impresion_clinica');
+      expect(clinicalDataFromJson(antiguo).impresionClinica, isNull);
+      expect(clinicalDataFromJson(antiguo).impresionLabel, 'No registrada');
     });
 
     test('la validación conserva la predicción original (I8, RF-04.2)', () {
@@ -105,6 +115,11 @@ void main() {
       expect(d.fechaNacimiento, DateTime(1970, 5, 2));
       expect(d.sustentoClinico, 'Patrón reticular regular.');
       expect(d.foto1Path, '/a.jpg');
+      expect(d.constanciaHerramienta, contains('versión 20261004T172732Z_registro'));
+      // Un backend anterior a D5 no envía la constancia: se usa el texto sin versión.
+      final antiguo = reportDocumentJson()..remove('constancia_herramienta');
+      expect(reportDocumentFromJson(antiguo).constanciaHerramienta,
+          startsWith('Caso evaluado con apoyo de Dermavía, herramienta'));
       expect(reportFromDocumentJson(reportDocumentJson()).conductaClinica, 'Control en 6 meses.');
     });
 

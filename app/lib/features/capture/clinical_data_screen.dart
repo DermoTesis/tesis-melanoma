@@ -33,7 +33,7 @@ const kBodySites = [
   'Pierna izquierda, cara anterior',
   'Planta del pie derecho',
   'Planta del pie izquierdo',
-  'Región subungueal',
+  // Sin "Región subungueal": HAM10000 excluyó esas lesiones (D6).
   'Otra ubicación',
 ];
 
@@ -50,6 +50,7 @@ class _ClinicalDataScreenState extends ConsumerState<ClinicalDataScreen> {
   String? _site;
   final _otherSite = TextEditingController();
   OnsetTime? _onset;
+  ClinicalImpression? _impression;
   final _symptoms = <Symptom>{};
   bool _attempted = false;
   bool _sending = false;
@@ -69,7 +70,7 @@ class _ClinicalDataScreenState extends ConsumerState<ClinicalDataScreen> {
       showAppSnack(context, 'Faltan imágenes aptas del caso.', error: true);
       return;
     }
-    if (_siteValue.isEmpty || _onset == null) return;
+    if (_siteValue.isEmpty || _onset == null || _impression == null) return;
     setState(() => _sending = true);
     try {
       final c = await ref
@@ -80,6 +81,7 @@ class _ClinicalDataScreenState extends ConsumerState<ClinicalDataScreen> {
               ubicacionLesion: _siteValue,
               tiempoAparicion: _onset!,
               sintomas: Set.of(_symptoms),
+              impresionClinica: _impression,
             ),
           );
       ref.read(captureDraftProvider.notifier).reset();
@@ -96,6 +98,7 @@ class _ClinicalDataScreenState extends ConsumerState<ClinicalDataScreen> {
     final draft = ref.watch(captureDraftProvider);
     final siteError = _attempted && _siteValue.isEmpty;
     final onsetError = _attempted && _onset == null;
+    final impressionError = _attempted && _impression == null;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Datos de la lesión')),
@@ -209,6 +212,45 @@ class _ClinicalDataScreenState extends ConsumerState<ClinicalDataScreen> {
                         ),
                     ],
                   ),
+                  const SizedBox(height: 20),
+                  // D4: la impresión se registra antes de conocer la predicción.
+                  FieldLabel('Tu impresión clínica *', error: impressionError),
+                  const Text(
+                    'Regístrala antes de ver el resultado del sistema; después no se puede cambiar.',
+                    style: TextStyle(fontSize: 12, height: 1.4, color: AppColors.textSubtle),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: impressionError ? const EdgeInsets.all(8) : EdgeInsets.zero,
+                    decoration: impressionError
+                        ? BoxDecoration(
+                            color: AppColors.errorSurface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.errorBorder, width: 1.5),
+                          )
+                        : null,
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        for (final i in ClinicalImpression.values)
+                          PillChip(
+                            label: i.label,
+                            selected: _impression == i,
+                            outlined: !impressionError,
+                            onTap: () => setState(() => _impression = i),
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (impressionError)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 6),
+                      child: Text(
+                        'Registra tu impresión para enviar el caso.',
+                        style: TextStyle(fontSize: 12, color: AppColors.error),
+                      ),
+                    ),
                 ],
               ),
             ),

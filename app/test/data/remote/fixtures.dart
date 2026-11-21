@@ -70,6 +70,7 @@ Map<String, dynamic> caseJson({
         'ubicacion_lesion': 'Brazo derecho',
         'tiempo_aparicion': 'entre_3_y_12_meses',
         'sintomas': ['picor', 'cambio_color'],
+        'impresion_clinica': 'dudosa',
       },
       'fecha_creacion': '2026-11-19T14:08:00Z',
       'vistas_cargadas': prediccion == null ? <String>[] : ['a', 'b'],
@@ -116,4 +117,8 @@ Map<String, dynamic> reportDocumentJson() => {
       'numero_colegiatura': '12345',
       'establecimiento': 'Hospital de demostración',
       'alcance': 'Herramienta de apoyo diagnóstico. No reemplaza el criterio médico…',
+      'constancia_herramienta':
+          'Caso evaluado con apoyo de Dermavía (versión 20261004T172732Z_registro), herramienta '
+              'de apoyo diagnóstico para melanoma. Su predicción preliminar fue revisada por el '
+              'especialista, a quien corresponde la conclusión.',
     };

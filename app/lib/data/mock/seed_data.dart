@@ -145,6 +145,8 @@ abstract final class SeedData {
       // Salida sin calibrar del modelo; el riesgo que se muestra sale de la
       // calibración del artefacto (entre paréntesis en cada caso).
       double? modelOutput,
+      // Impresión clínica registrada con el caso, antes de la predicción (D4).
+      ClinicalImpression impression = ClinicalImpression.dudosa,
     }) {
       final prediction = modelOutput == null
           ? null
@@ -162,6 +164,7 @@ abstract final class SeedData {
           ubicacionLesion: ubicacion,
           tiempoAparicion: onset,
           sintomas: symptoms,
+          impresionClinica: impression,
         ),
         prediction: prediction,
         suggestion: prediction?.defaultSuggestion,
@@ -172,7 +175,8 @@ abstract final class SeedData {
     addCase('CASO-0192', 'p-mquispe', CaseStatus.pendienteValidacion,
         ago(hours: 52), 'Espalda, región escapular izquierda',
         OnsetTime.entre3y12Meses, {Symptom.cambioTamano, Symptom.cambioColor},
-        modelOutput: 0.985); // 91%, posible melanoma
+        modelOutput: 0.985, // 91%, posible melanoma
+        impression: ClinicalImpression.sospechaMelanoma);
     addCase('CASO-0188', 'p-crojas', CaseStatus.pendienteValidacion,
         ago(hours: 49), 'Mejilla derecha', OnsetTime.masDe1Anio, {Symptom.picor},
         modelOutput: 0.215); // 20%, posible melanoma
@@ -182,7 +186,8 @@ abstract final class SeedData {
         modelOutput: 0.70); // 58%, posible melanoma
     addCase('CASO-0195', 'p-rflores', CaseStatus.pendienteValidacion,
         ago(hours: 5), 'Mejilla izquierda', OnsetTime.masDe1Anio, {},
-        modelOutput: 0.0025); // 3%, sin alerta
+        modelOutput: 0.0025, // 3%, sin alerta
+        impression: ClinicalImpression.sinSospecha);
     addCase('CASO-0197', 'p-lhuaman', CaseStatus.errorAnalisis,
         ago(minutes: 40), 'Pierna izquierda, cara anterior', OnsetTime.menos3Meses,
         {Symptom.sangrado});
@@ -193,7 +198,8 @@ abstract final class SeedData {
         modelOutput: 0.15); // 18%, posible melanoma
     addCase('CASO-0098', 'p-mquispe', CaseStatus.cerrado, ago(days: 290),
         'Brazo izquierdo', OnsetTime.masDe1Anio, {},
-        modelOutput: 0.002); // 3%, sin alerta
+        modelOutput: 0.002, // 3%, sin alerta
+        impression: ClinicalImpression.sinSospecha);
 
     void closed(String caseId, ValidationDecision decision, LesionClass clase,
         String sustento, String conducta, int daysAgo) {

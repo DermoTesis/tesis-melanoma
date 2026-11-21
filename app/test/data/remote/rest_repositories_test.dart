@@ -122,7 +122,10 @@ void main() {
   late Directory dir;
   late CaseDraft draft;
   String? sessionUid;
-  const data = ClinicalData(ubicacionLesion: 'Brazo derecho', tiempoAparicion: OnsetTime.noSabe);
+  const data = ClinicalData(
+      ubicacionLesion: 'Brazo derecho',
+      tiempoAparicion: OnsetTime.noSabe,
+      impresionClinica: ClinicalImpression.sinSospecha);
 
   Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 20));
 

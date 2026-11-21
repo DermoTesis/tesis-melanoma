@@ -360,6 +360,7 @@ class _ReviewView extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 child: Column(
                   children: [
+                    KeyValueRow('Tu impresión', c.clinicalData.impresionLabel),
                     KeyValueRow('Ubicación', c.clinicalData.ubicacionLesion),
                     KeyValueRow('Aparición', c.clinicalData.tiempoAparicion.label),
                     KeyValueRow('Síntomas', c.clinicalData.sintomasLabel),
