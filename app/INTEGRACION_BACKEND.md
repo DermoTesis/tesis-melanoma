@@ -23,6 +23,9 @@ backend simulado. Quedan para la fase 2 las partes de Firebase de I13, I15 e I16
 notificaciones push (I22) y el modo `nube`. Las tareas marcadas `[x]` están hechas;
 las notas **Fase 1** indican lo que quedó resuelto de forma provisional.
 
+**Fase 2:** el backend ya está desplegado (2026-11-21). Los cambios para conectar la app con
+Cloud Run y Firebase están en [CONEXION_NUBE.md](CONEXION_NUBE.md).
+
 Archivos principales: [backend_config.dart](lib/data/remote/backend_config.dart),
 [api_client.dart](lib/data/remote/api_client.dart),
 [codecs.dart](lib/data/remote/codecs.dart),
@@ -213,7 +216,7 @@ que la app puede usar en I6, I9 y I22.
 
 ## 5. Identidad y flujos de cuenta
 
-- [ ] **I13. Inicio de sesión.**
+- [x] **I13. Inicio de sesión.**
   - Fase 1: `DevTokenProvider` con una tabla correo → uid de las cuentas que siembra
     [local.py](../backend/dermavia/local.py) (`admin@dermavia.local` → `admin-dev`,
     `especialista@dermavia.local` → `especialista-dev`, `nuevo@dermavia.local` →
@@ -224,14 +227,14 @@ que la app puede usar en I6, I9 y I22.
     `GET /admin/users` usando la cuenta `admin-dev`. La sesión no se guarda entre
     reinicios de la app.
   - Fase 2: `FirebaseAuth.signInWithEmailAndPassword` y `getIdToken()` en cada petición
-    (Firebase lo renueva solo).
+    (Firebase lo renueva solo). **Fase 2: código hecho** (`FirebaseTokenProvider`, N4–N6); probado en la nube (CONEXION_NUBE.md, N13).
   - En ambos casos, después del token se llama `GET /users/me` para obtener el perfil, y el
     error de credenciales sigue siendo genérico (HU04·CA2).
 - [x] **I14. Acceso clínico revocado.** `GET /users/me` responde aunque el especialista no
   tenga acceso clínico (el backend solo lo bloquea en las rutas clínicas). La app debe
   cerrar sesión y mostrar el mensaje actual ("Tu acceso clínico fue revocado…") si
   `rol == especialista` y `acceso_clinico == false`.
-- [ ] **I15. Alta de especialista y activación de la cuenta.**
+- [x] **I15. Alta de especialista y activación de la cuenta.**
   - `POST /admin/specialists` recibe `nombres`, `correo`, `dni`, `numero_colegiatura`,
     `colegiatura_verificada` y `establecimiento` (opcional), y devuelve `UsuarioOut`, **no**
     un `ActivationTicket`. El backend **no envía correo**.
@@ -249,14 +252,16 @@ que la app puede usar en I6, I9 y I22.
     con su correo (I13). **Hecho:** `createSpecialist` devuelve `AppUser` y la pantalla
     de alta ya no muestra el vencimiento del enlace. **Pendiente (fase 2):** enviar el
     correo de Firebase; "Tengo un enlace de activación" muestra un aviso con el servidor
-    local.
-- [ ] **I16. Recuperar contraseña.** `requestPasswordReset` → `sendPasswordResetEmail`
+    local. **Fase 2: código hecho** (N7 y N8); probado en la nube (CONEXION_NUBE.md, N13).
+- [x] **I16. Recuperar contraseña.** `requestPasswordReset` → `sendPasswordResetEmail`
   (fase 2). `resetPassword` y `expireResetLink` no tienen equivalente: la nueva contraseña
   se define en la página de Firebase. Simplificar
   [recover_screen.dart](lib/features/auth/recover_screen.dart) a "te enviamos un enlace" y
   configurar la política de contraseñas (`PasswordPolicy`) en la consola de Firebase. En la
   fase 1, mostrar que la función no está disponible con el servidor local.
   **Fase 1 hecha:** la pantalla muestra el aviso (`kFirebasePending`).
+  **Fase 2: código hecho** (N8; la política es el mínimo de Firebase); probado en la nube
+  (CONEXION_NUBE.md, N13).
 
 ## 6. Flujo del caso y cola offline
 
@@ -301,9 +306,10 @@ que la app puede usar en I6, I9 y I22.
   fallos de red de `ApiClient`. El interruptor "Simular sin conexión" de
   [profile_screen.dart](lib/features/profile/profile_screen.dart) queda solo en modo mock o
   en compilaciones de depuración.
-- [ ] **I22. Notificaciones push (fase 2).** Pedir permiso, obtener el token de FCM y
+- [x] **I22. Notificaciones push (fase 2).** Pedir permiso, obtener el token de FCM y
   registrarlo con `POST /users/me/devices` (`{"token"}`) al iniciar sesión y cuando cambie.
   La push es genérica y sin datos clínicos; al tocarla, abrir alertas o el caso.
+  **Fase 2: código hecho** (`DeviceRegistration` y `PushNotifications`, N9 y N10); probado en la nube (CONEXION_NUBE.md, N13).
 
 ## 8. Android y entorno local
 
@@ -311,7 +317,7 @@ que la app puede usar en I6, I9 y I22.
   `android:usesCleartextTraffic="true"` (o una `network_security_config` para `10.0.2.2`)
   **solo** en [android/app/src/debug/AndroidManifest.xml](android/app/src/debug/AndroidManifest.xml).
   El permiso `INTERNET` ya está en el manifiesto principal. Fase 2: `google-services.json` y
-  el plugin de Google Services en Gradle.
+  el plugin de Google Services en Gradle (hecho, CONEXION_NUBE.md C1).
 - [x] **I24. Arranque del servidor local para el emulador.** Las URL firmadas del modo local
   se arman con `DERMAVIA_URL_BASE`; si queda en `localhost` o `0.0.0.0`, el emulador no
   puede subir las fotos. Desde `backend/`, en PowerShell:

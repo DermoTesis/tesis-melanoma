@@ -52,7 +52,7 @@ Los repositorios (`lib/domain/repositories/repositories.dart`) corresponden a lo
 módulos del backend monolítico modular de la Tabla 6: Identidad, Pacientes, Gestión de
 Casos (+ Inferencia), Validación Clínica, Informes y Auditoría.
 
-### Backend real (servidor local)
+### Backend real (servidor local o nube)
 
 La app elige el backend al compilar con `--dart-define=DERMAVIA_BACKEND`:
 
@@ -60,7 +60,7 @@ La app elige el backend al compilar con `--dart-define=DERMAVIA_BACKEND`:
 |---|---|
 | `mock` (por defecto) | simulado en memoria, con las cuentas de demostración de arriba |
 | `local` | servidor local del backend (`../backend`), con tokens `dev:<uid>` |
-| `nube` | Cloud Run + Firebase (fase 2, pendiente) |
+| `nube` | API en Cloud Run + Firebase Authentication y Cloud Messaging ([CONEXION_NUBE.md](CONEXION_NUBE.md)) |
 
 El backend necesita **Python 3.12 o 3.13** (`requires-python` de `../backend/pyproject.toml`).
 Con [uv](https://docs.astral.sh/uv/), `uv venv --python 3.12` lo descarga si no está instalado.
@@ -121,6 +121,18 @@ físico, usa la IP de la PC en `DERMAVIA_URL_BASE` y en `DERMAVIA_API_URL`.
 Las diferencias de contrato con el backend de `../backend` y los cambios necesarios están
 en [INTEGRACION_BACKEND.md](INTEGRACION_BACKEND.md).
 
+**Nube.** Sin `DERMAVIA_API_URL` usa la API de Cloud Run. La app Android ya está
+registrada en Firebase ([firebase_options.dart](lib/firebase_options.dart) y
+`android/app/google-services.json`):
+
+```bash
+flutter run --dart-define=DERMAVIA_BACKEND=nube
+```
+
+Las cuentas son las cuatro del modo simulado, con otras contraseñas que reparte el equipo
+fuera del repositorio. La app pide el login cada vez que se abre y la activación y la
+recuperación usan el correo de Firebase (el enlace vence en 1 hora).
+
 ### Estados del caso
 
 `REGISTRADO → EN_ANALISIS → (ERROR_ANALISIS) → PENDIENTE_VALIDACION → VALIDADO → CERRADO`
@@ -168,7 +180,6 @@ reemplazarán por el control TFLite descrito en la sección 3.1 de la memoria.
 
 ## Pendiente para siguientes sprints
 
-- Backend en Cloud Run, Firestore, Cloud Storage (URL firmadas) y Firebase Auth reales.
-- Notificaciones push con Firebase Cloud Messaging (las alertas ya se calculan).
+- Probar el modo `nube` en un celular físico (CONEXION_NUBE.md, N13).
 - Modelo TFLite local de control de calidad y medición de latencia en Cloud Run.
 - Persistencia local de la cola offline (hoy vive en memoria del proceso).

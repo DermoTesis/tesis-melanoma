@@ -53,7 +53,8 @@ memoria): `AuthRepository`/`AdminRepository` (Identidad), `PatientRepository`,
    closure y devuelve listas nuevas (`List.unmodifiable` cuando se expone estado
    interno).
 4. **Provider** en [repository_providers.dart](../../../lib/providers/repository_providers.dart):
-   `StreamProvider` o `StreamProvider.family` para lecturas. Derivados puros (orden,
+   `StreamProvider.autoDispose` (o `.autoDispose.family`) con `_forSession(...)` para
+   lecturas: se vacían sin sesión y no conservan datos de la cuenta anterior. Derivados puros (orden,
    filtros, vencimientos) van en [case_providers.dart](../../../lib/providers/case_providers.dart).
 5. **Datos de ejemplo** en [seed_data.dart](../../../lib/data/mock/seed_data.dart) si la
    demo los necesita. No cambies `DemoCredentials` (README y pruebas dependen de ellas).
@@ -92,8 +93,12 @@ UI no cambia: consume los mismos `Stream`s.
 - `LocalCaseStore` guarda en el dispositivo la cola offline (con `id_solicitud`), la
   equivalencia id local → id del backend, las fotos de los casos capturados aquí y el
   orden manual del panel.
-- `TokenProvider`: `DevTokenProvider` (`dev:<uid>`, servidor local) hoy; Firebase en la
-  fase 2.
+- `TokenProvider`: `DevTokenProvider` (`dev:<uid>`, servidor local) y
+  `FirebaseTokenProvider` (nube, ver [CONEXION_NUBE.md](../../../CONEXION_NUBE.md)), que
+  también envía los correos para definir la contraseña (`PasswordLinkSender`). Firebase va
+  detrás de interfaces (`FirebaseAuthGateway`, `PushMessaging`) para probarlo sin el plugin.
+- La cola offline guarda el uid del médico (`QueuedCase.ownerUid`): solo se muestran y
+  envían los casos del usuario con sesión.
 - Al añadir una operación: endpoint en `backend/dermavia/presentacion/rutas.py`,
   conversión en `codecs.dart`, método en el `Rest*Repository`, ejemplo JSON en
   `test/data/remote/fixtures.dart` y prueba con `MockClient`.

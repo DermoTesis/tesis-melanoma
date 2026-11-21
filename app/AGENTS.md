@@ -10,7 +10,9 @@ App Android en Flutter 3.35 / Dart 3.9 (Riverpod 3 + go_router) de apoyo diagnó
 para melanoma maligno. Por defecto funciona con un backend simulado en memoria
 (`lib/data/mock/`) que aplica las mismas reglas de negocio que el backend real; con
 `--dart-define=DERMAVIA_BACKEND=local` usa la API REST del backend (`lib/data/remote/`,
-ver [INTEGRACION_BACKEND.md](INTEGRACION_BACKEND.md)). Código, textos de UI,
+ver [INTEGRACION_BACKEND.md](INTEGRACION_BACKEND.md)) y con `nube`, la API de Cloud Run con
+Firebase Authentication y Cloud Messaging (ver [CONEXION_NUBE.md](CONEXION_NUBE.md)). Firebase
+solo se inicializa en modo `nube`: las pruebas no dependen de él. Código, textos de UI,
 pruebas y documentación en español.
 
 ## Comandos
