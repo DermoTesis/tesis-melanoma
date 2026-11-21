@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
+import 'providers/push_providers.dart';
 
 class DermaviaApp extends ConsumerWidget {
   const DermaviaApp({super.key});
@@ -12,6 +13,8 @@ class DermaviaApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    // Alertas push de casos vencidos (solo en modo `nube`).
+    ref.watch(pushNotificationsProvider);
     return MaterialApp.router(
       title: 'Dermavía',
       debugShowCheckedModeBanner: false,

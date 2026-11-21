@@ -9,7 +9,9 @@ import 'package:intl/intl.dart';
 import 'app.dart';
 import 'data/remote/backend_config.dart';
 import 'data/remote/local_case_store.dart';
+import 'data/remote/push_messaging.dart';
 import 'firebase_options.dart';
+import 'providers/push_providers.dart';
 import 'providers/repository_providers.dart';
 
 Future<void> main() async {
@@ -36,6 +38,7 @@ Future<void> main() async {
     // guardó en el dispositivo se cierra para que empiece y termine junto con
     // la de la app.
     await auth.signOut();
+    overrides.add(pushMessagingProvider.overrideWithValue(PluginPushMessaging()));
   }
   runApp(ProviderScope(overrides: overrides, child: const DermaviaApp()));
 }
