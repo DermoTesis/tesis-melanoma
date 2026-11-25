@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "432424057783",
+    "project_id": "tesis-dermavia",
+    "storage_bucket": "tesis-dermavia.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:432424057783:android:33d690028819e52d21c632",
+        "android_client_info": {
+          "package_name": "pe.edu.upc.dermavia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiIb9LOsDL11Zk-XVp2WFge-xuyObjkKI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

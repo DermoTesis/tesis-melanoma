@@ -1,0 +1,308 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/errors/app_exception.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/widgets/common.dart';
+import '../../data/mock/seed_data.dart';
+import '../../data/remote/backend_config.dart';
+import '../../data/remote/token_provider.dart';
+import '../../domain/models/user.dart';
+import '../../providers/repository_providers.dart';
+import 'auth_widgets.dart';
+
+/// Pantalla 01 · Inicio de sesión con error genérico (HU02, HU04·CA2).
+class LoginScreen extends ConsumerStatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final _email = TextEditingController();
+  final _password = TextEditingController();
+  bool _obscure = true;
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _email.dispose();
+    _password.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      await ref.read(authRepositoryProvider).signIn(_email.text, _password.text);
+    } on AppException catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  bool get _cloud => ref.read(backendConfigProvider).mode == BackendMode.nube;
+
+  Future<void> _openActivation() async {
+    if (_cloud) return _requestActivationLink();
+    final controller = TextEditingController(text: _email.text);
+    final email = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Enlace de activación'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Abre el enlace que recibiste por correo. En esta versión de demostración, '
+              'ingresa el correo con el que el administrador te dio de alta.',
+              style: TextStyle(fontSize: 14, color: AppColors.textMuted, height: 1.4),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(hintText: 'correo@hospital.gob.pe'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, controller.text),
+              child: const Text('Abrir enlace')),
+        ],
+      ),
+    );
+    if (email == null || email.trim().isEmpty || !mounted) return;
+    final ActivationTicket? ticket;
+    try {
+      ticket = await ref.read(authRepositoryProvider).findActivation(email);
+    } on AppException catch (e) {
+      if (mounted) showAppSnack(context, e.message, error: true);
+      return;
+    }
+    if (!mounted) return;
+    if (ticket == null) {
+      showAppSnack(context, 'No hay un enlace de activación pendiente para ese correo.',
+          error: true);
+      return;
+    }
+    context.push('/activar/${ticket.uid}');
+  }
+
+  /// En la nube el enlace de activación es el correo de Firebase para definir
+  /// la contraseña (I15, N8). Si venció, se pide uno nuevo aquí.
+  Future<void> _requestActivationLink() async {
+    final controller = TextEditingController(text: _email.text);
+    final email = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Enlace de activación'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Abre el correo «$kFirebaseEmailSubject»: aunque diga "cambia", es tu enlace '
+              'de activación. Define tu contraseña y vuelve aquí para iniciar sesión. Si el '
+              'enlace venció o no lo encuentras, te enviamos uno nuevo.',
+              style: TextStyle(fontSize: 14, color: AppColors.textMuted, height: 1.4),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(hintText: 'correo@hospital.gob.pe'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, controller.text),
+              child: const Text('Enviar enlace')),
+        ],
+      ),
+    );
+    if (email == null || email.trim().isEmpty || !mounted) return;
+    try {
+      await ref.read(authRepositoryProvider).requestPasswordReset(email);
+      if (mounted) showAppSnack(context, kPasswordLinkSent);
+    } on AppException catch (e) {
+      if (mounted) showAppSnack(context, e.message, error: true);
+    }
+  }
+
+  /// El servidor local no verifica la contraseña; basta con que no esté vacía.
+  static const _devPassword = 'dev';
+
+  void _showDemoAccounts() {
+    final mode = ref.read(backendConfigProvider).mode;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) {
+        Widget tile(String title, String email, String? pw) => ListTile(
+              title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: Text(pw == null ? email : '$email · $pw'),
+              onTap: () {
+                _email.text = email;
+                // En la nube solo se completa el correo (N6).
+                _password.text = pw ?? '';
+                Navigator.pop(ctx);
+              },
+            );
+        return SafeArea(
+          // Desplazable: en pantallas bajas las cuentas no caben en la hoja.
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 20, 20, 4),
+                child: Text('Cuentas de demostración',
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              ),
+              if (mode == BackendMode.nube) ...[
+                // Mismas cuentas que el simulado, con otras contraseñas que el
+                // equipo reparte fuera del repositorio (CONEXION_NUBE.md, N6).
+                tile('Médico especialista', DemoCredentials.specialistEmail, null),
+                tile('Administrador', DemoCredentials.adminEmail, null),
+                tile('Especialista con acceso revocado', DemoCredentials.revokedEmail, null),
+                tile('Especialista pendiente de activación', DemoCredentials.pendingEmail, null),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 4, 20, 20),
+                  child: Text(
+                    'Escribe la contraseña que te dio el equipo. La cuenta pendiente se activa '
+                    'con el enlace que llega por correo.',
+                    style: TextStyle(fontSize: 13, color: AppColors.textSubtle),
+                  ),
+                ),
+              ] else if (mode == BackendMode.local) ...[
+                // Cuentas sembradas por `python -m dermavia.local` (I13).
+                tile('Médico especialista', DevAccounts.specialistEmail, _devPassword),
+                tile('Administrador', DevAccounts.adminEmail, _devPassword),
+                tile('Especialista nuevo (sin aceptar el alcance)',
+                    DevAccounts.newSpecialistEmail, _devPassword),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 4, 20, 20),
+                  child: Text(
+                    'Servidor local: la contraseña no se verifica. Las cuentas que dé de alta '
+                    'el administrador también pueden entrar con su correo.',
+                    style: TextStyle(fontSize: 13, color: AppColors.textSubtle),
+                  ),
+                ),
+              ] else ...[
+                tile('Médico especialista', DemoCredentials.specialistEmail,
+                    DemoCredentials.specialistPassword),
+                tile('Administrador', DemoCredentials.adminEmail, DemoCredentials.adminPassword),
+                tile('Especialista con acceso revocado', DemoCredentials.revokedEmail,
+                    DemoCredentials.specialistPassword),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 4, 20, 20),
+                  child: Text(
+                    'Cuenta pendiente de activación: ${DemoCredentials.pendingEmail} '
+                    '(usa "Tengo un enlace de activación").',
+                    style: TextStyle(fontSize: 13, color: AppColors.textSubtle),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: BottomPinnedScroll(
+          padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+          children: [
+            const DermaviaLogo(),
+            const SizedBox(height: 14),
+            const ScreenTitle(
+              'Te damos la bienvenida',
+              size: 28,
+              subtitle:
+                  'Ingresa con la cuenta que te asignó el administrador de tu establecimiento.',
+            ),
+            const SizedBox(height: 28),
+            if (_error != null) ...[
+              InfoBanner(
+                key: const Key('login-error'),
+                message: _error!,
+                tone: BannerTone.error,
+                leading: const AlertDot(),
+              ),
+              const SizedBox(height: 20),
+            ],
+            AutofillGroup(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AppTextField(
+                    label: 'Correo institucional',
+                    controller: _email,
+                    keyboardType: TextInputType.emailAddress,
+                    autofillHints: const [AutofillHints.email],
+                    hint: 'nombre@hospital.gob.pe',
+                  ),
+                  const SizedBox(height: 16),
+                  AppTextField(
+                    label: 'Contraseña',
+                    controller: _password,
+                    obscureText: _obscure,
+                    autofillHints: const [AutofillHints.password],
+                    suffix: TextButton(
+                      onPressed: () => setState(() => _obscure = !_obscure),
+                      child: Text(_obscure ? 'Mostrar' : 'Ocultar'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => context.push('/recuperar'),
+                child: const Text('¿Olvidaste tu contraseña?'),
+              ),
+            ),
+          ],
+          bottom: [
+            PrimaryButton(label: 'Iniciar sesión', loading: _loading, onPressed: _submit),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: _openActivation,
+              child: const Text('Tengo un enlace de activación'),
+            ),
+            const Text(
+              'No existe registro público. Si aún no tienes cuenta, solicítala al administrador del sistema.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: AppColors.textSubtle, height: 1.45),
+            ),
+            TextButton(
+              onPressed: _showDemoAccounts,
+              style: TextButton.styleFrom(foregroundColor: AppColors.textSubtle),
+              child: const Text('Cuentas de demostración'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

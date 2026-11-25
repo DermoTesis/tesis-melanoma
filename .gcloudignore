@@ -1,0 +1,15 @@
+# Fuente que `gcloud builds submit --config backend/cloudbuild.yaml .` sube a Cloud Build:
+# solo lo que copia backend/Dockerfile. Sin este archivo gcloud aplica únicamente el .gitignore
+# de la raíz y sube app/build y app/.dart_tool (~2 GB).
+/*
+!/pyproject.toml
+!/src/
+/src/*
+!/src/melanoma/
+!/backend/
+/backend/*
+!/backend/Dockerfile
+!/backend/Dockerfile.dockerignore
+!/backend/pyproject.toml
+!/backend/dermavia/
+__pycache__/

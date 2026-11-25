@@ -1,0 +1,85 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../domain/models/clinical_case.dart';
+import 'repository_providers.dart';
+
+/// Tiempo límite de validación configurado (RF-04.5).
+const kValidationDeadline = Duration(hours: 48);
+
+/// Borrador del caso en captura (dos fotos dermatoscópicas de la lesión).
+class CaptureDraftNotifier extends Notifier<CaseDraft?> {
+  @override
+  CaseDraft? build() => null;
+
+  void start(String patientId) {
+    if (state?.patientId != patientId) state = CaseDraft(patientId: patientId);
+  }
+
+  void setImage(CaseImage image) {
+    final s = state;
+    if (s == null) return;
+    state = image.view == ImageView.foto1
+        ? s.copyWith(foto1: image)
+        : s.copyWith(foto2: image);
+  }
+
+  void clearImage(ImageView view) {
+    final s = state;
+    if (s == null) return;
+    state = view == ImageView.foto1
+        ? s.copyWith(clearFoto1: true)
+        : s.copyWith(clearFoto2: true);
+  }
+
+  void reset() => state = null;
+}
+
+final captureDraftProvider =
+    NotifierProvider<CaptureDraftNotifier, CaseDraft?>(CaptureDraftNotifier.new);
+
+/// Ordena los pendientes por probabilidad preliminar de malignidad
+/// (descendente) salvo que el especialista haya fijado un orden manual
+/// (RF-06.2).
+List<ClinicalCase> sortForPanel(List<ClinicalCase> cases, List<String> manual) {
+  final list = List.of(cases);
+  if (manual.isNotEmpty) {
+    int idx(ClinicalCase c) {
+      final i = manual.indexOf(c.id);
+      return i < 0 ? 1 << 20 : i;
+    }
+
+    list.sort((a, b) {
+      final cmp = idx(a).compareTo(idx(b));
+      if (cmp != 0) return cmp;
+      return _byProbability(a, b);
+    });
+    return list;
+  }
+  list.sort(_byProbability);
+  return list;
+}
+
+/// Primero los casos con alerta y después la probabilidad: en el escalón de
+/// la calibración (~7%) hay casos con y sin alerta con la misma probabilidad,
+/// y un caso sin alerta no debe quedar por encima de uno con alerta.
+int _byProbability(ClinicalCase a, ClinicalCase b) {
+  int alert(ClinicalCase c) => (c.prediction?.isAlert ?? false) ? 1 : 0;
+  final byAlert = alert(b).compareTo(alert(a));
+  if (byAlert != 0) return byAlert;
+  final pa = a.prediction?.probabilidadMalignidad ?? -1;
+  final pb = b.prediction?.probabilidadMalignidad ?? -1;
+  final cmp = pb.compareTo(pa);
+  return cmp != 0 ? cmp : b.createdAt.compareTo(a.createdAt);
+}
+
+/// Casos pendientes de validación que superan el tiempo límite.
+final overdueCasesProvider = Provider.autoDispose<List<ClinicalCase>>((ref) {
+  final cases = ref.watch(myCasesProvider).value ?? const [];
+  final now = ref.watch(clockProvider)();
+  final overdue = cases
+      .where((c) =>
+          c.isPendingValidation && c.pendingFor(now) > kValidationDeadline)
+      .toList()
+    ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+  return overdue;
+});
